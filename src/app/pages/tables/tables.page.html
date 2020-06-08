@@ -1,0 +1,67 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" class="ion-hide-lg-up">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Tablas</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Tables</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="create()">
+        <ion-icon slot="start" name="add"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Nuevo</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">New</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+
+    <!-- Filtros y búsquedas -->
+    <!-- <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ion-searchbar class="ion-no-padding"
+          [placeholder]="lang.isSpanish()?'Buscar por nombre':'Search by name'"
+          (ionChange)="onSearchChange($event.detail.value)">
+        </ion-searchbar>
+      </ion-col>
+    </ion-row> -->
+
+    <ion-row>
+      <ion-col *ngFor="let table of tables$ | async" size="12" class="ion-padding-top">
+        <ion-item color="primary" lines="none">
+          <ion-label>
+            <h2>{{ table?.name }}</h2>
+            <h3 style="cursor: pointer" (click)="copyToClipboard(table.shortcode)"><span
+                *ngIf="lang.isSpanish()">Código para plantilla:</span><span *ngIf="!lang.isSpanish()">Template
+                shortcode:</span>
+              {{ table?.shortcode }}
+              <ion-icon name="copy" style="font-size: 18px; position: relative; top: 3px; cursor: pointer;">
+              </ion-icon>
+            </h3>
+          </ion-label>
+          <ion-buttons slot="end">
+            <ion-button (click)="edit(table.id)">
+              <ion-icon slot="icon-only" name="create"></ion-icon>
+            </ion-button>
+            <ion-button (click)="delete(table.id)">
+              <ion-icon slot="icon-only" name="trash"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+        <ion-item lines="full" *ngFor="let disease of table.diseases">
+          <ion-label>
+            <h2>{{ disease.name }}</h2>
+          </ion-label>
+        </ion-item>
+        <ion-item *ngIf="!table.diseases" lines="full">
+          <ion-icon slot="start" name="sad"></ion-icon>
+          <ion-label *ngIf="lang.isSpanish()">Sin elementos</ion-label>
+          <ion-label *ngIf="!lang.isSpanish()">No elements found</ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+  </ion-grid>
+</ion-content>

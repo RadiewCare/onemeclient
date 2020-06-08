@@ -1,0 +1,150 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Base de datos: Elementos genéticos - Editar</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="delete()">
+        <ion-icon slot="start" name="trash"></ion-icon>
+        <ion-label class="ion-hide-md-down">Eliminar</ion-label>
+      </ion-button>
+      <ion-button (click)="save()">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label class="ion-hide-md-down">Guardar</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed padding>
+    <ion-row>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label>Enfermedad: {{ geneticElement?.disease.name }}</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label position="floating">Variante genética</ion-label>
+          <ionic-selectable [(ngModel)]="polymorphismsData" [items]="polymorphisms | async"
+            itemValueField="id" itemTextField="name" [canSearch]="true" confirmButtonText="Seleccionar"
+            closeButtonText="Cancelar" (onChange)="getGenes()" headerColor="primary"
+            searchFailText="No hay items disponibles" searchPlaceholder="Buscar">
+            <ng-template ionicSelectableCloseButtonTemplate>
+              <ion-icon name="close" style="font-size: 24px;"></ion-icon>
+            </ng-template>
+          </ionic-selectable>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label>Genes implicados</ion-label>
+          <ion-chip *ngFor="let gene of impliedGenes" color="primary" mode="ios" outline="true">
+            <ion-label>{{gene}}</ion-label>
+          </ion-chip>
+        </ion-item>
+      </ion-col>
+      <ion-col size="6" size-lg="2">
+        <ion-item lines="none">
+          <ion-label position="floating">Alelos de alto riesgo (padre)</ion-label>
+          <ion-select placeholder="Seleccione padre" [(ngModel)]="highRiskAllelesFather">
+            <ion-select-option value="A">A</ion-select-option>
+            <ion-select-option value="C">C</ion-select-option>
+            <ion-select-option value="T">T</ion-select-option>
+            <ion-select-option value="G">G</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="6" size-lg="2">
+        <ion-item lines="none">
+          <ion-label position="floating">Alelos de alto riesgo (madre)</ion-label>
+          <ion-select placeholder="Seleccione madre" [(ngModel)]="highRiskAllelesMother">
+            <ion-select-option value="A">A</ion-select-option>
+            <ion-select-option value="C">C</ion-select-option>
+            <ion-select-option value="T">T</ion-select-option>
+            <ion-select-option value="G">G</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="6" size-lg="2">
+        <ion-item lines="none">
+          <ion-label position="floating">Alelos de medio riesgo (padre)</ion-label>
+          <ion-select placeholder="Seleccione padre" [(ngModel)]="mediumRiskAllelesFather">
+            <ion-select-option value="A">A</ion-select-option>
+            <ion-select-option value="C">C</ion-select-option>
+            <ion-select-option value="T">T</ion-select-option>
+            <ion-select-option value="G">G</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="6" size-lg="2">
+        <ion-item lines="none">
+          <ion-label position="floating">Alelos de medio riesgo (madre)</ion-label>
+          <ion-select placeholder="Seleccione madre" [(ngModel)]="mediumRiskAllelesMother">
+            <ion-select-option value="A">A</ion-select-option>
+            <ion-select-option value="C">C</ion-select-option>
+            <ion-select-option value="T">T</ion-select-option>
+            <ion-select-option value="G">G</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="6" size-lg="2">
+        <ion-item lines="none">
+          <ion-label position="floating">Alelos favorables (padre)</ion-label>
+          <ion-select placeholder="Seleccione padre" [(ngModel)]="lowRiskAllelesFather">
+            <ion-select-option value="A">A</ion-select-option>
+            <ion-select-option value="C">C</ion-select-option>
+            <ion-select-option value="T">T</ion-select-option>
+            <ion-select-option value="G">G</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="6" size-lg="2">
+        <ion-item lines="none">
+          <ion-label position="floating">Alelos favorables (madre)</ion-label>
+          <ion-select placeholder="Seleccione madre" [(ngModel)]="lowRiskAllelesMother">
+            <ion-select-option value="A">A</ion-select-option>
+            <ion-select-option value="C">C</ion-select-option>
+            <ion-select-option value="T">T</ion-select-option>
+            <ion-select-option value="G">G</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="4">
+        <ion-item lines="none">
+          <ion-label position="floating">Probabilidad de alto riesgo</ion-label>
+          <ion-input type="number" placeholder="Introduzca probabilidad" [(ngModel)]="highRiskOddRatio">
+          </ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="4">
+        <ion-item lines="none">
+          <ion-label position="floating">Probabilidad de medio riesgo</ion-label>
+          <ion-input type="number" placeholder="Introduzca probabilidad" [(ngModel)]="mediumRiskOddRatio">
+          </ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="4">
+        <ion-item lines="none">
+          <ion-label position="floating">Probabilidad de favorable</ion-label>
+          <ion-input type="number" placeholder="Introduzca probabilidad" [(ngModel)]="lowRiskOddRatio">
+          </ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label position="floating">Comentario</ion-label>
+          <ion-textarea placeholder="Introduzca comentario" [(ngModel)]="comment"></ion-textarea>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label position="floating">Bibliografía</ion-label>
+          <ion-textarea placeholder="Introduzca bibliografía" [(ngModel)]="bibliography"></ion-textarea>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

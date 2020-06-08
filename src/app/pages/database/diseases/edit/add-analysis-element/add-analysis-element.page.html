@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Añadir elemento de análisis clínico: {{ disease?.name }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed padding>
+    <ion-row>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating">Elementos de análisis clínicos</ion-label>
+          <ionic-selectable [(ngModel)]="analysisElementsData" [items]="analysisElements$ | async"
+            itemValueField="id" itemTextField="name" [canSearch]="true" confirmButtonText="Seleccionar"
+            closeButtonText="Cancelar" headerColor="primary" isMultiple="true"
+            searchFailText="No hay items disponibles" searchPlaceholder="Buscar">
+            <ng-template ionicSelectableCloseButtonTemplate>
+              <ion-icon name="close" style="font-size: 24px;"></ion-icon>
+            </ng-template>
+          </ionic-selectable>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon slot="start" name="close"></ion-icon>
+        <ion-label>Cancelar</ion-label>
+      </ion-button>
+      <ion-button (click)="save()" color="primary">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label>Aceptar</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

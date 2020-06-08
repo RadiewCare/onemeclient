@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Enfermedades</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Diseases</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [routerLink]="['./create']">
+        <ion-icon slot="start" name="add"></ion-icon>
+        <ion-label class="ion-hide-md-down" *ngIf="lang.isSpanish()">Nuevo</ion-label>
+        <ion-label class="ion-hide-md-down" *ngIf="!lang.isSpanish()">New</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ion-searchbar #searchbar [placeholder]="lang.isSpanish()?'Buscar':'Search'"
+          (ionChange)="onSearchChange($event.detail.value)" [debounce]="250" class="ion-no-padding">
+        </ion-searchbar>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ng-container *ngIf="!queryDiseases; else elseTemplate">
+          <ion-item *ngFor="let disease of diseases" [routerLink]="['./edit', disease.id]" lines="full">
+            <ion-label>
+              <h2>{{ disease.name }}</h2>
+            </ion-label>
+          </ion-item>
+        </ng-container>
+        <ng-template #elseTemplate>
+          <ion-item *ngFor="let disease of queryDiseases" [routerLink]="['./edit', disease.id]" lines="full">
+            <ion-label>
+              <h2>{{ disease.name }}</h2>
+            </ion-label>
+          </ion-item>
+        </ng-template>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>

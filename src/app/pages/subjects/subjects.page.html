@@ -1,0 +1,112 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" class="ion-hide-lg-up">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Sujetos</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Subjects</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [routerLink]="['./create']">
+        <ion-icon slot="start" name="add"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Nuevo</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">New</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+
+    <!-- Filtros y búsquedas -->
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ion-searchbar class="ion-no-padding"
+          [placeholder]="lang.isSpanish()? 'Buscar por identificador' : 'Search by identifier'"
+          (ionChange)="onSearchChange($event.detail.value)">
+        </ion-searchbar>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+
+      <ion-col size="12" class="ion-padding-top">
+
+        <ng-container *ngIf="!querySubjects; else elseTemplate">
+          <ion-list lines="full" class="ion-no-padding">
+            <ion-list-header *ngIf="subjects?.length>0" color="primary">
+              <ion-label *ngIf="lang.isSpanish()">MIS SUJETOS</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">MY SUBJECTS</ion-label>
+            </ion-list-header>
+            <ion-item *ngFor="let subject of subjects; let i = index" style="cursor: pointer"
+              [routerLink]="['/subjects/edit/'+ subject.id]">
+              <ion-label>
+                {{ subject.identifier }}
+              </ion-label>
+              <ion-icon slot="end" name="body" [color]="(subject.history) ? 'primary' : 'medium'"></ion-icon>
+              <ion-icon slot="end" name="finger-print"
+                [color]="(subject.hasGeneticAnalysis) ? 'primary' : 'medium'">
+              </ion-icon>
+              <ion-icon slot="end" name="eyedrop"
+                [color]="(subject.hasClinicAnalysis) ? 'primary' : 'medium'">
+              </ion-icon>
+              <ion-icon slot="end" name="images" [color]="(subject.hasImageAnalysis) ? 'primary' : 'medium'">
+              </ion-icon>
+            </ion-item>
+          </ion-list>
+        </ng-container>
+
+        <ng-template #elseTemplate>
+          <ion-list lines="full" class="ion-no-padding">
+            <ion-list-header *ngIf="querySubjects?.length>0" color="primary">
+              <ion-label *ngIf="lang.isSpanish()">MIS SUJETOS</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">MY SUBJECTS</ion-label>
+            </ion-list-header>
+            <ion-item *ngFor="let subject of querySubjects; let i = index" style="cursor: pointer"
+              [routerLink]="['/subjects/edit/'+ subject.id]">
+              <ion-label>
+                {{ subject.identifier }}
+              </ion-label>
+              <ion-icon slot="end" name="body" [color]="(subject.history) ? 'primary' : 'medium'"></ion-icon>
+              <ion-icon slot="end" name="finger-print"
+                [color]="(subject.hasGeneticAnalysis) ? 'primary' : 'medium'">
+              </ion-icon>
+              <ion-icon slot="end" name="eyedrop"
+                [color]="(subject.hasClinicAnalysis) ? 'primary' : 'medium'">
+              </ion-icon>
+              <ion-icon slot="end" name="images" [color]="(subject.hasImageAnalysis) ? 'primary' : 'medium'">
+              </ion-icon>
+            </ion-item>
+          </ion-list>
+          <ion-item *ngIf="querySubjects?.length===0" lines="none">
+            <ion-label>Ningún resultado</ion-label>
+          </ion-item>
+        </ng-template>
+
+      </ion-col>
+
+      <ion-col
+        *ngIf="(sharedSubjectsPhenotypic && sharedSubjectsPhenotypic.length>0) || (sharedSubjectsAnalytic && sharedSubjectsAnalytic.length>0)|| (sharedSubjectsGenetic && sharedSubjectsGenetic.length>0)||(sharedSubjectsImage && sharedSubjectsImage.length>0)"
+        size="12" class="ion-padding-top">
+        <ion-list class="ion-no-padding">
+          <ion-list-header color="primary">
+            <ion-label *ngIf="lang.isSpanish()">SUJETOS COMPARTIDOS CONTIGO</ion-label>
+            <ion-label *ngIf="!lang.isSpanish()">SHARED SUBJECTS WITH YOU</ion-label>
+          </ion-list-header>
+          <ion-item *ngFor="let subject of sharedSubjectsData" lines="full"
+            [routerLink]="['/subjects/edit/'+ subject.id]">
+            <ion-label>{{subject.identifier}}</ion-label>
+            <ion-icon slot="end" name="body" [color]="(subject.history) ? 'primary' : 'medium'"></ion-icon>
+            <ion-icon slot="end" name="finger-print"
+              [color]="(subject.hasGeneticAnalysis) ? 'primary' : 'medium'">
+            </ion-icon>
+            <ion-icon slot="end" name="eyedrop" [color]="(subject.hasClinicAnalysis) ? 'primary' : 'medium'">
+            </ion-icon>
+            <ion-icon slot="end" name="images" [color]="(subject.hasImageAnalysis) ? 'primary' : 'medium'">
+            </ion-icon>
+          </ion-item>
+        </ion-list>
+      </ion-col>
+
+    </ion-row>
+  </ion-grid>
+</ion-content>

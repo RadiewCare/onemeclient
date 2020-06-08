@@ -1,0 +1,71 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Base de datos: Elementos de análisis</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [routerLink]="['./create']">
+        <ion-icon slot="start" name="add"></ion-icon>
+        <ion-label class="ion-hide-md-down">Nuevo</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="8" size-lg="10" class="ion-padding-top">
+        <ion-searchbar #searchbar placeholder="Buscar por nombre..."
+          (ionChange)="onSearchChange($event.detail.value)" [debounce]="250" class="ion-no-padding">
+        </ion-searchbar>
+      </ion-col>
+      <ion-col size="4" size-lg="2" class="ion-padding-top">
+        <ion-item lines="none" color="default">
+          <ion-buttons slot="end">
+            <ion-button (click)="changeView('list')" color="primary">
+              <ion-icon slot="icon-only" name="list"></ion-icon>
+            </ion-button>
+            <ion-button (click)="changeView('grid')" color="primary">
+              <ion-icon slot="icon-only" name="grid"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="listView">
+      <ion-col size="12" class="ion-padding-top">
+        <ng-container *ngIf="!queryElements; else elseTemplate">
+          <ion-item *ngFor="let analysisElement of analysisElements"
+            [routerLink]="['./edit', analysisElement.id]" lines="full">
+            <ion-label>
+              {{ analysisElement.name }}
+            </ion-label>
+            <!-- <ion-badge slot="end" color="primary" mode="ios">{{ geneticElement.disease.name }}</ion-badge> -->
+          </ion-item>
+        </ng-container>
+        <ng-template #elseTemplate>
+          <ion-item *ngFor="let analysisElement of queryElements"
+            [routerLink]="['./edit', analysisElement.id]">
+            <ion-label>
+              {{ analysisElement.name }}
+            </ion-label>
+            <!-- <ion-badge slot="end" color="primary" mode="ios">{{ geneticElement.disease.name }}</ion-badge> -->
+          </ion-item>
+        </ng-template>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ag-grid-angular *ngIf="!listView && !queryElements" style="height: 90%" class="ag-theme-material"
+    [rowData]="analysisElements" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef"
+    (gridReady)="onGridReady($event)">
+  </ag-grid-angular>
+
+  <ag-grid-angular *ngIf="!listView && queryElements" class="ag-theme-material" [rowData]="queryElements"
+    [columnDefs]="columnDefs" [defaultColDef]="defaultColDef" domLayout="autoHeight"
+    (gridReady)="onGridReady($event)">
+  </ag-grid-angular>
+</ion-content>

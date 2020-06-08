@@ -1,0 +1,57 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Doctores: Nuevo</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Doctors: New</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Guardar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Save</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item>
+          <ion-label position="floating" *ngIf="lang.isSpanish()">Nombre</ion-label>
+          <ion-label position="floating" *ngIf="!lang.isSpanish()">Name</ion-label>
+          <ion-input type="text" [(ngModel)]="name"
+            [placeholder]="lang.isSpanish()?'Introduzca nombre del doctor':'Enter doctor´s name'"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating" *ngIf="lang.isSpanish()">Seleccione usuario a convertir en doctor
+          </ion-label>
+          <ion-label position="floating" *ngIf="!lang.isSpanish()">Select an user to convert into a doctor
+          </ion-label>
+          <ion-select multiple="true" [placeholder]="lang.isSpanish() ? 'Seleccione usuario' : 'Select user'"
+            [(ngModel)]="selectedUserId" class="
+            ion-padding-top">
+            <ion-select-option *ngFor="let user of users | async" [value]="user.id">{{ user.email }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating" *ngIf="lang.isSpanish()">Seleccione rol para este doctor</ion-label>
+          <ion-label position="floating" *ngIf="!lang.isSpanish()">Select role for this doctor</ion-label>
+          <ion-select [placeholder]="lang.isSpanish() ? 'Seleccione rol' : 'Select role'"
+            class="ion-padding-top" value="none">
+            <ion-select-option value="none">Ninguno</ion-select-option>
+            <ion-select-option value="collaborator">Colaborador</ion-select-option>
+            <ion-select-option value="administrator">Administrador</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

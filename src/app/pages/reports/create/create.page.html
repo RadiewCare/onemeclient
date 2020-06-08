@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-buttons slot="start">
+        <ion-back-button></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Nuevo informe</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">New report</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Guardar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Save</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item lines="none">
+          <ion-label position="floating" *ngIf="lang.isSpanish()">Sujeto</ion-label>
+          <ion-label position="floating" *ngIf="!lang.isSpanish()">Subject</ion-label>
+          <ionic-selectable headerColor="primary" [(ngModel)]="subject" [items]="subjects$ | async"
+            itemValueField="id" itemTextField="identifier" [canSearch]="true" closeButtonText="Cancelar"
+            [searchPlaceholder]="lang.isSpanish()?'Buscar':'Search'"
+            [searchFailText]="lang.isSpanish()?'No se encuentran elementos':'No elements found'">
+            <ng-template ionicSelectableCloseButtonTemplate>
+              <ion-icon name="arrow-back" style="font-size: 24px;"></ion-icon>
+            </ng-template>
+          </ionic-selectable>
+        </ion-item>
+        <ion-col size="12">
+          <ion-item>
+            <ion-label position="floating" *ngIf="lang.isSpanish()">Plantilla</ion-label>
+            <ion-label position="floating" *ngIf="!lang.isSpanish()">Template</ion-label>
+            <ion-select [placeholder]="lang.isSpanish()?'Seleccione plantilla':'Select template'"
+              [(ngModel)]="template">
+              <ion-select-option *ngFor="let template of templates$ | async" [value]="template.id">
+                {{ template.name }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-col>
+      </ion-col>
+
+    </ion-row>
+  </ion-grid>
+</ion-content>

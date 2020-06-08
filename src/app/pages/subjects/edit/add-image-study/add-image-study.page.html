@@ -1,0 +1,110 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Crear prueba de imagen</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12" class="ion-margin-top">
+        <ion-item lines="full">
+          <ion-label *ngIf="lang.isSpanish()">Prueba de imagen</ion-label>
+          <ion-label *ngIf="!lang.isSpanish()">Image test</ion-label>
+          <ion-select [placeholder]="lang.isSpanish()?'Seleccione prueba de imagen':'Select image test'"
+            [(ngModel)]="currentImageTest" cancelText="Cancelar"
+            (ionChange)="getCurrentImageTest($event.target.value)">
+            <ion-select-option *ngFor="let test of imageTests" [value]="test.id">
+              {{ test.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="currentImageTestData">
+        <ion-item lines="full">
+          <ion-label position="floating" *ngIf="lang.isSpanish()">Fecha de realización</ion-label>
+          <ion-label position="floating" *ngIf="!lang.isSpanish()">Date of realization</ion-label>
+          <ion-datetime display-format="DD/MM/YYYY" [(ngModel)]="date" cancelText="Cancelar"
+            doneText="Aceptar">
+          </ion-datetime>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="date">
+        <ion-item *ngFor="let field of currentImageTestData.fields; let i = index" lines="full"
+          [color]="field.status==='positive'?'danger':'light'">
+          <ion-label position="floating" [ngStyle]="{'padding-bottom': field.type==='interval'?'5px':'0px'}">
+            {{ field.name }}</ion-label>
+          <ion-input *ngIf="field.type==='text'" type="text"
+            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
+            (ionChange)="editImageField($event.target.value,i)" [value]="field.value">
+          </ion-input>
+          <ion-textarea *ngIf="field.type==='textarea'"
+            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
+            rows="4" (ionChange)="editImageField($event.target.value,i)" [value]="field.value">
+          </ion-textarea>
+          <ion-textarea *ngIf="field.type==='conclusion'"
+            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
+            rows="4" (ionChange)="editImageField($event.target.value,i)" [value]="field.value">
+          </ion-textarea>
+          <ion-select *ngIf="field.type==='multiple'"
+            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
+            (ionChange)="editImageField($event.target.value,i)" [value]="field.value" cancelText="Cancelar">
+            <ion-select-option *ngFor="let option of field.options" [value]="option">{{option}}
+            </ion-select-option>
+          </ion-select>
+          <ion-select
+            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
+            *ngIf="field.type==='binary'" [value]="field.value" cancelText="Cancelar"
+            (ionChange)="editImageField($event.target.value,i)">
+            <ion-select-option *ngIf="!field.defaultInput" [value]="field.falseInput">
+              {{field.falseInput}}
+            </ion-select-option>
+            <ion-select-option *ngIf="!field.defaultInput" [value]="field.trueInput">{{field.trueInput}}
+            </ion-select-option>
+            <ion-select-option *ngIf="field.defaultInput" [value]="field.trueInput">{{field.trueInput}}
+            </ion-select-option>
+            <ion-select-option *ngIf="field.defaultInput" [value]="field.falseInput">
+              {{field.falseInput}}
+            </ion-select-option>
+          </ion-select>
+          <ion-input *ngIf="field.type==='number'" type="number"
+            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
+            (ionChange)="editImageField($event.target.value,i)" [value]="field.value"></ion-input>
+          <ion-range *ngIf="field.type==='interval'" (ionChange)="editImageField($event.target.value,i)"
+            [min]="field.min" [max]="field.max" pin="true" snaps="true" step="1" ticks="true" value="0"
+            color="primary" [value]="field.value">
+          </ion-range>
+          <ion-input *ngIf="field.type==='unit'" type="number"
+            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
+            (ionChange)="editImageField($event.target.value,i)" [value]="field.value"></ion-input>
+          <ion-note slot="end" *ngIf="field.type==='unit'">{{field.unit}}</ion-note>
+          <ion-buttons slot="end" *ngIf="values[i] && field.value">
+            <ion-button (click)="showGallery(i,field.name)">
+              <ion-icon slot="icon-only" name="photos"></ion-icon>
+            </ion-button>
+            <ion-button (click)="addImage(i,field.name)">
+              <ion-icon slot="icon-only" name="add"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon slot="start" name="close"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Cancelar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Cancel</ion-label>
+      </ion-button>
+      <ion-button (click)="save()" color="primary">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Aceptar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Accept</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

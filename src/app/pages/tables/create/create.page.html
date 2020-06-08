@@ -1,0 +1,61 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title *ngIf="lang.isSpanish()">Nueva tabla</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">New table</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+
+    <ion-row>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating" *ngIf="lang.isSpanish()">Nombre</ion-label>
+          <ion-label position="floating" *ngIf="!lang.isSpanish()">Name</ion-label>
+          <ion-input type="text"
+            [placeholder]="lang.isSpanish()?'Introduzca nombre de la tabla':'Enter table´s name'"
+            [(ngModel)]="name"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label *ngIf="lang.isSpanish()">Enfermedades</ion-label>
+          <ion-label *ngIf="!lang.isSpanish()">Diseases</ion-label>
+          <ionic-selectable [(ngModel)]="diseases" [items]="diseases$ | async" itemValueField="id"
+            itemTextField="name" [canSearch]="true" [closeButtonText]="lang.isSpanish()?'Cancelar':'Cancel'"
+            [confirmButtonText]="lang.isSpanish()?'Aceptar':'Accept'"
+            [searchFailText]="lang.isSpanish()?'No hay items disponibles':'No items available'"
+            [searchPlaceholder]="lang.isSpanish()?'Buscar':'Search'" headerColor="primary" isMultiple="true">
+            <ng-template ionicSelectableCloseButtonTemplate>
+              <ion-icon name="close" style="font-size: 24px;"></ion-icon>
+            </ng-template>
+          </ionic-selectable>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+  </ion-grid>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()" color="primary">
+        <ion-icon slot="start" name="close"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Cancelar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Cancel</ion-label>
+      </ion-button>
+      <ion-button (click)="save()" color="primary">
+        <ion-icon slot="start" name="checkmark"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Aceptar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Accept</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

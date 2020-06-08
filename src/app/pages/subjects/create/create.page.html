@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-buttons slot="start">
+        <ion-back-button></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Nuevo sujeto</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">New subject</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Guardar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Save</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <!-- <ion-col size="12" class="ion-padding-top">
+        <ion-item lines="none">
+          <ion-label position="floating" *ngIf="lang.isSpanish()">Correo electrónico</ion-label>
+          <ion-label position="floating" *ngIf="!lang.isSpanish()">Email</ion-label>
+          <ion-input type="email"
+            [placeholder]="lang.isSpanish() ? 'Introduzca un correo electrónico' : 'Enter email'"
+            [(ngModel)]="email">
+          </ion-input>
+        </ion-item>
+      </ion-col> -->
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item lines="none">
+          <ion-label position="floating" *ngIf="lang.isSpanish()">Identificador</ion-label>
+          <ion-label position="floating" *ngIf="!lang.isSpanish()">Identifier</ion-label>
+          <ion-input type="text"
+            [placeholder]="lang.isSpanish() ? 'Introduzca un identificador' : 'Enter identifier'"
+            [(ngModel)]="identifier">
+          </ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

@@ -1,0 +1,109 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Doctores: Editar</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Doctors: Edit</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="delete()">
+        <ion-icon slot="start" name="trash"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Eliminar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Delete</ion-label>
+      </ion-button>
+      <ion-button (click)="save()">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Guardar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Save</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ng-container *ngIf="user; else elseTemplate">
+      <ion-row>
+        <ion-col size="12" class="ion-padding-top">
+          <ion-item lines="full">
+            <ion-label position="floating" *ngIf="lang.isSpanish()">Correo electrónico</ion-label>
+            <ion-label position="floating" *ngIf="!lang.isSpanish()">E-mail</ion-label>
+            <ion-input type="text" placeholder="Introduzca correo electrónico" [(ngModel)]="email" disabled>
+            </ion-input>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12" class="ion-padding-top">
+          <ion-item lines="full">
+            <ion-label position="floating" *ngIf="lang.isSpanish()">Nombre</ion-label>
+            <ion-label position="floating" *ngIf="!lang.isSpanish()">Name</ion-label>
+            <ion-input type="text" placeholder="Introduzca nombre" [(ngModel)]="name"></ion-input>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12" class="ion-padding-top">
+          <ion-item lines="full">
+            <ion-label *ngIf="lang.isSpanish()">Administrador</ion-label>
+            <ion-label *ngIf="!lang.isSpanish()">Admin</ion-label>
+            <ion-checkbox [(ngModel)]="admin"></ion-checkbox>
+          </ion-item>
+        </ion-col>
+        <ion-col *ngIf="!admin" size="12" class="ion-padding-top">
+          <ion-list class="ion-no-padding" style="padding-left: 5px; padding-right: 5px;">
+            <ion-list-header>
+              <ion-label *ngIf="lang.isSpanish()">LISTADO DE SUJETOS A LOS QUE TIENE ACCESO</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">SUBJECTS WHICH DOCTOR HAS ACCESS</ion-label>
+            </ion-list-header>
+            <ion-item *ngFor="let subject of sharedSubjectsData" lines="full">
+              <ion-label>{{subject.identifier}}</ion-label>
+              <ion-buttons slot="end">
+                <ion-button (click)="revoke(subject.id)" color="danger">
+                  <ion-icon slot="start" name="close"></ion-icon>
+                  <ion-label *ngIf="lang.isSpanish()">Revocar acceso</ion-label>
+                  <ion-label *ngIf="!lang.isSpanish()">Revoke access</ion-label>
+                </ion-button>
+              </ion-buttons>
+            </ion-item>
+          </ion-list>
+        </ion-col>
+      </ion-row>
+    </ng-container>
+    <ng-template #elseTemplate>
+      <ion-row>
+        <ion-col size="12" class="ion-padding-top">
+          <ion-item>
+            <ion-label position="floating">
+              <ion-skeleton-text width="10%"></ion-skeleton-text>
+            </ion-label>
+            <ion-input type="text">
+              <ion-skeleton-text width="30%"></ion-skeleton-text>
+            </ion-input>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12" class="ion-padding-top">
+          <ion-item>
+            <ion-label position="floating">
+              <ion-skeleton-text width="10%"></ion-skeleton-text>
+            </ion-label>
+            <ion-input type="text">
+              <ion-skeleton-text width="30%"></ion-skeleton-text>
+            </ion-input>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12" class="ion-padding-top">
+          <ion-item>
+            <ion-label position="floating">
+              <ion-skeleton-text width="10%"></ion-skeleton-text>
+            </ion-label>
+            <ion-input type="text">
+              <ion-skeleton-text width="30%"></ion-skeleton-text>
+            </ion-input>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ng-template>
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

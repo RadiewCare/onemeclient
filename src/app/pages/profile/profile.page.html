@@ -1,0 +1,89 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" class="ion-hide-lg-up">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Perfil</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Profile</ion-title>
+    <ion-buttons slot="end" *ngIf="!currentUser?.isDoctor">
+      <ion-button (click)="signOut()">
+        <ion-icon slot="start" name="log-out"></ion-icon>
+        Salir
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ng-container *ngIf="currentUser; else elseTemplate">
+      <ion-row>
+        <ion-col size="12" class="ion-padding-top">
+          <ion-item *ngIf="language==='esp'">
+            <ion-label position="floating">Idioma</ion-label>
+            <ion-select placeholder="Seleccione idioma" [(ngModel)]="language" (ionChange)="save()">
+              <ion-select-option value="esp">Español</ion-select-option>
+              <ion-select-option value="eng">Inglés</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item *ngIf="language==='eng'">
+            <ion-label position="floating">Language</ion-label>
+            <ion-select placeholder="Select language" [(ngModel)]="language" (ionChange)="save()">
+              <ion-select-option value="esp">Spanish</ion-select-option>
+              <ion-select-option value="eng">English</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12">
+          <ion-item>
+            <ion-label position="floating" *ngIf="lang.isSpanish()">Correo electrónico</ion-label>
+            <ion-label position="floating" *ngIf="!lang.isSpanish()">E-mail</ion-label>
+            <ion-input type="text"
+              [placeholder]="lang.isSpanish()? 'Introduzca correo electrónico' : 'Enter e-mail'"
+              [(ngModel)]="email">
+            </ion-input>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12" class="ion-margin-top">
+          ACCIONES
+        </ion-col>
+        <ion-col size="6">
+          <ion-button (click)="updateEmail()" expand="full">
+            <ion-icon slot="start" name="mail"></ion-icon>
+            {{lang.isSpanish()?'Cambiar email':'Change email'}}
+          </ion-button>
+        </ion-col>
+        <ion-col size="6">
+          <ion-button (click)="resetPassword()" expand="full">
+            <ion-icon slot="start" name="key"></ion-icon>
+            {{lang.isSpanish()?'Resetear contraseña':'Reset password'}}
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ng-container>
+    <ng-template #elseTemplate>
+      <ion-row>
+        <ion-col size="12" size-lg="6" class="ion-padding-top">
+          <ion-item>
+            <ion-label position="floating">
+              <ion-skeleton-text width="10%"></ion-skeleton-text>
+            </ion-label>
+            <ion-input type="text">
+              <ion-skeleton-text width="30%"></ion-skeleton-text>
+            </ion-input>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12" size-lg="6" class="ion-padding-top">
+          <ion-item>
+            <ion-label position="floating">
+              <ion-skeleton-text width="10%"></ion-skeleton-text>
+            </ion-label>
+            <ion-input type="text">
+              <ion-skeleton-text width="30%"></ion-skeleton-text>
+            </ion-input>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ng-template>
+  </ion-grid>
+</ion-content>

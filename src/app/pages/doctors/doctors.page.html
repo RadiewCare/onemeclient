@@ -1,0 +1,69 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" class="ion-hide-lg-up">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title *ngIf="this.lang.isSpanish()">Doctores</ion-title>
+    <ion-title *ngIf="!this.lang.isSpanish()">Doctors</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <!-- Filtros y búsquedas -->
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ion-searchbar class="ion-no-padding"
+          [placeholder]="this.lang.isSpanish()? 'Buscar por nombre' : 'Search by name'"
+          (ionChange)="onSearchChange($event.detail.value)">
+        </ion-searchbar>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ng-container *ngIf="!queryDoctors; else elseTemplate">
+        <ion-col size="12" class="ion-padding-top">
+          <ion-item *ngFor="let doctor of doctors" lines="full" [routerLink]="['/doctors/edit/', doctor.id]"
+            style="cursor: pointer">
+            <ion-label>{{ doctor.name }}</ion-label>
+            <ion-badge *ngIf="doctor.isAdmin && this.lang.isSpanish()" color="primary" mode="ios" slot="end">
+              Administrador
+            </ion-badge>
+            <ion-badge *ngIf="doctor.isCollaborator && this.lang.isSpanish()" color="secondary" mode="ios"
+              slot="end">
+              Colaborador
+            </ion-badge>
+            <ion-badge *ngIf="doctor.isAdmin && !this.lang.isSpanish()" color="primary" mode="ios" slot="end">
+              Admin
+            </ion-badge>
+            <ion-badge *ngIf="doctor.isCollaborator && !this.lang.isSpanish()" color="secondary" mode="ios"
+              slot="end">
+              Collaborator
+            </ion-badge>
+          </ion-item>
+        </ion-col>
+      </ng-container>
+      <ng-template #elseTemplate>
+        <ion-col size="12" class="ion-padding-top">
+          <ion-item *ngFor="let doctor of queryDoctors" lines="full"
+            [routerLink]="['/doctors/edit/', doctor.id]" style="cursor: pointer">
+            <ion-label>{{ doctor.name }}</ion-label>
+            <ion-badge *ngIf="doctor.isAdmin && lang.isSpanish()" color="primary" mode="ios" slot="end">
+              Administrador
+            </ion-badge>
+            <ion-badge *ngIf="doctor.isCollaborator && lang.isSpanish()" color="secondary" mode="ios"
+              slot="end">
+              Colaborador
+            </ion-badge>
+            <ion-badge *ngIf="doctor.isAdmin && !lang.isSpanish()" color="primary" mode="ios" slot="end">
+              Admin
+            </ion-badge>
+            <ion-badge *ngIf="doctor.isCollaborator && !lang.isSpanish()" color="secondary" mode="ios"
+              slot="end">
+              Collaborator
+            </ion-badge>
+          </ion-item>
+        </ion-col>
+      </ng-template>
+    </ion-row>
+  </ion-grid>
+</ion-content>

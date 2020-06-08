@@ -1,0 +1,40 @@
+<ion-content>
+  <ion-grid class="ion-no-padding ion-no-margin">
+    <ion-row class="ion-no-padding ion-no-margin">
+      <ion-col size="12" size-md="6" class="ion-hide-sm-down"
+        style="background-image: url(/assets/images/microsound-fondo.jpg); background-size: cover; background-position: center; height: 100vh">
+      </ion-col>
+      <ion-col size="12" size-md="6" style="height: 100vh">
+        <form action="" style="max-width: 400px; margin: 0 auto; margin-top: 25vh">
+          <ion-img src="assets/images/logo-microsound.svg" class="ion-margin-vertical"></ion-img>
+          <ion-item class="ion-margin-top">
+            <ion-label position="floating" *ngIf="language==='spanish'">Correo electrónico</ion-label>
+            <ion-label position="floating" *ngIf="language==='english'">E-mail</ion-label>
+            <ion-input type="text" [(ngModel)]="email" [ngModelOptions]="{standalone: true}"
+              [placeholder]="language==='spanish'?'Correo electrónico':'E-mail'" (keyup.enter)="login()">
+            </ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating" *ngIf="language==='spanish'">Contraseña</ion-label>
+            <ion-label position="floating" *ngIf="language==='english'">Password</ion-label>
+            <ion-input type="password" [(ngModel)]="password" [ngModelOptions]="{standalone: true}"
+              [placeholder]="language==='spanish'?'Contraseña':'Password'" (keyup.enter)="login()">
+            </ion-input>
+          </ion-item>
+          <ion-button (click)="login()" expand="full" class="ion-margin-top">
+            <ion-icon slot="start" name="log-in"></ion-icon>
+            <ion-label *ngIf="language==='spanish'">Acceder</ion-label>
+            <ion-label *ngIf="language==='english'">Login</ion-label>
+          </ion-button>
+          <div style="text-align: center" class="ion-margin-top">
+            <img src="/assets/images/spain.svg" alt="Spanish"
+              style="max-width: 32px; margin-right: 1rem; cursor: pointer;"
+              (click)="changeLanguage('spanish')">
+            <img src="/assets/images/united-kingdom.svg" alt="English"
+              style="max-width: 32px; cursor: pointer;" (click)="changeLanguage('english')">
+          </div>
+        </form>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

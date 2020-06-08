@@ -1,0 +1,26 @@
+<ion-content>
+  <ion-grid fixed class="ion-no-padding">
+    <ion-row>
+      <ion-col class="ion-no-padding">
+        <ion-list>
+          <ion-list-header>
+            <ion-label>NOTIFICACIONES</ion-label>
+            <ion-button *ngIf="hasNotifications" (click)="cleanNotifications()" shape="round">
+              <ion-icon slot="icon-only" name="eye-off"></ion-icon>
+            </ion-button>
+          </ion-list-header>
+          <ng-container *ngIf="hasNotifications; else elseTemplate">
+            <ion-item *ngFor="let notification of notifications" lines="full">
+              <ion-label>Awesome Label</ion-label>
+            </ion-item>
+          </ng-container>
+          <ng-template #elseTemplate>
+            <ion-item lines="none">
+              <ion-label> No hay notificaciones</ion-label>
+            </ion-item>
+          </ng-template>
+        </ion-list>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

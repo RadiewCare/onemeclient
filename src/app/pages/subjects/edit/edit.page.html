@@ -1,0 +1,728 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-buttons slot="start">
+        <ion-back-button></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Editar sujeto: {{identifier}}</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Edit subject: {{identifier}}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="delete()" [disabled]="!userData?.isAdmin || userData?.id !== subject?.mainDoctor"
+        color="danger">
+        <ion-icon slot="start" name="trash"></ion-icon>
+        <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Eliminar</ion-label>
+        <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Delete</ion-label>
+      </ion-button>
+      <ion-button [routerLink]="['/subjects/share', id]"
+        [disabled]="!userData?.isAdmin || userData?.id !== subject?.mainDoctor">
+        <ion-icon slot="start" name="share"></ion-icon>
+        <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Compartir</ion-label>
+        <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Share</ion-label>
+      </ion-button>
+      <ion-button [routerLink]="['/subjects/import', id]"
+        [disabled]="!userData?.isAdmin || userData?.id !== subject?.mainDoctor">
+        <ion-icon slot="start" name="cloud-upload"></ion-icon>
+        <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Importar</ion-label>
+        <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Import</ion-label>
+      </ion-button>
+      <ion-button (click)="save()" color="success">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Guardar</ion-label>
+        <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Save</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Botones tipo segment -->
+  <ion-segment (ionChange)="segmentChanged($event)" scrollable>
+    <ion-segment-button value="phenotypic-data" layout="icon-start"
+      [disabled]="userData?.id !== subject?.mainDoctor && !userData?.sharedSubjectsPhenotypic.includes(id)">
+      <ion-icon name="body"></ion-icon>
+      <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Datos fenotípicos</ion-label>
+      <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Phenotypic data</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="genetic-study" layout="icon-start"
+      [disabled]="userData?.id !== subject?.mainDoctor && !userData?.sharedSubjectsGenetic.includes(id)">
+      <ion-icon name="finger-print"></ion-icon>
+      <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Estudio genético</ion-label>
+      <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Genetic study</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="epigenetic-study" layout="icon-start" disabled>
+      <ion-icon name="git-pull-request"></ion-icon>
+      <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Estudio epigenético</ion-label>
+      <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Epigenetic study</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="analytic-study" layout="icon-start"
+      [disabled]="userData?.id !== subject?.mainDoctor && !userData?.sharedSubjectsAnalytic.includes(id)">
+      <ion-icon name="eyedrop"></ion-icon>
+      <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Estudio analítico</ion-label>
+      <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Analytic study</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="image-study" layout="icon-start"
+      [disabled]="userData?.id !== subject?.mainDoctor && !userData?.sharedSubjectsImage.includes(id)">
+      <ion-icon name="images"></ion-icon>
+      <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Estudio de imagen</ion-label>
+      <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Image study</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+</ion-header>
+
+<ion-content>
+
+  <ion-grid fixed [ngSwitch]="segment.value">
+
+    <!-- DATOS FENOTÍPICOS -->
+    <ng-container
+      *ngIf="userData?.id === subject?.mainDoctor || userData?.sharedSubjectsPhenotypic.includes(id)">
+      <ion-row *ngSwitchCase="'phenotypic-data'" class="ion-padding-bottom">
+        <ng-container *ngIf="subject; else elsePhenotypic">
+
+          <ion-col size="12" class="ion-padding-top">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Identificador</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Identifier</ion-label>
+              <ion-input type="text" placeholder="Introduzca un identificador" [(ngModel)]="identifier">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+
+          <!-- DATOS BIOMÉTRICOS -->
+          <ion-col size="12" class="ion-padding-top">
+            <ion-item lines="none" color="primary">
+              <ion-label *ngIf="lang.isSpanish()">DATOS BIOMÉTRICOS</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">BIOMETRIC DATA</ion-label>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Sexo</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Genre</ion-label>
+              <ion-select [placeholder]="lang.isSpanish()?'Seleccionar':'Select'" [(ngModel)]="genre">
+                <ion-select-option value="varon" *ngIf="lang.isSpanish()">Varón</ion-select-option>
+                <ion-select-option value="hembra" *ngIf="lang.isSpanish()">Hembra</ion-select-option>
+                <ion-select-option value="intersexo" *ngIf="lang.isSpanish()">Intersexo</ion-select-option>
+                <ion-select-option value="none" *ngIf="lang.isSpanish()">Sin especificar</ion-select-option>
+                <ion-select-option value="varon" *ngIf="!lang.isSpanish()">Male</ion-select-option>
+                <ion-select-option value="hembra" *ngIf="!lang.isSpanish()">Female</ion-select-option>
+                <ion-select-option value="intersexo" *ngIf="!lang.isSpanish()">Intersex</ion-select-option>
+                <ion-select-option value="none" *ngIf="!lang.isSpanish()">Unknown</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Fecha de nacimiento</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Birth date</ion-label>
+              <ion-datetime [placeholder]="lang.isSpanish()?'Seleccionar':'Select'"
+                display-format="DD/MM/YYYY" [(ngModel)]="birthDate">
+              </ion-datetime>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Estatura (cm)</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Height (cm)</ion-label>
+              <ion-input [placeholder]="lang.isSpanish()?'Seleccionar':'Select'" type="number"
+                [(ngModel)]="height"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Peso (kg)</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Weight (kg)</ion-label>
+              <ion-input [placeholder]="lang.isSpanish()?'Seleccionar':'Select'" type="number"
+                [(ngModel)]="weight"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Grupo de población</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Population group</ion-label>
+              <ion-select [placeholder]="lang.isSpanish()?'Seleccionar':'Select'"
+                [(ngModel)]="populationGroup">
+                <ion-select-option value="subsahariano" *ngIf="lang.isSpanish()">Subsahariano
+                </ion-select-option>
+                <ion-select-option value="africano" *ngIf="lang.isSpanish()">Norteafricano</ion-select-option>
+                <ion-select-option value="indioasiatico" *ngIf="lang.isSpanish()">Indioasiático
+                </ion-select-option>
+                <ion-select-option value="caucasico" *ngIf="lang.isSpanish()">Caucásico</ion-select-option>
+                <ion-select-option value="chino" *ngIf="lang.isSpanish()">Chino</ion-select-option>
+                <ion-select-option value="japones" *ngIf="lang.isSpanish()">Japonés</ion-select-option>
+                <ion-select-option value="sudesteasiatico" *ngIf="lang.isSpanish()">Sudeste asiático
+                </ion-select-option>
+                <ion-select-option value="otrosgruposasiaticos" *ngIf="lang.isSpanish()">Otros grupos
+                  asiáticos
+                </ion-select-option>
+                <ion-select-option value="aborigendeaustralia" *ngIf="lang.isSpanish()">Aborígen de Australia
+                </ion-select-option>
+                <ion-select-option value="islasdelpacificoypolinesia" *ngIf="lang.isSpanish()">Islas del
+                  Pacífico y Polinesia
+                </ion-select-option>
+                <ion-select-option value="amerindio" *ngIf="!lang.isSpanish()">Amerindian</ion-select-option>
+                <ion-select-option value="latinohispano" *ngIf="!lang.isSpanish()">Latin or hispanic
+                </ion-select-option>
+                <ion-select-option value="subsahariano" *ngIf="!lang.isSpanish()">Sub-saharan
+                </ion-select-option>
+                <ion-select-option value="africano" *ngIf="!lang.isSpanish()">North african
+                </ion-select-option>
+                <ion-select-option value="indioasiatico" *ngIf="!lang.isSpanish()">Indoasian
+                </ion-select-option>
+                <ion-select-option value="caucasico" *ngIf="!lang.isSpanish()">Caucasian</ion-select-option>
+                <ion-select-option value="chino" *ngIf="!lang.isSpanish()">Chinese</ion-select-option>
+                <ion-select-option value="japones" *ngIf="!lang.isSpanish()">Japanese</ion-select-option>
+                <ion-select-option value="sudesteasiatico" *ngIf="!lang.isSpanish()">Southeast Asian
+                </ion-select-option>
+                <ion-select-option value="otrosgruposasiaticos" *ngIf="!lang.isSpanish()">Other asian groups
+                </ion-select-option>
+                <ion-select-option value="aborigendeaustralia" *ngIf="!lang.isSpanish()">Australian aboriginal
+                </ion-select-option>
+                <ion-select-option value="islasdelpacificoypolinesia" *ngIf="!lang.isSpanish()">Pacific
+                  Islands
+                  and Polynesia
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Tono de piel</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Skin tone</ion-label>
+              <ion-select [placeholder]="lang.isSpanish()?'Seleccionar':'Select'" [(ngModel)]="skin">
+                <ion-select-option value="albina" *ngIf="lang.isSpanish()">Albina</ion-select-option>
+                <ion-select-option value="blanca" *ngIf="lang.isSpanish()">Blanca</ion-select-option>
+                <ion-select-option value="morena" *ngIf="lang.isSpanish()">Morena</ion-select-option>
+                <ion-select-option value="negra" *ngIf="lang.isSpanish()">Negra</ion-select-option>
+                <ion-select-option value="albina" *ngIf="!lang.isSpanish()">Albino</ion-select-option>
+                <ion-select-option value="blanca" *ngIf="!lang.isSpanish()">White</ion-select-option>
+                <ion-select-option value="morena" *ngIf="!lang.isSpanish()">Brunette</ion-select-option>
+                <ion-select-option value="negra" *ngIf="!lang.isSpanish()">Black</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Color de cabello</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Hair color</ion-label>
+              <ion-select [placeholder]="lang.isSpanish()?'Seleccionar':'Select'" [(ngModel)]="hair">
+                <ion-select-option value="moreno" *ngIf="lang.isSpanish()">Moreno</ion-select-option>
+                <ion-select-option value="marron" *ngIf="lang.isSpanish()">Castaño</ion-select-option>
+                <ion-select-option value="rubio" *ngIf="lang.isSpanish()">Rubio</ion-select-option>
+                <ion-select-option value="pelirrojo" *ngIf="lang.isSpanish()">Pelirrojo</ion-select-option>
+                <ion-select-option value="moreno" *ngIf="!lang.isSpanish()">Black</ion-select-option>
+                <ion-select-option value="marron" *ngIf="!lang.isSpanish()">Brown</ion-select-option>
+                <ion-select-option value="rubio" *ngIf="!lang.isSpanish()">Blonde</ion-select-option>
+                <ion-select-option value="pelirrojo" *ngIf="!lang.isSpanish()">Ginger</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Color de los ojos</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Eye color</ion-label>
+              <ion-select [placeholder]="lang.isSpanish()?'Seleccionar':'Select'" [(ngModel)]="eyes">
+                <ion-select-option value="marrones" *ngIf="lang.isSpanish()">Marrones</ion-select-option>
+                <ion-select-option value="verdes" *ngIf="lang.isSpanish()">Verdes</ion-select-option>
+                <ion-select-option value="azules" *ngIf="lang.isSpanish()">Azules</ion-select-option>
+                <ion-select-option value="marrones" *ngIf="!lang.isSpanish()">Brown</ion-select-option>
+                <ion-select-option value="verdes" *ngIf="!lang.isSpanish()">Green</ion-select-option>
+                <ion-select-option value="azules" *ngIf="!lang.isSpanish()">Blue</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">IMC</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">BMI</ion-label>
+              <ion-input [placeholder]="lang.isSpanish()?'Seleccionar':'Select'" type="number"
+                [(ngModel)]="imc"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">% grasa visceral androide</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">% android visceral fat</ion-label>
+              <ion-input type="number" [placeholder]="lang.isSpanish()?'Seleccionar':'Select'"
+                [(ngModel)]="androidFat"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="3">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Presión arterial mayor</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Higher blood pressure</ion-label>
+              <ion-input type="number" [placeholder]="lang.isSpanish()?'Mayor':'Higher'"
+                [(ngModel)]="highBloodPressure"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="3">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Presión arterial menor</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Lower blood pressure</ion-label>
+              <ion-input type="number" [placeholder]="lang.isSpanish()?'Menor':'Lower'"
+                [(ngModel)]="lowBloodPressure"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Alergias</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Alergias</ion-label>
+              <ion-input type="text" [placeholder]="lang.isSpanish()?'Seleccionar':'Select'"
+                [(ngModel)]="alergies"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Intolerancias alimenticias</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Food intolerances</ion-label>
+              <ion-input type="text" [placeholder]="lang.isSpanish()?'Seleccionar':'Select'"
+                [(ngModel)]="foodIntolerance"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Transtornos intestinales</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Intestinal disorders</ion-label>
+              <ion-input type="text" [placeholder]="lang.isSpanish()?'Seleccionar':'Select'"
+                [(ngModel)]="intestinalDisorders"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Hijos</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Children</ion-label>
+              <ion-input type="number" [placeholder]="lang.isSpanish()?'Seleccionar':'Select'"
+                [(ngModel)]="children"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6" *ngIf="genre==='hembra'">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Edad menarquía</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Menarche age</ion-label>
+              <ion-input type="number" [placeholder]="lang.isSpanish()?'Seleccionar':'Select'"
+                [(ngModel)]="menarcheAge"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6" *ngIf="genre==='hembra'">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Edad menopausia</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Menopausal age</ion-label>
+              <ion-input type="number" [placeholder]="lang.isSpanish()?'Seleccionar':'Select'"
+                [(ngModel)]="menopausalAge"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6" *ngIf="genre==='hembra'">
+            <ion-item lines="none">
+              <ion-label *ngIf="lang.isSpanish()">Síndrome de Ovario Poliquístico</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">Polycystic ovary syndrome</ion-label>
+              <ion-checkbox [(ngModel)]="sop"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6" *ngIf="genre==='hembra'">
+            <ion-item lines="none">
+              <ion-label>Manchado vaginal >50 años</ion-label>
+              <ion-label>Vaginal spotting >50 years</ion-label>
+              <ion-checkbox [(ngModel)]="vaginalSpotting"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+
+          <!-- HÁBITOS DE VIDA -->
+          <ion-col size="12" class="ion-margin-top">
+            <ion-item lines="none" color="primary">
+              <ion-label *ngIf="lang.isSpanish()">HÁBITOS DE VIDA</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">LIFE HABITS</ion-label>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label *ngIf="lang.isSpanish()" position="floating">Tabaco</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()" position="floating">Tobacco</ion-label>
+              <ion-select [(ngModel)]="smoker" [placeholder]="lang.isSpanish()?'Seleccionar':'Select'">
+                <ion-select-option value="habitual" *ngIf="lang.isSpanish()">Habitual</ion-select-option>
+                <ion-select-option value="ocasional" *ngIf="lang.isSpanish()">Ocasional</ion-select-option>
+                <ion-select-option value="no" *ngIf="lang.isSpanish()">No fumador</ion-select-option>
+                <ion-select-option value="habitual" *ngIf="!lang.isSpanish()">Habitual</ion-select-option>
+                <ion-select-option value="ocasional" *ngIf="!lang.isSpanish()">Occasional</ion-select-option>
+                <ion-select-option value="no" *ngIf="!lang.isSpanish()">Non smoker</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating">Alcohol</ion-label>
+              <ion-select [placeholder]="lang.isSpanish()?'Seleccionar':'Select'" [(ngModel)]="alcohol">
+                <ion-select-option value="habitual" *ngIf="lang.isSpanish()">Habitual</ion-select-option>
+                <ion-select-option value="habitual" *ngIf="!lang.isSpanish()">Habitual</ion-select-option>
+                <ion-select-option value="ocasional" *ngIf="lang.isSpanish()">Ocasional</ion-select-option>
+                <ion-select-option value="ocasional" *ngIf="!lang.isSpanish()">Occasional</ion-select-option>
+                <ion-select-option value="abstemio" *ngIf="lang.isSpanish()">Abstemio</ion-select-option>
+                <ion-select-option value="abstemio" *ngIf="!lang.isSpanish()">Teetotaler</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Otras drogas</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Other drugs</ion-label>
+              <ion-select [placeholder]="lang.isSpanish()?'Seleccionar':'Select'" [(ngModel)]="otherDrugs">
+                <ion-select-option value="habitual" *ngIf="lang.isSpanish()">Habitual</ion-select-option>
+                <ion-select-option value="ocasional" *ngIf="lang.isSpanish()">Ocasional</ion-select-option>
+                <ion-select-option value="no" *ngIf="lang.isSpanish()">No consumidor</ion-select-option>
+                <ion-select-option value="habitual" *ngIf="!lang.isSpanish()">Habitual</ion-select-option>
+                <ion-select-option value="ocasional" *ngIf="!lang.isSpanish()">Occasional</ion-select-option>
+                <ion-select-option value="no" *ngIf="!lang.isSpanish()">Non consumer</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label *ngIf="lang.isSpanish()">Medicamentos</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">Medicines</ion-label>
+              <ion-checkbox [(ngModel)]="medicines"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Exposición solar</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Solar exposition</ion-label>
+              <ion-select [placeholder]="lang.isSpanish()?'Seleccionar':'Select'"
+                [(ngModel)]="solarExposition">
+                <ion-select-option value="habitual" *ngIf="lang.isSpanish()">Habitual</ion-select-option>
+                <ion-select-option value="ocasional" *ngIf="lang.isSpanish()">Ocasional</ion-select-option>
+                <ion-select-option value="no" *ngIf="lang.isSpanish()">Ninguna</ion-select-option>
+                <ion-select-option value="habitual" *ngIf="!lang.isSpanish()">Habitual</ion-select-option>
+                <ion-select-option value="ocasional" *ngIf="!lang.isSpanish()">Occasional</ion-select-option>
+                <ion-select-option value="no" *ngIf="!lang.isSpanish()">None</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Exposición laboral</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Work exposition</ion-label>
+              <ion-select [placeholder]="lang.isSpanish()?'Seleccionar':'Select'"
+                [(ngModel)]="workExposition">
+                <ion-select-option value="habitual" *ngIf="lang.isSpanish()">Habitual</ion-select-option>
+                <ion-select-option value="ocasional" *ngIf="lang.isSpanish()">Ocasional</ion-select-option>
+                <ion-select-option value="no" *ngIf="lang.isSpanish()">Ninguna</ion-select-option>
+                <ion-select-option value="habitual" *ngIf="!lang.isSpanish()">Habitual</ion-select-option>
+                <ion-select-option value="ocasional" *ngIf="!lang.isSpanish()">Occasional</ion-select-option>
+                <ion-select-option value="no" *ngIf="!lang.isSpanish()">None</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Actividad física semanal</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Weekly physical activity</ion-label>
+              <ion-select [placeholder]="lang.isSpanish()?'Seleccionar':'Select'"
+                [(ngModel)]="physicalActivity">
+                <ion-select-option value="diario" *ngIf="lang.isSpanish()">Todos los días</ion-select-option>
+                <ion-select-option value="moderado" *ngIf="lang.isSpanish()">3 a 5 días</ion-select-option>
+                <ion-select-option value="ligero" *ngIf="lang.isSpanish()">1 a 3 días</ion-select-option>
+                <ion-select-option value="no" *ngIf="lang.isSpanish()">Ninguna</ion-select-option>
+                <ion-select-option value="diario" *ngIf="!lang.isSpanish()">Everyday</ion-select-option>
+                <ion-select-option value="moderado" *ngIf="!lang.isSpanish()">3 to 5 days</ion-select-option>
+                <ion-select-option value="ligero" *ngIf="!lang.isSpanish()">1 to 3 days</ion-select-option>
+                <ion-select-option value="no" *ngIf="!lang.isSpanish()">None</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+
+          <!-- SIGNOS Y SÍNTOMAS -->
+          <ion-col size="12" class="ion-margin-top">
+            <ion-item lines="none" color="primary">
+              <ion-label *ngIf="lang.isSpanish()">SIGNOS Y SÍNTOMAS</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">SIGNS AND SYMPTOMS</ion-label>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Signos</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Signs</ion-label>
+              <ion-input type="text"
+                [placeholder]="lang.isSpanish()?'Introduzca signos de uno en uno y pulse intro':'Enter one by one signs and press enter'"
+                (keyup.enter)="addSign($event.target.value)" [(ngModel)]="currentSign"></ion-input>
+            </ion-item>
+            <div class="ion-margin-top">
+              <ion-chip *ngFor="let sign of signs" color="primary" mode="ios" outline="true">
+                <ion-label>{{sign}}</ion-label>
+              </ion-chip>
+            </div>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Síntomas</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Symptoms</ion-label>
+              <ion-input type="text"
+                [placeholder]="lang.isSpanish()?'Introduzca síntomas de uno en uno y pulse intro':'Enter one by one symptoms and press enter'"
+                (keyup.enter)="addSymptom($event.target.value)" [(ngModel)]="currentSymptom"></ion-input>
+            </ion-item>
+            <div class="ion-margin-top">
+              <ion-chip *ngFor="let sympton of symptoms" color="primary" mode="ios" outline="true">
+                <ion-label>{{sympton}}</ion-label>
+              </ion-chip>
+            </div>
+          </ion-col>
+
+          <!-- ANTECENDENTES -->
+          <ion-col size="12" class="ion-margin-top">
+            <ion-item lines="none" color="primary">
+              <ion-label *ngIf="lang.isSpanish()">ANTECEDENTES
+              </ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">HISTORY</ion-label>
+              <ion-buttons slot="end">
+                <ion-button [routerLink]="['/subjects/familiars', id]" expand="full">
+                  <ion-icon slot="start" name="people-circle"></ion-icon>
+                  <ion-label *ngIf="lang.isSpanish()">Ver antecedentes familiares</ion-label>
+                  <ion-label *ngIf="!lang.isSpanish()">Show family history</ion-label>
+                </ion-button>
+              </ion-buttons>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label *ngIf="lang.isSpanish()">Cáncer</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">Cancer</ion-label>
+              <ion-checkbox [(ngModel)]="cancer"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label *ngIf="lang.isSpanish()">Neurodegenerativos</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">Neurodegeneratives</ion-label>
+              <ion-checkbox [(ngModel)]="neurodegeneratives"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label *ngIf="lang.isSpanish()">Autoinmunes</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">Autoimmunes</ion-label>
+              <ion-checkbox [(ngModel)]="autoinmunes"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label *ngIf="lang.isSpanish()">Enfermedad cardiovascular</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">Cardio disease</ion-label>
+              <ion-checkbox [(ngModel)]="cardioDisease"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label *ngIf="lang.isSpanish()">Infertilidad</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">Infertility</ion-label>
+              <ion-checkbox [(ngModel)]="infertility"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+
+          <!-- OTROS ANTECEDENTES -->
+          <ion-col size="12" class="ion-margin-top">
+            <ion-item lines="none" color="primary">
+              <ion-label *ngIf="lang.isSpanish()">OTROS ANTECEDENTES</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">OTHER BACKGROUND</ion-label>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12">
+            <ion-item lines="none">
+              <ion-textarea rows="4" [(ngModel)]="otherBackground" placeholder="Introduzca enfermedades">
+              </ion-textarea>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" class="ion-margin-top">
+            <ion-item lines="none" color="primary">
+              <ion-label *ngIf="lang.isSpanish()">TRATAMIENTO ACTUAL</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">CURRENT TREATMENT</ion-label>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12">
+            <ion-item lines="none">
+              <ion-textarea rows="4" [(ngModel)]="currentTreatment" placeholder="Introduzca tratamiento">
+              </ion-textarea>
+            </ion-item>
+          </ion-col>
+        </ng-container>
+        <ng-template #elsePhenotypic>
+          <ion-col size="12" class="ion-padding-top">
+            <ion-item lines="none">
+              <ion-label>
+                <ion-skeleton-text width="80%"></ion-skeleton-text>
+              </ion-label>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6" class="ion-padding-top" *ngFor="let i of skeletonData">
+            <ion-item lines="none">
+              <ion-label>
+                <ion-skeleton-text width="80%"></ion-skeleton-text>
+              </ion-label>
+            </ion-item>
+          </ion-col>
+        </ng-template>
+      </ion-row>
+    </ng-container>
+    <!-- FIN DE DATOS FENOTÍPICOS -->
+
+    <!-- ESTUDIO GENÉTICO -->
+    <div *ngSwitchCase="'genetic-study'">
+
+      <ng-container
+        *ngIf="userData?.id === subject?.mainDoctor || userData?.sharedSubjectsGenetic.includes(id)">
+        <ion-row>
+          <ion-col size="12" *ngIf="mutations">
+            <ion-text color="primary">
+              <h5 *ngIf="lang.isSpanish()">Mutaciones encontradas:</h5>
+              <h5 *ngIf="!lang.isSpanish()">Mutations found:</h5>
+            </ion-text>
+          </ion-col>
+
+          <ion-col size="12" size-lg="4" *ngFor="let mutation of mutations">
+            <ion-item lines="full">
+              <ion-label>{{mutation.geneticVariant}}</ion-label>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12" *ngIf="geneticStudy?.length>0">
+            <ion-text color="primary">
+              <h5 *ngIf="lang.isSpanish()">Polimorfismos del sujeto: {{ numberOfVariants }}</h5>
+              <h5 *ngIf="!lang.isSpanish()">Subject's polymorphisms: {{ numberOfVariants }}</h5>
+            </ion-text>
+          </ion-col>
+          <ion-col size="12">
+            <ion-item *ngFor="let geneticVariant of geneticStudy" lines="full">
+              <ion-label>{{ geneticVariant.geneticVariant }}</ion-label>
+              <ion-chip *ngIf="geneticVariant.frequency !== null && geneticVariant.frequency > 0" slot="end"
+                color="primary">Freq: {{geneticVariant.frequency || 0}}
+              </ion-chip>
+              <ion-chip *ngIf="geneticVariant.frequency !== null && geneticVariant.magnitude > 0" slot="end"
+                color="primary">Magn: {{geneticVariant.magnitude || 0}}
+              </ion-chip>
+              <ion-chip slot="end" color="primary" *ngIf="geneticVariant?.alleles">
+                ({{geneticVariant.alleles.father || "-"}},{{geneticVariant.alleles.mother || "-"}})
+              </ion-chip>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <ion-infinite-scroll threshold="25%" (ionInfinite)="loadGeneticMore($event)">
+          <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Cargando...">
+          </ion-infinite-scroll-content>
+        </ion-infinite-scroll>
+      </ng-container>
+
+    </div>
+    <!-- FIN DE ESTUDIO GENÉTICO -->
+
+    <!-- ESTUDIO ANALÍTICO -->
+
+    <ion-row *ngSwitchCase="'analytic-study'" class=" ion-padding-top">
+      <ng-container
+        *ngIf="userData?.id === subject?.mainDoctor || userData?.sharedSubjectsAnalytic.includes(id)">
+        <ion-col size="12" class="ion-margin-bottom">
+          <ion-button (click)="showAddAnalytic()" expand="full" color="secondary">
+            <ion-icon slot="start" name="add"></ion-icon>
+            <ion-label *ngIf="lang.isSpanish()">Crear estudio analítico</ion-label>
+            <ion-label *ngIf="!lang.isSpanish()">Create analytic study</ion-label>
+          </ion-button>
+        </ion-col>
+        <ion-col size="12">
+          <ng-container *ngFor="let study of analyticStudy$ | async" lines="full">
+            <ion-item lines="none" color="primary">
+              <ion-label>
+                <p>Fecha de realización: {{study.date | date: 'dd/MM/yy'}}</p>
+                <p (click)="copyToClipboard(study.shortcode)" style="cursor:pointer;">Shortcode:
+                  {{study.shortcode}}</p>
+              </ion-label>
+              <ion-buttons slot="end">
+                <ion-button (click)="showEditAnalytic(study.id)">
+                  <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Editar':'Edit'}}</ion-label>
+                  <ion-icon slot="start" name="create"></ion-icon>
+                </ion-button>
+                <ion-button (click)="deleteAnalyticStudy(study.id)">
+                  <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Eliminar':'Delete'}}</ion-label>
+                  <ion-icon slot="start" name="trash"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-item>
+
+            <div style="border-bottom: 1px solid lightgrey; background: white;" class="ion-padding">
+              <ng-container *ngFor="let element of study.values">
+                <ion-chip color="danger" mode="ios" outline="true"
+                  *ngIf="element.status && element.status !=='normal'">
+                  <ion-label>{{element.name}}: {{element.value}}{{element.metricUnit}}
+                    <span *ngFor="let relatedDisease of element.relatedDiseases">({{relatedDisease}})</span>
+                  </ion-label>
+                  <ion-icon *ngIf="element.status ==='high'" name="trending-up"></ion-icon>
+                  <ion-icon *ngIf="element.status ==='low'" name="trending-down"></ion-icon>
+                </ion-chip>
+              </ng-container>
+            </div>
+          </ng-container>
+        </ion-col>
+      </ng-container>
+    </ion-row>
+
+    <!-- FIN DE ESTUDIO ANALÍTICO -->
+
+    <!-- ESTUDIO DE IMAGEN -->
+
+    <ng-container *ngIf="userData?.id === subject?.mainDoctor || userData?.sharedSubjectsImage.includes(id)">
+      <ion-row *ngSwitchCase="'image-study'" class="ion-padding-vertical">
+        <ion-col size="12">
+          <ion-button (click)="showAddImage()" expand="full" color="secondary">
+            <ion-icon slot="start" name="add"></ion-icon>
+            <ion-label *ngIf="lang.isSpanish()">Crear prueba de imagen</ion-label>
+            <ion-label *ngIf="!lang.isSpanish()">Create image test</ion-label>
+          </ion-button>
+        </ion-col>
+        <ion-col size="12" *ngFor="let imageTest of imageTests ; let i = index" class="ion-padding-top">
+          <ion-item color="primary" lines="none">
+            <ion-label>
+              <p>{{ imageTest.name }}</p>
+              <p>Fecha de realización: {{ imageTest.date | date: 'dd/MM/yy' }}</p>
+              <p (click)="copyToClipboard(imageTest.shortcode)" style="cursor:pointer;">Shortcode:
+                {{ imageTest.shortcode }}</p>
+            </ion-label>
+            <ion-buttons slot="end">
+              <!-- <ion-button (click)="addImage(i)">
+                <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Añadir imagen':'Add image'}}
+                </ion-label>
+                <ion-icon slot="start" name="add"></ion-icon>
+              </ion-button>
+              <ion-button (click)="showGallery(i)">
+                <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Ver imágenes':'Show images'}}
+                </ion-label>
+                <ion-icon slot="start" name="eye"></ion-icon>
+              </ion-button> -->
+              <ion-button (click)="showImageTest(imageTest.id, i)">
+                <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Editar':'Edit'}}</ion-label>
+                <ion-icon slot="start" name="create"></ion-icon>
+              </ion-button>
+              <ion-button (click)="deleteImageTest(i)">
+                <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Eliminar':'Delete'}}</ion-label>
+                <ion-icon slot="start" name="trash"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-item>
+          <div style="border-bottom: 1px solid lightgrey; background: white;" class="ion-padding"
+            *ngIf="imageTest.status==='positive'">
+            <ng-container *ngFor="let element of imageTest.values">
+              <ion-chip color="danger" mode="ios" outline="true"
+                *ngIf="element.status && element.status === 'positive'">
+                <ion-label>{{element.name}}: {{element.value}}{{element.metricUnit}}
+                  <span *ngFor="let relatedDisease of element.relatedDiseases">({{relatedDisease}})</span>
+                </ion-label>
+              </ion-chip>
+            </ng-container>
+          </div>
+          <div style="border-bottom: 1px solid lightgrey; background: white;" class="ion-padding"
+            *ngIf="imageTest.status==='negative'">
+            {{lang.isSpanish()?'Sin hallazgos destacados':'No relevant findings'}}
+          </div>
+        </ion-col>
+      </ion-row>
+    </ng-container>
+
+  </ion-grid>
+
+</ion-content>

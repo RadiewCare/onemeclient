@@ -1,0 +1,97 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start" class="ion-hide-lg-up">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Base de datos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12">
+        <ion-text>
+          <h4>Enfermedades, rasgos y síntomas</h4>
+        </ion-text>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12" size-md="6">
+        <ion-item [routerLink]="['./diseases']" lines="full">
+          <ion-icon slot="start" name="folder"></ion-icon>
+          <ion-label>Enfermedades y rasgos</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-md="6">
+        <ion-item [routerLink]="['./diseases']" lines="full">
+          <ion-icon slot="start" name="folder"></ion-icon>
+          <ion-label>Síntomas</ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12">
+        <ion-text>
+          <h4>Análisis clínicos</h4>
+        </ion-text>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12" size-md="6">
+        <ion-item [routerLink]="['./analysis-elements']" lines="full">
+          <ion-icon slot="start" name="folder"></ion-icon>
+          <ion-label>Elementos de análisis clínicos</ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12">
+        <ion-text>
+          <h4>Análisis genéticos</h4>
+        </ion-text>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12" size-md="6" *ngIf="false">
+        <ion-item [routerLink]="['./genetic-elements']" lines="full">
+          <ion-icon slot="start" name="folder"></ion-icon>
+          <ion-label>Elementos genéticos</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-md="6">
+        <ion-item [routerLink]="['./polymorphisms']" lines="full">
+          <ion-icon slot="start" name="folder"></ion-icon>
+          <ion-label>Polimorfismos</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-md="6">
+        <ion-item [routerLink]="['./mutations']" lines="full">
+          <ion-icon slot="start" name="folder"></ion-icon>
+          <ion-label>Mutaciones</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-md="6">
+        <ion-item [routerLink]="['./drug-elements']" lines="full">
+          <ion-icon slot="start" name="folder"></ion-icon>
+          <ion-label>Metabolización de fármacos</ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12">
+        <ion-text>
+          <h4>Análisis de imagen</h4>
+        </ion-text>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12" size-md="6">
+        <ion-item [routerLink]="['./image-tests']" lines="full">
+          <ion-icon slot="start" name="folder"></ion-icon>
+          <ion-label>Pruebas de imagen</ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

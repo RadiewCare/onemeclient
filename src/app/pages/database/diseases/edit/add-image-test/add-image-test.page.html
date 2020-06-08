@@ -1,0 +1,126 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title *ngIf="lang.isSpanish()">Añadir prueba de imagen: {{ disease?.name }}</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Add image test: {{ disease?.name }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed padding>
+    <ion-row>
+
+      <ion-col size="12">
+        <ion-item lines="full">
+          <ion-label position="floating" *ngIf="lang.isSpanish()">Pruebas de imagen</ion-label>
+          <ion-label position="floating" *ngIf="!lang.isSpanish()">Image tests</ion-label>
+          <ionic-selectable [(ngModel)]="imageTestsData" [items]="imageTests$ | async" itemValueField="id"
+            itemTextField="name" [canSearch]="true"
+            [confirmButtonText]="lang.isSpanish()?'Seleccionar':'Select'"
+            [closeButtonText]="lang.isSpanish()?'Cancelar':'Cancel'" headerColor="primary"
+            [searchFailText]="lang.isSpanish()?'No hay items disponibles':'No items available'"
+            [searchPlaceholder]="lang.isSpanish()?'Buscar':'Search'" (onChange)="getTestFields()">
+            <ng-template ionicSelectableCloseButtonTemplate>
+              <ion-icon name="close" style="font-size: 24px;"></ion-icon>
+            </ng-template>
+          </ionic-selectable>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" *ngIf="imageTestsData">
+        <ion-item lines="full">
+          <ion-label position="floating">Hallazgo</ion-label>
+          <ion-select placeholder="Seleccione hallazgo" (ionChange)="setCurrentField($event.detail.value)"
+            okText="Aceptar" cancelText="Cancelar">
+            <ion-select-option *ngFor="let test of fields" [value]="test.name">{{test.name}}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" *ngIf="currentField?.type==='number'">
+        <ion-item>
+          <ion-label position="floating">Comparación</ion-label>
+          <ion-select placeholder="Seleccione comparación" [(ngModel)]="compareFunction" okText="Aceptar"
+            cancelText="Cancelar">
+            <ion-select-option value="igual">==</ion-select-option>
+            <ion-select-option value="mayor">></ion-select-option>
+            <ion-select-option value="mayorigual">>=</ion-select-option>
+            <ion-select-option value="menor">&#60;</ion-select-option>
+            <ion-select-option value="menorigual">&#60;=</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" *ngIf="currentField?.type==='text' || currentField?.type==='textarea'">
+        <ion-item>
+          <ion-label position="floating">Comparación</ion-label>
+          <ion-select placeholder="Seleccione comparación" [(ngModel)]="compareFunction" okText="Aceptar"
+            cancelText="Cancelar">
+            <ion-select-option value="igual">==</ion-select-option>
+            <ion-select-option value="contiene">Contiene</ion-select-option>
+            <ion-select-option value="nocontiene">No contiene</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" *ngIf="currentField">
+        <ion-item lines="full">
+          <ion-label position="floating">Valor</ion-label>
+
+          <ion-select multiple="true" *ngIf="currentField.type==='multiple'" placeholder="Seleccione valor"
+            [(ngModel)]="currentOption" okText="Aceptar" cancelText="Cancelar">
+            <ion-select-option *ngFor="let item of currentField.options" [value]="item">
+              {{item}}
+            </ion-select-option>
+          </ion-select>
+
+          <ion-select *ngIf="currentField.type==='binary'" placeholder="Seleccione valor"
+            [(ngModel)]="currentBinary" okText="Aceptar" cancelText="Cancelar">
+            <ng-container>
+              <ion-select-option [value]="currentField.trueInput">{{currentField.trueInput}}
+              </ion-select-option>
+              <ion-select-option [value]="currentField.falseInput">{{currentField.falseInput}}
+              </ion-select-option>
+            </ng-container>
+          </ion-select>
+
+          <ion-input *ngIf="currentField.type==='number'" type="number" placeholder="Seleccione valor"
+            [(ngModel)]="currentNumber">
+          </ion-input>
+
+          <ion-input *ngIf="currentField.type==='unit'" type="number" placeholder="Seleccione valor"
+            [(ngModel)]="currentUnit">
+          </ion-input>
+
+          <ion-input *ngIf="currentField.type==='text' || currentField.type==='textarea'" type="text"
+            placeholder="Seleccione valor" [(ngModel)]="currentText">
+          </ion-input>
+
+          <ion-select *ngIf="currentField.type==='interval'" placeholder="Seleccione valor"
+            [(ngModel)]="currentInterval" okText="Aceptar" cancelText="Cancelar">
+            <ion-select-option [value]="outside">Fuera del intervalo</ion-select-option>
+            <ion-select-option [value]="inside">Dentro del intervalo</ion-select-option>
+          </ion-select>
+
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon slot="start" name="close"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Cancelar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Cancel</ion-label>
+      </ion-button>
+      <ion-button (click)="save()" color="primary">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Aceptar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Accept</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

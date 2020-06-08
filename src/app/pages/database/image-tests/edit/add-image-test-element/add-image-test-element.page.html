@@ -1,0 +1,190 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Nuevo elemento de prueba de imagen: {{ imageTest?.name }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label position="floating">Nombre del campo</ion-label>
+          <ion-input type="text" placeholder="Nombre del campo" [(ngModel)]="name"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label position="floating">Tipo de campo</ion-label>
+          <ion-select placeholder="Seleccione campo" [(ngModel)]="type">
+            <ion-select-option value="text">Texto</ion-select-option>
+            <ion-select-option value="binary">Binario</ion-select-option>
+            <ion-select-option value="multiple">Múltiples opciones</ion-select-option>
+            <ion-select-option value="textarea">Área de texto</ion-select-option>
+            <ion-select-option value="conclusion">Conclusión (Área de texto)</ion-select-option>
+            <ion-select-option value="number">Número</ion-select-option>
+            <ion-select-option value="interval">Intervalo</ion-select-option>
+            <ion-select-option value="unit">Unidad métrica</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'binary'">
+        <ion-item>
+          <ion-label>Binario 0 (Falso)</ion-label>
+          <ion-input type="text" placeholder="Falso" [(ngModel)]="falseInput"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'binary'">
+        <ion-item>
+          <ion-label>Binario 1 (Verdadero)</ion-label>
+          <ion-input type="text" placeholder="Verdadero" [(ngModel)]="trueInput"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'binary'">
+        <ion-item>
+          <ion-label>¿Verdadero por defecto?</ion-label>
+          <ion-checkbox [(ngModel)]="defaultInput"></ion-checkbox>
+        </ion-item>
+      </ion-col>
+      <ion-col size="6" *ngIf="type === 'interval'">
+        <ion-item lines="none">
+          <ion-label position="floating">Mínimo</ion-label>
+          <ion-input type="number" placeholder="Mínimo" [(ngModel)]="min"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="6" *ngIf="type === 'interval'">
+        <ion-item lines="none">
+          <ion-label position="floating">Máximo</ion-label>
+          <ion-input type="number" placeholder="Máximo" [(ngModel)]="max"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'multiple'">
+        <ion-item lines="none">
+          <ion-label position="floating">Opciones</ion-label>
+          <ion-input type="text" placeholder="Texto de la opción"
+            (keyup.enter)="addOption($event.target.value)" [(ngModel)]="currentOption"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'multiple'">
+        <ion-button (click)="addOption(currentOption)" expand="full">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Añadir
+        </ion-button>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'multiple'">
+        <ion-chip *ngFor="let option of options" lines="none">
+          <ion-label>{{ option }}</ion-label>
+          <ion-icon name="close" (click)="removeOption(option)"></ion-icon>
+        </ion-chip>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'multiple' && options.length>0">
+        <ion-item lines="none">
+          <ion-label position="floating">Opciones positivas</ion-label>
+          <ion-select multiple="true" placeholder="Seleccione campos que sugieren positivo"
+            (ionChange)="addPositiveOptions($event.target.value)" [value]="positiveOptions">
+            <ion-select-option *ngFor="let option of options" [value]="option">{{option}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'unit'">
+        <ion-item>
+          <ion-label position="floating">Unidad métrica</ion-label>
+          <ion-input type="text" placeholder="Escribir unidad" [(ngModel)]="unit"></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon slot="start" name="close"></ion-icon>
+        <ion-label>Cancelar</ion-label>
+      </ion-button>
+      <ion-button (click)="save()" color="primary">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label>Aceptar</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>
+
+
+<!-- 
+  <ion-col size="12" *ngIf="imageTestsData">
+        <ion-item lines="full">
+          <ion-label position="floating">Hallazgo</ion-label>
+          <ion-select placeholder="Seleccione hallazgo" (ionChange)="setCurrentField($event.detail.value)">
+            <ion-select-option *ngFor="let test of fields" [value]="test.name">{{test.name}}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" *ngIf="currentField?.type==='number'">
+        <ion-item>
+          <ion-label position="floating">Comparación</ion-label>
+          <ion-select placeholder="Seleccione comparación" [(ngModel)]="compareFunction">
+            <ion-select-option value="igual">==</ion-select-option>
+            <ion-select-option value="mayor">></ion-select-option>
+            <ion-select-option value="mayorigual">>=</ion-select-option>
+            <ion-select-option value="menor">&#60;</ion-select-option>
+            <ion-select-option value="menorigual">&#60;=</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" *ngIf="currentField?.type==='text' || currentField?.type==='textarea'">
+        <ion-item>
+          <ion-label position="floating">Comparación</ion-label>
+          <ion-select placeholder="Seleccione comparación" [(ngModel)]="compareFunction">
+            <ion-select-option value="igual">==</ion-select-option>
+            <ion-select-option value="contiene">Contiene</ion-select-option>
+            <ion-select-option value="nocontiene">No contiene</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" *ngIf="currentField">
+        <ion-item lines="full">
+          <ion-label position="floating">Valor</ion-label>
+
+          <ion-select *ngIf="currentField.type==='multiple'" placeholder="Seleccione valor"
+            [(ngModel)]="currentOption">
+            <ion-select-option *ngFor="let item of currentField.options" [value]="item">{{item}}
+            </ion-select-option>
+          </ion-select>
+
+          <ion-select *ngIf="currentField.type==='binary'" placeholder="Seleccione valor"
+            [(ngModel)]="currentBinary">
+            <ng-container>
+              <ion-select-option [value]="currentField.trueInput">{{currentField.trueInput}}
+              </ion-select-option>
+              <ion-select-option [value]="currentField.falseInput">{{currentField.falseInput}}
+              </ion-select-option>
+            </ng-container>
+          </ion-select>
+
+          <ion-input *ngIf="currentField.type==='number'" type="number" placeholder="Seleccione valor"
+            [(ngModel)]="currentNumber">
+          </ion-input>
+
+          <ion-input *ngIf="currentField.type==='unit'" type="number" placeholder="Seleccione valor"
+            [(ngModel)]="currentUnit">
+          </ion-input>
+
+          <ion-input *ngIf="currentField.type==='text' || currentField.type==='textarea'" type="text"
+            placeholder="Seleccione valor" [(ngModel)]="currentText">
+          </ion-input>
+
+          <ion-select *ngIf="currentField.type==='interval'" placeholder="Seleccione valor"
+            [(ngModel)]="currentInterval">
+            <ion-select-option [value]="outside">Fuera del intervalo</ion-select-option>
+            <ion-select-option [value]="inside">Dentro del intervalo</ion-select-option>
+          </ion-select>
+
+        </ion-item>
+      </ion-col>
+ -->

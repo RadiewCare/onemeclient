@@ -1,0 +1,222 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Informe</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Report</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="delete()">
+        <ion-icon slot="start" name="trash"></ion-icon>
+        <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Eliminar</ion-label>
+        <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Delete</ion-label>
+      </ion-button>
+      <ion-button (click)="export()">
+        <ion-icon slot="start" name="cloud-download"></ion-icon>
+        <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Exportar</ion-label>
+        <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Export</ion-label>
+      </ion-button>
+      <ion-button (click)="save()">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Guardar</ion-label>
+        <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Save</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item>
+          <ion-label position="floating" *ngIf="lang.isSpanish()">Plantilla</ion-label>
+          <ion-label position="floating" *ngIf="!lang.isSpanish()">Template</ion-label>
+          <ion-select [placeholder]="lang.isSpanish()?'Seleccione plantilla':'Select template'"
+            [(ngModel)]="templateId">
+            <ion-select-option *ngFor="let template of templates$ | async" [value]="template.id">
+              {{ template.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <!-- Tabla -->
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top" *ngFor="let table of realTables">
+        <ion-item color="secondary" lines="full">
+          <ion-label>{{table.name}}</ion-label>
+        </ion-item>
+
+        <ion-row *ngFor="let disease of table.rows">
+          <ion-col size="12" class="ion-no-padding">
+            <ion-item lines="full" color="primary">
+              <ion-label>{{disease.element}}</ion-label>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" class="ion-no-padding">
+            <ion-item lines="full" [color]="getColor(disease.dispositionColor)">
+              <ion-text class="ion-padding-vertical">
+                <div *ngIf="lang.isSpanish()">Disposición genética:</div>
+                <div *ngIf="!lang.isSpanish()">Genetic disposition:</div>
+                <div>{{disease.disposition}}</div>
+              </ion-text>
+            </ion-item>
+          </ion-col>
+          <!-- Alelos favorables y desfavorables-->
+          <ion-col size="12" class="ion-no-padding">
+            <ion-item lines="full">
+              <ion-label color="success" *ngIf="lang.isSpanish()">Alelos favorables en los genes</ion-label>
+              <ion-label color="success" *ngIf="!lang.isSpanish()">Favorable alleles in the genes</ion-label>
+              <ng-container *ngIf="disease.lowRiskGenes.length > 0; else elseAlelos">
+                <ion-chip *ngFor="let gen of disease.lowRiskGenes" color="success" mode="ios" outline="true">
+                  <ion-label>{{gen}}</ion-label>
+                </ion-chip>
+              </ng-container>
+              <ng-template #elseAlelos>
+                <ion-text slot="end">
+                  <div *ngIf="lang.isSpanish()">No encontrados</div>
+                  <div *ngIf="!lang.isSpanish()">Not found</div>
+                </ion-text>
+              </ng-template>
+            </ion-item>
+            <ion-item lines="full">
+              <ion-label color="danger" *ngIf="lang.isSpanish()">Alelos no favorables en los genes</ion-label>
+              <ion-label color="danger" *ngIf="!lang.isSpanish()">Unfavorable alleles in the genes</ion-label>
+              <ng-container *ngIf="disease.highRiskGenes.length > 0; else elseAlelos2">
+                <ion-chip *ngFor="let gen of disease.highRiskGenes" color="danger" mode="ios" outline="true">
+                  <ion-label>{{gen}}</ion-label>
+                </ion-chip>
+              </ng-container>
+              <ng-template #elseAlelos2>
+                <ion-text slot="end">
+                  <div *ngIf="lang.isSpanish()">No encontrados</div>
+                  <div *ngIf="!lang.isSpanish()">Not found</div>
+                </ion-text>
+              </ng-template>
+            </ion-item>
+            <ion-item lines="full">
+              <ion-label color="warning" *ngIf="lang.isSpanish()">Alelos de riesgo medio en los genes
+              </ion-label>
+              <ion-label color="warning" *ngIf="!lang.isSpanish()">Medium risk alleles in the genes
+              </ion-label>
+              <ng-container *ngIf="disease.mediumRiskGenes.length > 0; else elseAlelos3">
+                <ion-chip *ngFor="let gen of disease.mediumRiskGenes" color="warning" mode="ios"
+                  outline="true">
+                  <ion-label>{{gen}}</ion-label>
+                </ion-chip>
+              </ng-container>
+              <ng-template #elseAlelos3>
+                <ion-text slot="end">
+                  <div *ngIf="lang.isSpanish()">No encontrados</div>
+                  <div *ngIf="!lang.isSpanish()">Not found</div>
+                </ion-text>
+              </ng-template>
+            </ion-item>
+          </ion-col>
+          <!-- Fenotípicos -->
+          <ion-col size="12" class="ion-no-padding">
+            <!-- <ion-item lines="none">
+              <ion-label slot="start" *ngIf="lang.isSpanish()">Rasgos fenotípicos asociados</ion-label>
+              <ion-label slot="start" *ngIf="!lang.isSpanish()">Associated phenotypic data</ion-label>
+            </ion-item>
+            <div class="ion-text-center"
+              style="background: white; border-bottom: 1px solid #dedede; padding-bottom: 1rem;">
+              <ion-chip *ngFor="let element of disease.phenotypicElements"
+                [color]="isPhenotypicFound(element)" mode="ios" outline="true">
+                <ng-container *ngIf="element.value===true || element.value===false; else elseTemplate">
+                  <ion-label>{{element.id}}</ion-label>
+                </ng-container>
+                <ng-template #elseTemplate>
+                  <ion-label>{{element.value | titlecase}}</ion-label>
+                </ng-template>
+              </ion-chip>
+            </div> -->
+            <!-- Polimorfismos -->
+            <!-- <ion-item lines="none">
+              <ion-label slot="start" *ngIf="lang.isSpanish()">Polimorfismos asociados</ion-label>
+              <ion-label slot="start" *ngIf="!lang.isSpanish()">Associated polymophisms</ion-label>
+            </ion-item>
+            <div class="ion-text-center"
+              style="background: white; border-bottom: 1px solid #dedede; padding-bottom: 1rem;">
+              <ion-chip *ngFor="let element of disease.geneticElements" color="primary" mode="ios"
+                outline="true">
+                <ion-label>{{element.name}}</ion-label>
+              </ion-chip>
+            </div> -->
+            <!-- Mutaciones -->
+            <!-- <ion-item lines="none">
+              <ion-label *ngIf="lang.isSpanish()">Mutaciones asociadas</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">Associated mutations</ion-label>
+            </ion-item>
+            <div class="ion-text-center"
+              style="background: white; border-bottom: 1px solid #dedede; padding-bottom: 1rem;">
+              <ion-chip *ngFor="let mutation of disease.mutations" color="primary" mode="ios" outline="true">
+                <ion-label>{{mutation.name}}</ion-label>
+              </ion-chip>
+            </div> -->
+            <ion-item lines="none">
+              <ion-label *ngIf="lang.isSpanish()">Mutaciones encontradas</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">Mutations found</ion-label>
+            </ion-item>
+            <div class="ion-text-center"
+              style="background: white; border-bottom: 1px solid #dedede; padding-bottom: 1rem;">
+              <ng-container *ngFor="let mutation of disease.mutations">
+                <ng-container *ngIf="subject.mutations">
+                  <ion-chip *ngIf="subject.mutations.includes(mutation.name)" color="danger" mode="ios"
+                    outline="true">
+                    <ion-label>
+                      {{mutation.name}}</ion-label>
+                  </ion-chip>
+                </ng-container>
+              </ng-container>
+            </div>
+            <!-- Análisis clínicos -->
+            <ion-item lines="full">
+              <ion-label *ngIf="lang.isSpanish()">Hallazgos en análisis clínicos</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">Clinic analysis findings</ion-label>
+              <ng-container *ngFor="let study of disease.relevantClinicStudies">
+                <ion-chip *ngIf="study.status && study.status!=='normal'" color="danger" mode="ios"
+                  outline="true">
+                  <ion-label>{{study.name + ': '+ study.value+study.metricUnit}}</ion-label>
+                  <ion-icon *ngIf="study.status ==='high'" name="trending-up"></ion-icon>
+                  <ion-icon *ngIf="study.status ==='low'" name="trending-down"></ion-icon>
+                </ion-chip>
+              </ng-container>
+            </ion-item>
+            <!-- Pruebas de imagen -->
+            <ion-item lines="none">
+              <ion-label *ngIf="lang.isSpanish()">Hallazgos en biomarcadores de imagen</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">Image biomarkers findings</ion-label>
+            </ion-item>
+            <div class="ion-text-center"
+              style="background: white; border-bottom: 1px solid #dedede; padding-bottom: 1rem;">
+              <ng-container *ngFor="let test of disease.relevantImageTests">
+                <ion-chip color="danger" mode="ios" outline="true">
+                  <ion-label>{{test.name + ': '+ test.value}}</ion-label>
+                </ion-chip>
+              </ng-container>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="polyMorphismsWithNoGenes.length>0" class="ion-margin-top">
+      <ion-col size="12">
+        <ion-item color="danger" lines="full">
+          <ion-label>Polimorfismos sin genes asociados</ion-label>
+        </ion-item>
+        <div class="ion-text-center"
+          style="background: white; border-bottom: 1px solid #dedede; padding-bottom: 1rem;padding-top: 1rem;">
+          <ion-chip *ngFor="let polyWithNoGenes of polyMorphismsWithNoGenes" color="primary" mode="ios"
+            outline="true">
+            <ion-label>{{polyWithNoGenes}}</ion-label>
+          </ion-chip>
+        </div>
+      </ion-col>
+    </ion-row>
+
+  </ion-grid>
+</ion-content>

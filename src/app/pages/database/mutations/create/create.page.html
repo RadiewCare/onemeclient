@@ -1,0 +1,66 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Base de datos: Mutaciones - Nuevo</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label class="ion-hide-md-down">Guardar</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+
+      <ion-col size="6" class="ion-padding-top">
+        <ion-item>
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input type="text" placeholder="Introduzca nombre" [(ngModel)]="name"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="6" class="ion-padding-top">
+        <ion-item>
+          <ion-label position="floating">Nombre formal</ion-label>
+          <ion-input type="text" placeholder="Introduzca nombre formal" [(ngModel)]="formalName">
+          </ion-input>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="6">
+        <ion-item>
+          <ion-label position="floating">Cromosoma</ion-label>
+          <ion-input type="number" placeholder="0" [(ngModel)]="chromosome"></ion-input>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="6">
+        <ion-item>
+          <ion-label position="floating">Posición</ion-label>
+          <ion-input type="number" placeholder="0" [(ngModel)]="position"></ion-input>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating">Genes implicados</ion-label>
+          <ion-input type="text" placeholder="Introduzca un gen y pulse intro para incluirlo"
+            (keyup.enter)="addGene($event.target.value)" [(ngModel)]="temporaryGene"></ion-input>
+        </ion-item>
+        <ion-list id="genes" class="ion-no-padding">
+          <ion-item *ngFor="let gene of genes" lines="none">
+            <ion-label>{{ gene }}</ion-label>
+            <ion-button (click)="deleteGene(gene)">
+              <ion-icon slot="icon-only" name="trash"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-col>
+
+    </ion-row>
+  </ion-grid>
+</ion-content>

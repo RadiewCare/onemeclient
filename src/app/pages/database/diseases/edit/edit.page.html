@@ -1,0 +1,272 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Editar enfermedad</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="delete()">
+        <ion-icon slot="start" name="trash"></ion-icon>
+        <ion-label>Eliminar</ion-label>
+      </ion-button>
+      <ion-button (click)="importGeneticElements()">
+        <ion-icon slot="start" name="cloud-upload"></ion-icon>
+        <ion-label>Importar</ion-label>
+      </ion-button>
+      <ion-button (click)="save()">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label>Guardar</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row class="ion-padding-vertical">
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input type="text" placeholder="Introduzca nombre" [(ngModel)]="name"></ion-input>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" class="ion-margin-bottom">
+        <ion-item>
+          <ion-label position="floating">Notas</ion-label>
+          <ion-textarea placeholder="Introduzca notas" [(ngModel)]="notes" rows="4">
+          </ion-textarea>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item color="secondary" lines="none">
+          <ion-icon slot="start" name="body"></ion-icon>
+          <ion-label>Datos fenotípicos:</ion-label>
+          <ion-buttons slot="end">
+            <ion-button (click)="addPhenotypicElement()">
+              <ion-icon slot="icon-only" name="add"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-xl="4" color="secondary"
+        *ngFor="let field of disease?.phenotypicElements; let i = index">
+        <ion-item lines="none">
+          <ion-label>
+            <ion-text>
+              <div>{{field.id}}</div>
+            </ion-text>
+            <ion-text color="primary" class="ion-text-wrap">
+              <div *ngIf="field.compare">{{field.compare}}</div>
+              <div>{{field.value}}</div>
+            </ion-text>
+          </ion-label>
+          <ion-buttons slot="end">
+            <ion-button (click)="deletePhenotypicConfig(i)">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item color="secondary" lines="none">
+          <ion-icon slot="start" name="finger-print"></ion-icon>
+          <ion-label>Elementos genéticos:</ion-label>
+          <ion-buttons slot="end">
+            <ion-button (click)="addGeneticElement()">
+              <ion-icon slot="icon-only" name="add"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" size-lg="3" color="secondary"
+        *ngFor="let geneticElement of disease?.geneticElements">
+        <ion-item lines="none" [routerLink]="['/database/genetic-elements/edit/',geneticElement.id]">
+          <ion-label>{{ geneticElement.name }}
+          </ion-label>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12">
+        <ion-item lines="none" color="danger">
+          <ion-label position="floating">Disposición Alto Riesgo</ion-label>
+          <ion-textarea placeholder="Introduzca disposición" [(ngModel)]="highRiskExplanation"></ion-textarea>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12">
+        <ion-item lines="none" color="warning">
+          <ion-label position="floating">Disposición Medio Riesgo</ion-label>
+          <ion-textarea placeholder="Introduzca disposición" [(ngModel)]="mediumRiskExplanation">
+          </ion-textarea>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12">
+        <ion-item lines="none" color="success">
+          <ion-label position="floating">Disposición Bajo Riesgo</ion-label>
+          <ion-textarea placeholder="Introduzca disposición" [(ngModel)]="lowRiskExplanation"></ion-textarea>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label>Odd ratio: </ion-label>
+          <ion-badge slot="end" color="primary" mode="ios">{{disease?.averageOddRatio}}</ion-badge>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label>Product ratio: </ion-label>
+          <ion-badge slot="end" color="primary" mode="ios">{{disease?.averageProductRatio}}</ion-badge>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item color="secondary" lines="none">
+          <ion-icon slot="start" name="git-branch"></ion-icon>
+          <ion-label>Mutaciones:</ion-label>
+          <ion-buttons slot="end">
+            <ion-button (click)="addMutation()">
+              <ion-icon slot="icon-only" name="add"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="3" color="secondary" *ngFor="let mutation of disease?.mutations">
+        <ion-item lines="none">
+          <ion-label>{{mutation.name}}</ion-label>
+          <ion-buttons slot="end">
+            <ion-button [routerLink]="['/database/mutations/edit/', mutation.id]">
+              <ion-icon slot="icon-only" name="create"></ion-icon>
+            </ion-button>
+            <ion-button (click)="deleteMutation(disease.id, mutation.id)">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item color="secondary" lines="none">
+          <ion-icon slot="start" name="water"></ion-icon>
+          <ion-label>Pruebas de laboratorio:</ion-label>
+          <ion-buttons slot="end">
+            <ion-button (click)="addAnalysisElement()">
+              <ion-icon slot="icon-only" name="add"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="4" color="secondary"
+        *ngFor="let analysisElement of disease?.analysisElements">
+        <ion-item lines="none">
+          <ion-label>{{analysisElement.name}}</ion-label>
+          <ion-buttons slot="end">
+            <ion-button [routerLink]="['/database/analysis-elements/edit/', analysisElement.id]">
+              <ion-icon slot="icon-only" name="create"></ion-icon>
+            </ion-button>
+            <ion-button (click)="deleteAnalysisElement(disease.id, analysisElement.id)">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item color="secondary" lines="none">
+          <ion-icon slot="start" name="photos"></ion-icon>
+          <ion-label>Pruebas de imagen:</ion-label>
+          <ion-buttons slot="end">
+            <ion-button (click)="addImageTest()">
+              <ion-icon slot="icon-only" name="add"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" color="secondary" *ngFor="let imageTest of disease?.imageTests; let i = index">
+        <ion-item lines="none">
+          <ion-label>
+            <ion-text>
+              <div style="font-weight: bold;">{{imageTest.name}}</div>
+              <div class="ion-margin-bottom">Elemento de prueba / hallazgo: <i><b>"{{imageTest.test}}"</b></i>
+              </div>
+              <div>Biomarcadores:</div>
+              <ng-container *ngIf="imageTest.type==='multiple'; else elseTemplate">
+                <ul *ngIf="imageTest.value.length>0">
+                  <li *ngFor="let value of imageTest.value">{{value}}</li>
+                </ul>
+                <div *ngIf="imageTest.value===0">Ninguno</div>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <div>{{value}}</div>
+              </ng-template>
+            </ion-text>
+          </ion-label>
+
+          <ion-buttons slot="end">
+            <!-- <ion-button
+              [routerLink]="['/database/diseases/edit/edit-image-test', {id: imageTest.id, index: i}]">
+              <ion-icon slot="icon-only" name="create"></ion-icon>
+            </ion-button> -->
+            <ion-button (click)="deleteImageTest(disease.id, i)">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item color="secondary" lines="none" disabled="true">
+          <ion-icon slot="start" name="git-pull-request"></ion-icon>
+          <ion-label>Rasgos epigenéticos:</ion-label>
+          <ion-buttons slot="end">
+            <ion-button (click)="addEpigeneticElement()">
+              <ion-icon slot="icon-only" name="add"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+      <ion-col size="3" color="secondary" *ngFor="let epigeneticFeature of disease?.epigeneticFeatures">
+        <ion-item lines="none">
+          <ion-label>{{epigeneticFeature.name}}</ion-label>
+          <ion-buttons slot="end">
+            <ion-button [routerLink]="['/database/epigenetic-features/edit/', epigeneticFeature.id]">
+              <ion-icon slot="icon-only" name="create"></ion-icon>
+            </ion-button>
+            <ion-button (click)="deleteEpigeneticFeatures(disease.id, epigeneticFeature.id)">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+
+      <!-- <ion-col size="12" class="ion-padding-top">
+        <ion-item color="secondary" lines="none">
+          <ion-icon slot="start" name="flask"></ion-icon>
+          <ion-label>Explicaciones bajo combinaciones de pruebas</ion-label>
+          <ion-buttons slot="end">
+            <ion-button (click)="addExplanation()">
+              <ion-icon slot="icon-only" name="add"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="4" color="secondary" *ngFor="let tests of disease?.testsCombinations">
+        <ion-item lines="none">
+          <ion-label>{{test.name}}</ion-label>
+          <ion-buttons slot="end">
+            <ion-button (click)="deleteTestcCombination(disease.id, test.id)">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col> -->
+
+    </ion-row>
+  </ion-grid>
+</ion-content>

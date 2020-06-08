@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title *ngIf="lang.isSpanish()">Añadir imagen a biomarcador</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Add image to biomarker</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed padding>
+    <ion-row>
+      <ion-col size="12" *ngIf="preview">
+        <ion-img [src]="preview"></ion-img>
+      </ion-col>
+      <ion-col size="12">
+        <ion-text>
+          <div>Biomarcador: {{ test }}</div>
+        </ion-text>
+      </ion-col>
+      <ion-col size="12">
+        <input type="file" name="" id="" (change)="loadImage($event.target.files)">
+      </ion-col>
+      <!-- <ion-col size="12">
+        <ion-item>
+          <ion-label>{{lang.isSpanish()?'Biomarcador':'Biomarker'}}</ion-label>
+          <ion-select [placeholder]="lang.isSpanish()?'Selecciona biomarcador':'Select biomarker'"
+            [(ngModel)]="test">
+            <ion-select-option *ngFor="let t of tests; let i = index" [value]="t.name">{{t.name}}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col> -->
+      <ion-col size="12">
+        <ion-item>
+          <ion-input type="text" [placeholder]="lang.isSpanish()?'Introduce sección':'Enter section'"
+            [(ngModel)]="currentSection"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="4">
+        <ion-item>
+          <ion-input type="number" [placeholder]="lang.isSpanish()?'Coordenada X':'Coordinate X'"
+            [(ngModel)]="currentX"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="4">
+        <ion-item>
+          <ion-input type="number" [placeholder]="lang.isSpanish()?'Coordenada Y':'Coordinate Y'"
+            [(ngModel)]="currentY"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="4">
+        <ion-item>
+          <ion-input type="number" [placeholder]="lang.isSpanish()?'Coordenada Z':'Coordinate Z'"
+            [(ngModel)]="currentZ"></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon slot="start" name="close"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Cancelar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Cancel</ion-label>
+      </ion-button>
+      <ion-button (click)="save()" color="primary">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Aceptar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Accept</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>
