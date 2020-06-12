@@ -24,6 +24,16 @@ const routes: Routes = [
       import("./familiars/familiars.module").then((m) => m.FamiliarsPageModule)
   },
   {
+    path: "familiars/create/:id",
+    loadChildren: () =>
+      import("./familiars/create/create.module").then((m) => m.CreatePageModule)
+  },
+  {
+    path: "familiars/edit/:id",
+    loadChildren: () =>
+      import("./familiars/edit/edit.module").then((m) => m.EditPageModule)
+  },
+  {
     path: "import/:id",
     loadChildren: () =>
       import("./import/import.module").then((m) => m.ImportPageModule)

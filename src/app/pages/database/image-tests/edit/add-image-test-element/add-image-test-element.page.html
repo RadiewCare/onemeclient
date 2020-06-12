@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Nuevo elemento de prueba de imagen: {{ imageTest?.name }}</ion-title>
+    <ion-title>Nuevo biomarcador</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -9,14 +9,15 @@
     <ion-row>
       <ion-col size="12">
         <ion-item lines="none">
-          <ion-label position="floating">Nombre del campo</ion-label>
-          <ion-input type="text" placeholder="Nombre del campo" [(ngModel)]="name"></ion-input>
+          <ion-label position="floating">Nombre del biomarcador</ion-label>
+          <ion-input type="text" placeholder="Nombre del biomarcador" [(ngModel)]="name"></ion-input>
         </ion-item>
       </ion-col>
       <ion-col size="12">
         <ion-item lines="none">
           <ion-label position="floating">Tipo de campo</ion-label>
-          <ion-select placeholder="Seleccione campo" [(ngModel)]="type">
+          <ion-select placeholder="Seleccione tipo de campo" [(ngModel)]="type" cancelText="Cancelar"
+            okText="Aceptar">
             <ion-select-option value="text">Texto</ion-select-option>
             <ion-select-option value="binary">Binario</ion-select-option>
             <ion-select-option value="multiple">Múltiples opciones</ion-select-option>

@@ -1,5 +1,10 @@
+ion-card-header {
+  text-align: center;
+}
 ion-card-content {
   font-size: 32px;
   color: var(--ion-color-dark);
   font-weight: bold;
+  text-align: center;
+  padding: 1rem;
 }

@@ -1,9 +1,365 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>create</ion-title>
+    <ion-buttons slot="start">
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/subjects/familiars/{{id}}"></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title>Nuevo familiar</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label class="ion-hide-sm-down">Guardar</ion-label>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <ion-grid fixed>
+    <ion-row class="ion-margin-vertical">
 
+      <!-- PARENTESCO -->
+      <ion-col size="12">
+        <ion-item lines="none" color="secondary">
+          <ion-label>PARENTESCO</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Grado</ion-label>
+          <ion-select placeholder="Seleccionar" [(ngModel)]="grade" (ionChange)="resetForm()">
+            <ion-select-option value="first">Primer grado</ion-select-option>
+            <ion-select-option value="second">Segundo grado</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6" *ngIf="grade">
+        <ion-item lines="none">
+          <ion-label position="floating">Relación</ion-label>
+          <ion-select placeholder="Seleccionar" [(ngModel)]="relationship" (ionChange)="resetRelation()">
+            <ng-container *ngIf="grade==='first'; else elseTemplate">
+              <ion-select-option value="father">Padre</ion-select-option>
+              <ion-select-option value="mother">Madre</ion-select-option>
+              <ion-select-option value="son">Hijo</ion-select-option>
+              <ion-select-option value="daughter">Hija</ion-select-option>
+            </ng-container>
+            <ng-template #elseTemplate>
+              <ion-select-option value="grandfather">Abuelo</ion-select-option>
+              <ion-select-option value="grandmother">Abuela</ion-select-option>
+              <ion-select-option value="brother">Hermano</ion-select-option>
+              <ion-select-option value="sister">Hermana</ion-select-option>
+              <ion-select-option value="grandson">Nieto</ion-select-option>
+              <ion-select-option value="granddaughter">Nieta</ion-select-option>
+            </ng-template>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6" *ngIf="relationship ==='grandfather' || relationship === 'grandmother'">
+        <ion-item lines="none">
+          <ion-label position="floating">Rama familiar</ion-label>
+          <ion-select placeholder="Seleccionar" [(ngModel)]="familyBranch">
+            <ion-select-option value="father">Padre</ion-select-option>
+            <ion-select-option value="mother">Madre</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <!-- DATOS BIOMÉTRICOS -->
+      <ion-col size="12" class="ion-margin-top">
+        <ion-item lines="none" color="secondary">
+          <ion-label>DATOS BIOMÉTRICOS</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Sexo</ion-label>
+          <ion-select placeholder="Seleccionar" [(ngModel)]="genre">
+            <ion-select-option value="varon">Varón</ion-select-option>
+            <ion-select-option value="hembra">Hembra</ion-select-option>
+            <ion-select-option value="intersexo">Intersexo</ion-select-option>
+            <ion-select-option value="none">Sin especificar</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Fecha de nacimiento</ion-label>
+          <ion-datetime placeholder="Seleccionar" display-format="DD/MM/YYYY" [(ngModel)]="birthDate">
+          </ion-datetime>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Estatura (cm)</ion-label>
+          <ion-input placeholder="Seleccionar" type="number" [(ngModel)]="height"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Peso (kg)</ion-label>
+          <ion-input placeholder="Seleccionar" type="number" [(ngModel)]="weight"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Grupo de población</ion-label>
+          <ion-select placeholder="Seleccionar" [(ngModel)]="populationGroup">
+            <ion-select-option value="subsahariano">Subsahariano</ion-select-option>
+            <ion-select-option value="africano">Norteafricano</ion-select-option>
+            <ion-select-option value="indioasiatico">Indioasiático</ion-select-option>
+            <ion-select-option value="caucasico">Caucásico</ion-select-option>
+            <ion-select-option value="chino">Chino</ion-select-option>
+            <ion-select-option value="japones">Japonés</ion-select-option>
+            <ion-select-option value="sudesteasiatico">Sudeste asiático</ion-select-option>
+            <ion-select-option value="otrosgruposasiaticos">Otros grupos asiáticos</ion-select-option>
+            <ion-select-option value="aborigendeaustralia">Aborígen de Australia</ion-select-option>
+            <ion-select-option value="islasdelpacificoypolinesia">Islas del Pacífico y Polinesia
+            </ion-select-option>
+            <ion-select-option value="amerindio">Amerindio</ion-select-option>
+            <ion-select-option value="latinohispano">Latino o hispano</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Tono de piel</ion-label>
+          <ion-select placeholder="Seleccionar" [(ngModel)]="skin">
+            <ion-select-option value="albina">Albina</ion-select-option>
+            <ion-select-option value="blanca">Blanca</ion-select-option>
+            <ion-select-option value="morena">Morena</ion-select-option>
+            <ion-select-option value="negra">Negra</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Color de cabello</ion-label>
+          <ion-select placeholder="Seleccionar" [(ngModel)]="hair">
+            <ion-select-option value="moreno">Moreno</ion-select-option>
+            <ion-select-option value="marron">Castaño</ion-select-option>
+            <ion-select-option value="rubio">Rubio</ion-select-option>
+            <ion-select-option value="pelirrojo">Pelirrojo</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Color de los ojos</ion-label>
+          <ion-select placeholder="Seleccionar" [(ngModel)]="eyes">
+            <ion-select-option value="marrones">Marrones</ion-select-option>
+            <ion-select-option value="verdes">Verdes</ion-select-option>
+            <ion-select-option value="azules">Azules</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">IMC</ion-label>
+          <ion-input placeholder="Seleccionar" type="number" [(ngModel)]="imc"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">% grasa visceral androide</ion-label>
+          <ion-input type="number" placeholder="Seleccionar" [(ngModel)]="androidFat"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="3">
+        <ion-item lines="none">
+          <ion-label position="floating">Presión arterial mayor</ion-label>
+          <ion-input type="number" placeholder="Mayor" [(ngModel)]="highBloodPressure"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="3">
+        <ion-item lines="none">
+          <ion-label position="floating">Presión arterial menor</ion-label>
+          <ion-input type="number" placeholder="Menor" [(ngModel)]="lowBloodPressure"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Alergias</ion-label>
+          <ion-input type="text" placeholder="Seleccionar" [(ngModel)]="alergies"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Intolerancias alimenticias</ion-label>
+          <ion-input type="text" placeholder="Seleccionar" [(ngModel)]="foodIntolerance"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Transtornos intestinales</ion-label>
+          <ion-input type="text" placeholder="Seleccionar" [(ngModel)]="intestinalDisorders"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Hijos</ion-label>
+          <ion-input type="number" placeholder="Seleccionar" [(ngModel)]="children"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6" *ngIf="genre==='hembra'">
+        <ion-item lines="none">
+          <ion-label position="floating">Edad menarquía</ion-label>
+          <ion-input type="number" placeholder="Seleccionar" [(ngModel)]="menarcheAge"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6" *ngIf="genre==='hembra'">
+        <ion-item lines="none">
+          <ion-label position="floating">Edad menopausia</ion-label>
+          <ion-input type="number" placeholder="Seleccionar" [(ngModel)]="menopausalAge"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6" *ngIf="genre==='hembra'">
+        <ion-item lines="none">
+          <ion-label>Síndrome de Ovario Poliquístico</ion-label>
+          <ion-checkbox [(ngModel)]="sop"></ion-checkbox>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6" *ngIf="genre==='hembra'">
+        <ion-item lines="none">
+          <ion-label>Manchado vaginal >50 años</ion-label>
+          <ion-checkbox [(ngModel)]="vaginalSpotting"></ion-checkbox>
+        </ion-item>
+      </ion-col>
+
+      <!-- HÁBITOS DE VIDA -->
+      <ion-col size="12" class="ion-margin-top">
+        <ion-item lines="none" color="secondary">
+          <ion-label>HÁBITOS DE VIDA</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Tabaco</ion-label>
+          <ion-select [(ngModel)]="smoker" placeholder="Seleccionar">
+            <ion-select-option value="habitual">Habitual</ion-select-option>
+            <ion-select-option value="ocasional">Ocasional</ion-select-option>
+            <ion-select-option value="no">No fumador</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Alcohol</ion-label>
+          <ion-select placeholder="Seleccionar" [(ngModel)]="alcohol">
+            <ion-select-option value="habitual">Habitual</ion-select-option>
+            <ion-select-option value="ocasional">Ocasional</ion-select-option>
+            <ion-select-option value="abstemio">Abstemio</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Otras drogas</ion-label>
+          <ion-select placeholder="Seleccionar" [(ngModel)]="otherDrugs">
+            <ion-select-option value="habitual">Habitual</ion-select-option>
+            <ion-select-option value="ocasional">Ocasional</ion-select-option>
+            <ion-select-option value="no">No consumidor</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label>Medicamentos</ion-label>
+          <ion-checkbox [(ngModel)]="medicines"></ion-checkbox>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Exposición solar</ion-label>
+          <ion-select placeholder="Seleccionar" [(ngModel)]="solarExposition">
+            <ion-select-option value="habitual">Habitual</ion-select-option>
+            <ion-select-option value="ocasional">Ocasional</ion-select-option>
+            <ion-select-option value="no">Ninguna</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Exposición laboral</ion-label>
+          <ion-select placeholder="Seleccionar" [(ngModel)]="workExposition">
+            <ion-select-option value="habitual">Habitual</ion-select-option>
+            <ion-select-option value="ocasional">Ocasional</ion-select-option>
+            <ion-select-option value="no">Ninguna</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label position="floating">Actividad física semanal</ion-label>
+          <ion-select placeholder="Seleccionar" [(ngModel)]="physicalActivity">
+            <ion-select-option value="diario">Todos los días</ion-select-option>
+            <ion-select-option value="moderado">3 a 5 días</ion-select-option>
+            <ion-select-option value="ligero">1 a 3 días</ion-select-option>
+            <ion-select-option value="no">Ninguna</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <!-- ANTECENDENTES -->
+      <ion-col size="12" class="ion-margin-top">
+        <ion-item lines="none" color="secondary">
+          <ion-label>ANTECEDENTES</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label>Cáncer</ion-label>
+          <ion-checkbox [(ngModel)]="cancer"></ion-checkbox>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label>Neurodegenerativos</ion-label>
+          <ion-checkbox [(ngModel)]="neurodegeneratives"></ion-checkbox>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label>Autoinmunes</ion-label>
+          <ion-checkbox [(ngModel)]="autoinmunes"></ion-checkbox>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label>Enfermedad cardiovascular</ion-label>
+          <ion-checkbox [(ngModel)]="cardioDisease"></ion-checkbox>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6">
+        <ion-item lines="none">
+          <ion-label>Infertilidad</ion-label>
+          <ion-checkbox [(ngModel)]="infertility"></ion-checkbox>
+        </ion-item>
+      </ion-col>
+
+      <!-- OTROS ANTECEDENTES -->
+      <ion-col size="12" class="ion-margin-top">
+        <ion-item lines="none" color="secondary">
+          <ion-label>OTROS ANTECEDENTES</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label position="floating">Enfermedades</ion-label>
+          <ion-textarea rows="4" [(ngModel)]="otherBackground"></ion-textarea>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" class="ion-margin-top">
+        <ion-item lines="none" color="secondary">
+          <ion-label>TRATAMIENTO ACTUAL</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label position="floating">Tratamiento</ion-label>
+          <ion-textarea rows="4" [(ngModel)]="currentTreatment"></ion-textarea>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

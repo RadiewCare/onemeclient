@@ -77,7 +77,7 @@ export class PolymorphismsPage implements OnInit {
   onSearchChange(query: string) {
     if (query.length > 0) {
       this.queryVariants = this.geneticVariants.filter((variant) =>
-        variant.name.includes(query)
+        variant.name.toLowerCase().includes(query.toLowerCase())
       );
     } else {
       this.queryVariants = null;

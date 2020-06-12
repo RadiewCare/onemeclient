@@ -35,6 +35,19 @@ export class SubjectsService {
     }
   }
 
+  getSubjectsByDoctor(id: string): Promise<any> {
+    return this.db.firestore
+      .collection("subjects")
+      .get()
+      .then((data) => {
+        return data.docs.filter(
+          (subject) =>
+            subject.data().mainDoctor === id ||
+            subject.data().doctors.includes(id)
+        );
+      });
+  }
+
   /**
    * Devuelve un sujeto como observable
    * @param subjectId Identificador del sujeto

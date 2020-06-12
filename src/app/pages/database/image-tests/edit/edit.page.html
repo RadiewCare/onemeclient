@@ -1,7 +1,7 @@
 <ion-header>
-  <ion-toolbar color="primary">
+  <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
+      <ion-back-button defaultHref="/database/image-tests"></ion-back-button>
     </ion-buttons>
     <ion-title>Editar prueba de imagen</ion-title>
     <ion-buttons slot="end">
@@ -28,23 +28,26 @@
       </ion-col>
 
       <ion-col size="12" class="ion-padding-top">
-        <ion-item color="secondary" lines="none">
-          <ion-icon slot="start" name="photos"></ion-icon>
-          <ion-label>Elementos de prueba de imagen (campos del formulario):</ion-label>
+        <ion-item color="primary" lines="none">
+          <ion-icon slot="start" name="images"></ion-icon>
+          <ion-label>Biomarcadores</ion-label>
           <ion-buttons slot="end">
             <ion-button (click)="addImageTestElement()">
-              <ion-icon slot="icon-only" name="add"></ion-icon>
+              <ion-icon slot="start" name="add"></ion-icon>
+              <ion-label>Añadir</ion-label>
             </ion-button>
           </ion-buttons>
         </ion-item>
         <ion-item *ngFor="let element of imageTest?.fields; let i = index" lines="full">
-          <ion-label>{{ element.name }}</ion-label>
+          <ion-label class="ion-text-wrap">{{ element.name }}</ion-label>
           <ion-buttons slot="end">
-            <ion-button (click)="editImageTestElement(element.name, i)">
-              <ion-icon slot="icon-only" name="create"></ion-icon>
-            </ion-button>
             <ion-button (click)="deleteImageTestElement(element.name)" color="danger">
-              <ion-icon slot="icon-only" name="close"></ion-icon>
+              <ion-icon slot="start" name="close"></ion-icon>
+              <ion-label>Eliminar</ion-label>
+            </ion-button>
+            <ion-button (click)="editImageTestElement(element.name, i)">
+              <ion-icon slot="start" name="create"></ion-icon>
+              <ion-label>Editar</ion-label>
             </ion-button>
           </ion-buttons>
         </ion-item>

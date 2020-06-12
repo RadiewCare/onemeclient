@@ -6,7 +6,7 @@
     <ion-title *ngIf="lang.isSpanish()">Informes</ion-title>
     <ion-title *ngIf="!lang.isSpanish()">Reports</ion-title>
     <ion-buttons slot="end">
-      <ion-button [routerLink]="['/reports/create']">
+      <ion-button [routerLink]="['/reports/create']" title="Nuevo informe">
         <ion-icon slot="start" name="add"></ion-icon>
         <ion-label *ngIf="lang.isSpanish()">Nuevo</ion-label>
         <ion-label *ngIf="!lang.isSpanish()">New</ion-label>
@@ -31,7 +31,8 @@
           <ion-icon slot="start" name="calendar" color="primary"></ion-icon>
           <ion-label *ngIf="lang.isSpanish()">Filtrar por fecha</ion-label>
           <ion-label *ngIf="!lang.isSpanish()">Filter by date</ion-label>
-          <ion-datetime display-format="DD/MM/YYYY" (ionChange)="onDateChange($event.detail.value)">
+          <ion-datetime display-format="DD/MM/YYYY" (ionChange)="onDateChange($event.detail.value)"
+            doneText="Aceptar" cancelText="Cancelar">
           </ion-datetime>
         </ion-item>
       </ion-col>

@@ -66,6 +66,11 @@ const routes: Routes = [
       import("./polymorphisms/polymorphisms.module").then(
         (m) => m.PolymorphismsPageModule
       )
+  },
+  {
+    path: "symptoms",
+    loadChildren: () =>
+      import("./symptoms/symptoms.module").then((m) => m.SymptomsPageModule)
   }
 ];
 

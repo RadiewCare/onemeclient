@@ -1,19 +1,21 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { NgModule } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 
-import { IonicModule } from '@ionic/angular';
+import { IonicModule } from "@ionic/angular";
 
-import { AddGeneticElementPageRoutingModule } from './add-genetic-element-routing.module';
+import { AddGeneticElementPageRoutingModule } from "./add-genetic-element-routing.module";
 
-import { AddGeneticElementPage } from './add-genetic-element.page';
+import { AddGeneticElementPage } from "./add-genetic-element.page";
+import { IonicSelectableModule } from "ionic-selectable";
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    AddGeneticElementPageRoutingModule
+    AddGeneticElementPageRoutingModule,
+    IonicSelectableModule
   ],
   declarations: [AddGeneticElementPage]
 })

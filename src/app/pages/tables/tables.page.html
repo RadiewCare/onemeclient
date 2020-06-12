@@ -6,7 +6,7 @@
     <ion-title *ngIf="lang.isSpanish()">Tablas</ion-title>
     <ion-title *ngIf="!lang.isSpanish()">Tables</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="create()">
+      <ion-button (click)="create()" title="Nueva tabla">
         <ion-icon slot="start" name="add"></ion-icon>
         <ion-label *ngIf="lang.isSpanish()">Nuevo</ion-label>
         <ion-label *ngIf="!lang.isSpanish()">New</ion-label>
@@ -42,11 +42,13 @@
             </h3>
           </ion-label>
           <ion-buttons slot="end">
-            <ion-button (click)="edit(table.id)">
-              <ion-icon slot="icon-only" name="create"></ion-icon>
+            <ion-button (click)="delete(table.id)" color="danger" title="Eliminar tabla">
+              <ion-icon slot="start" name="trash"></ion-icon>
+              <ion-label>Eliminar</ion-label>
             </ion-button>
-            <ion-button (click)="delete(table.id)">
-              <ion-icon slot="icon-only" name="trash"></ion-icon>
+            <ion-button (click)="edit(table.id)" title="Editar tabla">
+              <ion-icon slot="start" name="create"></ion-icon>
+              <ion-label>Editar</ion-label>
             </ion-button>
           </ion-buttons>
         </ion-item>

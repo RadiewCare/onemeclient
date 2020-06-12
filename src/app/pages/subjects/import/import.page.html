@@ -1,9 +1,119 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>import</ion-title>
+    <ion-buttons slot="start">
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/subjects/edit/{{id}}"></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Importar datos de sujeto</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Import subject data</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        *ngIf="doneMessagePhenotypic || doneMessageAnalytic || doneMessageGenetic || doneMessageImage"
+        (click)="import()">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Importar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Import</ion-label>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top" *ngIf="false">
+        <ion-item lines="none" disabled="true">
+          <ion-label>Datos fenotípicos</ion-label>
+          <input type="file" accept=".csv" name="" id="" class="ion-margin-vertical"
+            (change)="loadPhenotypicData($event)" />
+          <ion-buttons slot="end">
+            <ion-button color="primary" (click)="openUrl('/assets/csv/phenotypic-data.csv')">
+              <ion-icon slot="start" name="download"></ion-icon>
+              <ion-label>Descargar plantilla</ion-label>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+        <ion-item *ngIf="doneMessagePhenotypic" lines="none" color="success">
+          <ion-icon slot="start" name="checkmark"></ion-icon>
+          <ion-label>{{ doneMessagePhenotypic }}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="errorMessagePhenotypic" lines="none" color="danger">
+          <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+          <ion-label>Ha ocurrido algún error: {{ errorMessagePhenotypic }}</ion-label>
+        </ion-item>
+      </ion-col>
 
+      <!-- Genética -->
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item lines="none">
+          <ion-label *ngIf="lang.isSpanish()">Datos genéticos (Promethease)</ion-label>
+          <ion-label *ngIf="!lang.isSpanish()">Genetic data (Promethease)</ion-label>
+          <input type="file" accept=".csv" name="" id="" class="ion-margin-vertical"
+            (change)="loadGeneticData($event)" />
+          <ion-buttons slot="end" *ngIf="false">
+            <ion-button color="primary" (click)="openUrl('/assets/csv/genetic-data.csv')">
+              <ion-icon slot="start" name="download"></ion-icon>
+              <ion-label class="hide-lg-down">{{ lang.isSpanish()?'Descargar plantilla':'Download template' }}
+              </ion-label>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+        <ion-item *ngIf="doneMessageGenetic" lines="none" color="success">
+          <ion-icon slot="start" name="checkmark"></ion-icon>
+          <ion-label>{{ doneMessageGenetic }}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="errorMessageGenetic" lines="none" color="danger">
+          <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+          <ion-label>Ha ocurrido algún error: {{ errorMessageGenetic }}</ion-label>
+        </ion-item>
+      </ion-col>
+
+      <!-- Analítica -->
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item lines="none">
+          <ion-label *ngIf="lang.isSpanish()">Datos analíticos</ion-label>
+          <ion-label *ngIf="!lang.isSpanish()">Analytic data</ion-label>
+          <input type="file" accept=".csv" name="" id="" class="ion-margin-vertical"
+            (change)="loadAnalyticData($event)" />
+          <ion-buttons slot="end">
+            <ion-button color="primary" (click)="openUrl('/assets/csv/analytic-data.csv')">
+              <ion-icon slot="start" name="download"></ion-icon>
+              <ion-label class="ion-hide-sm-down">Descargar plantilla</ion-label>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+        <ion-item *ngIf="doneMessageAnalytic" lines="none" color="success">
+          <ion-icon slot="start" name="checkmark"></ion-icon>
+          <ion-label>{{ doneMessageAnalytic }}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="errorMessageAnalytic" lines="none" color="danger">
+          <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+          <ion-label>Ha ocurrido algún error: {{ errorMessageAnalytic }}</ion-label>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" class="ion-padding-top" *ngIf="false">
+        <ion-item lines="none" disabled="true">
+          <ion-label>Datos de imagen</ion-label>
+          <input type="file" accept=".csv" name="" id="" class="ion-margin-vertical"
+            (change)="loadImageData($event)" />
+          <ion-buttons slot="end">
+            <ion-button color="primary" (click)="openUrl('/assets/csv/image-data.csv')">
+              <ion-icon slot="start" name="download"></ion-icon>
+              <ion-label>Descargar plantilla</ion-label>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+        <ion-item *ngIf="doneMessageImage" lines="none" color="success">
+          <ion-icon slot="start" name="checkmark"></ion-icon>
+          <ion-label>{{ doneMessageImage }}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="errorMessageImage" lines="none" color="danger">
+          <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+          <ion-label>Ha ocurrido algún error: {{ errorMessageImage }}</ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

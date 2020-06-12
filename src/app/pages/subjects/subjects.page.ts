@@ -37,7 +37,6 @@ export class SubjectsPage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.sharedSubjectsData = [];
     this.userSub = this.auth.user$.subscribe((data) => {
       this.userData = data;
       this.getSubjects();
@@ -53,16 +52,12 @@ export class SubjectsPage implements OnInit, OnDestroy {
 
       this.sharedSubjectsPhenotypic =
         data.data().sharedSubjectsPhenotypic || [];
-      console.log(this.sharedSubjectsPhenotypic);
 
       this.sharedSubjectsGenetic = data.data().sharedSubjectsGenetic || [];
-      console.log(this.sharedSubjectsGenetic);
 
       this.sharedSubjectsAnalytic = data.data().sharedSubjectsAnalytic || [];
-      console.log(this.sharedSubjectsAnalytic);
 
       this.sharedSubjectsImage = data.data().sharedSubjectsImage || [];
-      console.log(this.sharedSubjectsImage);
 
       this.getSharedSubjects();
     });
@@ -91,15 +86,13 @@ export class SubjectsPage implements OnInit, OnDestroy {
   }
 
   async getSharedSubjects() {
-    this.sharedSubjects = this.sharedSubjectsAnalytic
+    this.sharedSubjects = await this.sharedSubjectsAnalytic
       .concat(this.sharedSubjectsGenetic)
       .concat(this.sharedSubjectsPhenotypic)
       .concat(this.sharedSubjectsImage)
       .filter((item, pos, self) => {
         return self.indexOf(item) === pos;
       });
-
-    console.log(this.sharedSubjects);
 
     for await (const sub of this.sharedSubjects) {
       await this.subjectsService.getSubjectData(sub).then((userData) => {
@@ -108,8 +101,6 @@ export class SubjectsPage implements OnInit, OnDestroy {
         this.sharedSubjectsData.push(userData.data());
       });
     }
-
-    console.log(this.sharedSubjectsData);
   }
 
   onSearchChange(query: string): void {
@@ -125,6 +116,9 @@ export class SubjectsPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.subjectsSub) {
       this.subjectsSub.unsubscribe();
+    }
+    if (this.userSub) {
+      this.userSub.unsubscribe();
     }
   }
 }

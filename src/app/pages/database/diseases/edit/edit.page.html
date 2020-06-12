@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
+      <ion-back-button defaultHref="/database/diseases"></ion-back-button>
     </ion-buttons>
     <ion-title>Editar enfermedad</ion-title>
     <ion-buttons slot="end">
@@ -84,8 +84,8 @@
 
       <ion-col size="12" size-lg="3" color="secondary"
         *ngFor="let geneticElement of disease?.geneticElements">
-        <ion-item lines="none" [routerLink]="['/database/genetic-elements/edit/',geneticElement.id]">
-          <ion-label>{{ geneticElement.name }}
+        <ion-item lines="none" [routerLink]="['/database/genetic-elements/edit/', geneticElement.id]">
+          <ion-label>{{ geneticElement.name }} {{geneticElement.id}}
           </ion-label>
         </ion-item>
       </ion-col>
@@ -179,7 +179,7 @@
 
       <ion-col size="12" class="ion-padding-top">
         <ion-item color="secondary" lines="none">
-          <ion-icon slot="start" name="photos"></ion-icon>
+          <ion-icon slot="start" name="images"></ion-icon>
           <ion-label>Pruebas de imagen:</ion-label>
           <ion-buttons slot="end">
             <ion-button (click)="addImageTest()">

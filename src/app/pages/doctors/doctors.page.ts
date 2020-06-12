@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from "@angular/core";
 import { Subscription } from "rxjs";
 import { LanguageService } from "src/app/services/language.service";
 import { DoctorsService } from "src/app/services/doctors.service";
+import { ModalController } from "@ionic/angular";
+import { InvitationPage } from "./invitation/invitation.page";
 
 @Component({
   selector: "app-doctors",
@@ -15,7 +17,8 @@ export class DoctorsPage implements OnInit, OnDestroy {
 
   constructor(
     private doctorsService: DoctorsService,
-    public lang: LanguageService
+    public lang: LanguageService,
+    private modalController: ModalController
   ) {}
 
   ngOnInit() {
@@ -32,6 +35,13 @@ export class DoctorsPage implements OnInit, OnDestroy {
     } else {
       this.queryDoctors = null;
     }
+  }
+
+  async openDoctorInvitation() {
+    const modal = await this.modalController.create({
+      component: InvitationPage
+    });
+    return await modal.present();
   }
 
   ngOnDestroy() {

@@ -90,8 +90,8 @@ export class EditPage implements OnInit, OnDestroy {
   physicalActivity: string;
 
   /* Signos y síntomas */
-  signs: string[];
-  symptoms: string[];
+  signs = [];
+  symptoms = [];
   currentSign: string;
   currentSymptom: string;
 
@@ -238,10 +238,16 @@ export class EditPage implements OnInit, OnDestroy {
         this.infertility = history.infertility;
         this.otherBackground = history.otherBackground;
         this.currentTreatment = history.currentTreatment;
-        this.signs = history.signs;
-        this.symptoms = history.symptoms;
+        if (history.signs) {
+          this.signs = history.signs;
+        }
+        if (history.symptoms) {
+          this.symptoms = history.symptoms;
+        }
       }
-      this.imageTests = data.imageTests;
+      this.imageTests = data.imageTests.sort((a, b) => {
+        return b.date - a.date;
+      });
     });
   }
 
@@ -320,48 +326,86 @@ export class EditPage implements OnInit, OnDestroy {
     this.currentAnalysisDate = date;
   }
 
-  deleteClinicAnalysis() {
-    this.currentAnalysisData$ = undefined;
-    this.analyticStudyValues$ = undefined;
-    this.analyticStudy$ = undefined;
-    this.analysisSub.unsubscribe();
-    this.analyticValuesSub.unsubscribe();
-    this.currentAnalysisData = undefined;
-    this.currentAnalysisDate = undefined;
-    this.currentAnalysisValues = undefined;
-    this.analyticStudiesService
-      .deleteAnalysisStudy(this.id, this.currentAnalysis)
-      .then(() => {
-        this.toastService.show(
-          "success",
-          "Análisis clínico eliminado con éxito"
-        );
-        this.currentAnalysis = undefined;
-      })
-      .catch(() => {
-        this.toastService.show(
-          "danger",
-          "Error al eliminar el análisis clínico"
-        );
-      });
+  async deleteClinicAnalysis() {
+    const alert = await this.alertController.create({
+      header: "¿Estás seguro?",
+      message: "Pulse aceptar para eliminar el análisis",
+      buttons: [
+        {
+          text: "Cancelar",
+          role: "cancel",
+          cssClass: "secondary",
+          handler: (blah) => {}
+        },
+        {
+          text: "Aceptar",
+          handler: () => {
+            this.currentAnalysisData$ = undefined;
+            this.analyticStudyValues$ = undefined;
+            this.analyticStudy$ = undefined;
+            this.analysisSub.unsubscribe();
+            this.analyticValuesSub.unsubscribe();
+            this.currentAnalysisData = undefined;
+            this.currentAnalysisDate = undefined;
+            this.currentAnalysisValues = undefined;
+            this.analyticStudiesService
+              .deleteAnalysisStudy(this.id, this.currentAnalysis)
+              .then(() => {
+                this.toastService.show(
+                  "success",
+                  "Análisis clínico eliminado con éxito"
+                );
+                this.currentAnalysis = undefined;
+              })
+              .catch(() => {
+                this.toastService.show(
+                  "danger",
+                  "Error al eliminar el análisis clínico"
+                );
+              });
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
-  deleteAnalyticStudy(studyId: string) {
-    this.analyticStudiesService
-      .deleteAnalysisStudy(this.id, studyId)
-      .then(() => {
-        this.toastService.show(
-          "success",
-          "Análisis clínico eliminado con éxito"
-        );
-        this.currentAnalysis = undefined;
-      })
-      .catch(() => {
-        this.toastService.show(
-          "danger",
-          "Error al eliminar el análisis clínico"
-        );
-      });
+  async deleteAnalyticStudy(studyId: string) {
+    const alert = await this.alertController.create({
+      header: "¿Estás seguro?",
+      message: "Pulse aceptar para eliminar el análisis",
+      buttons: [
+        {
+          text: "Cancelar",
+          role: "cancel",
+          cssClass: "secondary",
+          handler: (blah) => {}
+        },
+        {
+          text: "Aceptar",
+          handler: () => {
+            this.analyticStudiesService
+              .deleteAnalysisStudy(this.id, studyId)
+              .then(() => {
+                this.toastService.show(
+                  "success",
+                  "Análisis clínico eliminado con éxito"
+                );
+                this.currentAnalysis = undefined;
+              })
+              .catch(() => {
+                this.toastService.show(
+                  "danger",
+                  "Error al eliminar el análisis clínico"
+                );
+              });
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   editElement(
@@ -402,29 +446,48 @@ export class EditPage implements OnInit, OnDestroy {
     this.imageStudiesService.createImageAnalysis(this.id, data);
   }
 
-  deleteImageTest(index: number) {
-    this.imageTests.splice(index, 1);
-    this.subjectsService
-      .updateSubject(this.id, {
-        imageTests: this.imageTests
-      })
-      .then(() => {
-        if (this.imageTests.length === 0) {
-          this.subjectsService.updateSubject(this.id, {
-            hasImageAnalysis: false
-          });
+  async deleteImageTest(index: number) {
+    const alert = await this.alertController.create({
+      header: "¿Estás seguro?",
+      message: "Pulse aceptar para eliminar la prueba de imagen",
+      buttons: [
+        {
+          text: "Cancelar",
+          role: "cancel",
+          cssClass: "secondary",
+          handler: (blah) => {}
+        },
+        {
+          text: "Aceptar",
+          handler: () => {
+            this.imageTests.splice(index, 1);
+            this.subjectsService
+              .updateSubject(this.id, {
+                imageTests: this.imageTests
+              })
+              .then(() => {
+                if (this.imageTests.length === 0) {
+                  this.subjectsService.updateSubject(this.id, {
+                    hasImageAnalysis: false
+                  });
+                }
+                this.toastService.show(
+                  "success",
+                  "Prueba de imagen eliminada con éxito"
+                );
+              })
+              .catch(() => {
+                this.toastService.show(
+                  "danger",
+                  "Error al eliminar la prueba de imagen"
+                );
+              });
+          }
         }
-        this.toastService.show(
-          "success",
-          "Prueba de imagen eliminada con éxito"
-        );
-      })
-      .catch(() => {
-        this.toastService.show(
-          "danger",
-          "Error al eliminar la prueba de imagen"
-        );
-      });
+      ]
+    });
+
+    await alert.present();
   }
 
   /*editImageDate(value: any, formIndex: number) {
@@ -453,6 +516,8 @@ export class EditPage implements OnInit, OnDestroy {
   }
 
   addSymptom(symptom: string) {
+    console.log(symptom);
+
     if (symptom.length > 0) {
       this.symptoms.push(symptom.toLowerCase());
       this.currentSymptom = "";

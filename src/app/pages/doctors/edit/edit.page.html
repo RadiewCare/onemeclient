@@ -6,12 +6,12 @@
     <ion-title *ngIf="lang.isSpanish()">Doctores: Editar</ion-title>
     <ion-title *ngIf="!lang.isSpanish()">Doctors: Edit</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="delete()">
+      <ion-button (click)="delete()" color="danger">
         <ion-icon slot="start" name="trash"></ion-icon>
         <ion-label *ngIf="lang.isSpanish()">Eliminar</ion-label>
         <ion-label *ngIf="!lang.isSpanish()">Delete</ion-label>
       </ion-button>
-      <ion-button (click)="save()">
+      <ion-button (click)="save()" color="success">
         <ion-icon slot="start" name="save"></ion-icon>
         <ion-label *ngIf="lang.isSpanish()">Guardar</ion-label>
         <ion-label *ngIf="!lang.isSpanish()">Save</ion-label>
@@ -100,10 +100,5 @@
         </ion-col>
       </ion-row>
     </ng-template>
-    <ion-row>
-      <ion-col size="12" class="ion-padding-top">
-
-      </ion-col>
-    </ion-row>
   </ion-grid>
 </ion-content>

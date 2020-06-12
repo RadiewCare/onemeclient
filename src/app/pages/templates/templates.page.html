@@ -11,7 +11,7 @@
         <ion-label *ngIf="lang.isSpanish()">Nuevo</ion-label>
         <ion-label *ngIf="!lang.isSpanish()">New</ion-label>
       </ion-button>
-      <ion-button (click)="save()">
+      <ion-button (click)="save()" color="success" *ngIf="templateData">
         <ion-icon slot="start" name="save"></ion-icon>
         <ion-label *ngIf="lang.isSpanish()">Guardar</ion-label>
         <ion-label *ngIf="!lang.isSpanish()">Save</ion-label>

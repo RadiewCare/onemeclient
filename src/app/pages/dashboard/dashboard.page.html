@@ -13,85 +13,99 @@
     <ion-row>
       <ion-col size="6" size-xl="3">
         <ion-card>
-          <ion-card-header>
-            <ion-card-title *ngIf="lang.isSpanish()">Sujetos</ion-card-title>
-            <ion-card-title *ngIf="!lang.isSpanish()">Subjects</ion-card-title>
+          <ion-card-header color="primary">
+            <ion-card-title *ngIf="lang.isSpanish()">Sujetos propios</ion-card-title>
+            <ion-card-title *ngIf="!lang.isSpanish()">Own subjects</ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            {{numberOfSubjects}}
-            <ion-skeleton-text *ngIf="!numberOfSubjects" width="20%"></ion-skeleton-text>
-            <ion-skeleton-text *ngIf="!numberOfSubjects" width="20%"></ion-skeleton-text>
-            <ion-skeleton-text *ngIf="!numberOfSubjects" width="20%"></ion-skeleton-text>
+            {{numberOfOwnSubjects}}
+            <ion-skeleton-text *ngIf="!numberOfOwnSubjects" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfOwnSubjects" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfOwnSubjects" width="20%" animated></ion-skeleton-text>
           </ion-card-content>
         </ion-card>
       </ion-col>
-      <ion-col size="6" size-xl="3">
+      <ion-col size="6" size-xl="3" *ngIf="userData?.isAdmin">
         <ion-card>
-          <ion-card-header>
+          <ion-card-header color="primary">
+            <ion-card-title *ngIf="lang.isSpanish()">Sujetos totales</ion-card-title>
+            <ion-card-title *ngIf="!lang.isSpanish()">Total of subjects</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            {{numberOfSubjects}}
+            <ion-skeleton-text *ngIf="!numberOfSubjects" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfSubjects" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfSubjects" width="20%" animated></ion-skeleton-text>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6" size-xl="3" *ngIf="userData?.isAdmin">
+        <ion-card>
+          <ion-card-header color="primary">
             <ion-card-title *ngIf="lang.isSpanish()">Doctores</ion-card-title>
             <ion-card-title *ngIf="!lang.isSpanish()">Doctors</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             {{numberOfDoctors}}
-            <ion-skeleton-text *ngIf="!numberOfDoctors" width="20%"></ion-skeleton-text>
-            <ion-skeleton-text *ngIf="!numberOfDoctors" width="20%"></ion-skeleton-text>
-            <ion-skeleton-text *ngIf="!numberOfDoctors" width="20%"></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfDoctors" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfDoctors" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfDoctors" width="20%" animated></ion-skeleton-text>
           </ion-card-content>
         </ion-card>
       </ion-col>
       <ion-col size="6" size-xl="3">
         <ion-card>
-          <ion-card-header>
+          <ion-card-header color="primary">
             <ion-card-title *ngIf="lang.isSpanish()">Enfermedades y rasgos</ion-card-title>
             <ion-card-title *ngIf="!lang.isSpanish()">Diseases and traits</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             {{numberOfDiseases}}
-            <ion-skeleton-text *ngIf="!numberOfDiseases" width="20%"></ion-skeleton-text>
-            <ion-skeleton-text *ngIf="!numberOfDiseases" width="20%"></ion-skeleton-text>
-            <ion-skeleton-text *ngIf="!numberOfDiseases" width="20%"></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfDiseases" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfDiseases" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfDiseases" width="20%" animated></ion-skeleton-text>
           </ion-card-content>
         </ion-card>
       </ion-col>
       <ion-col size="6" size-xl="3">
         <ion-card>
-          <ion-card-header>
+          <ion-card-header color="primary">
             <ion-card-title *ngIf="lang.isSpanish()">Polimorfismos</ion-card-title>
             <ion-card-title *ngIf="!lang.isSpanish()">Polymorphisms</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             {{numberOfPolymorphisms}}
-            <ion-skeleton-text *ngIf="!numberOfPolymorphisms" width="20%"></ion-skeleton-text>
-            <ion-skeleton-text *ngIf="!numberOfPolymorphisms" width="20%"></ion-skeleton-text>
-            <ion-skeleton-text *ngIf="!numberOfPolymorphisms" width="20%"></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfPolymorphisms" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfPolymorphisms" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfPolymorphisms" width="20%" animated></ion-skeleton-text>
           </ion-card-content>
         </ion-card>
       </ion-col>
       <ion-col size="6" size-xl="3">
         <ion-card>
-          <ion-card-header>
+          <ion-card-header color="primary">
             <ion-card-title *ngIf="lang.isSpanish()">Mutaciones</ion-card-title>
             <ion-card-title *ngIf="!lang.isSpanish()">Mutations</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             {{numberOfMutations}}
-            <ion-skeleton-text *ngIf="!numberOfMutations" width="20%"></ion-skeleton-text>
-            <ion-skeleton-text *ngIf="!numberOfMutations" width="20%"></ion-skeleton-text>
-            <ion-skeleton-text *ngIf="!numberOfMutations" width="20%"></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfMutations" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfMutations" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfMutations" width="20%" animated></ion-skeleton-text>
           </ion-card-content>
         </ion-card>
       </ion-col>
       <ion-col size="6" size-xl="3">
         <ion-card>
-          <ion-card-header>
+          <ion-card-header color="primary">
             <ion-card-title *ngIf="lang.isSpanish()">Fármacos</ion-card-title>
             <ion-card-title *ngIf="!lang.isSpanish()">Drugs</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             {{numberOfPharma}}
-            <ion-skeleton-text *ngIf="!numberOfPharma" width="20%"></ion-skeleton-text>
-            <ion-skeleton-text *ngIf="!numberOfPharma" width="20%"></ion-skeleton-text>
-            <ion-skeleton-text *ngIf="!numberOfPharma" width="20%"></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfPharma" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfPharma" width="20%" animated></ion-skeleton-text>
+            <ion-skeleton-text *ngIf="!numberOfPharma" width="20%" animated></ion-skeleton-text>
           </ion-card-content>
         </ion-card>
       </ion-col>

@@ -69,23 +69,44 @@ export class EditPage implements OnInit {
     return await modal.present();
   }
 
-  deleteImageTestElement(name: string) {
-    this.imageTestsService
-      .updateImageTest(this.id, {
-        fields: this.imageTest.fields.filter((field) => field.name !== name)
-      })
-      .then(() => {
-        this.toastService.show(
-          "success",
-          "Elemento de prueba de imagen eliminado con éxito"
-        );
-      })
-      .catch(() => {
-        this.toastService.show(
-          "danger",
-          "Error al eliminar el elemento de prueba de imagen"
-        );
-      });
+  async deleteImageTestElement(name: string) {
+    const alert = await this.alertController.create({
+      header: "¿Estás seguro?",
+      message: "Pulse aceptar para eliminar el biomarcador",
+      buttons: [
+        {
+          text: "Cancelar",
+          role: "cancel",
+          cssClass: "secondary",
+          handler: (blah) => {}
+        },
+        {
+          text: "Aceptar",
+          handler: () => {
+            this.imageTestsService
+              .updateImageTest(this.id, {
+                fields: this.imageTest.fields.filter(
+                  (field) => field.name !== name
+                )
+              })
+              .then(() => {
+                this.toastService.show(
+                  "success",
+                  "Biomarcador eliminado con éxito"
+                );
+              })
+              .catch(() => {
+                this.toastService.show(
+                  "danger",
+                  "Error al eliminar el biomarcador"
+                );
+              });
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   save() {

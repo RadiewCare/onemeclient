@@ -1,19 +1,21 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { NgModule } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 
-import { IonicModule } from '@ionic/angular';
+import { IonicModule } from "@ionic/angular";
 
-import { EditPageRoutingModule } from './edit-routing.module';
+import { EditPageRoutingModule } from "./edit-routing.module";
 
-import { EditPage } from './edit.page';
+import { EditPage } from "./edit.page";
+import { IonicSelectableModule } from "ionic-selectable";
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    EditPageRoutingModule
+    EditPageRoutingModule,
+    IonicSelectableModule
   ],
   declarations: [EditPage]
 })

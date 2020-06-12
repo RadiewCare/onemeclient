@@ -75,6 +75,26 @@ export class ProfilePage implements OnInit, OnDestroy {
     });
   }
 
+  save() {
+    if (this.email !== undefined && this.email.length > 0) {
+      this.usersService
+        .updateUser(this.currentUser.id, {
+          language: this.language
+        })
+        .then(() => {
+          this.toastService.show("success", "Datos actualizados con éxito");
+        })
+        .catch((error) => {
+          this.toastService.show(
+            "danger",
+            "Error al guardar los datos " + error
+          );
+        });
+    } else {
+      this.toastService.show("danger", "Rellene todos los campos");
+    }
+  }
+
   async updateEmail() {
     const currentUser = await this.afAuth.currentUser;
 
