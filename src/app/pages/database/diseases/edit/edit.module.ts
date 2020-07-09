@@ -39,15 +39,6 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     IonicSelectableModule
   ],
-  declarations: [
-    EditPage,
-    AddGeneticElementPage,
-    AddAnalysisElementPage,
-    AddImageTestPage,
-    AddMutationPage,
-    AddEpigeneticElementPage,
-    AddPhenotypicElementPage,
-    ImportPage
-  ]
+  declarations: [EditPage]
 })
 export class EditPageModule {}

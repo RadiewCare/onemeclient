@@ -233,6 +233,11 @@ export class EditPage implements OnInit, OnDestroy {
     return await modal.present();
   }
 
+  async deleteEpigeneticFeatures(
+    diseaseId: string,
+    epigeneticFeatureId: string
+  ) {}
+
   async importGeneticElements() {
     const modal = await this.modalController.create({
       component: ImportPage,

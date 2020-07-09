@@ -98,8 +98,8 @@
 
           <ion-select *ngIf="currentField.type==='interval'" placeholder="Seleccione valor"
             [(ngModel)]="currentInterval" okText="Aceptar" cancelText="Cancelar">
-            <ion-select-option [value]="outside">Fuera del intervalo</ion-select-option>
-            <ion-select-option [value]="inside">Dentro del intervalo</ion-select-option>
+            <ion-select-option value="outside">Fuera del intervalo</ion-select-option>
+            <ion-select-option value="inside">Dentro del intervalo</ion-select-option>
           </ion-select>
 
         </ion-item>

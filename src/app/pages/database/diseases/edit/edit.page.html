@@ -196,15 +196,12 @@
               <div class="ion-margin-bottom">Elemento de prueba / hallazgo: <i><b>"{{imageTest.test}}"</b></i>
               </div>
               <div>Biomarcadores:</div>
-              <ng-container *ngIf="imageTest.type==='multiple'; else elseTemplate">
+              <ng-container *ngIf="imageTest.type==='multiple'">
                 <ul *ngIf="imageTest.value.length>0">
                   <li *ngFor="let value of imageTest.value">{{value}}</li>
                 </ul>
                 <div *ngIf="imageTest.value===0">Ninguno</div>
               </ng-container>
-              <ng-template #elseTemplate>
-                <div>{{value}}</div>
-              </ng-template>
             </ion-text>
           </ion-label>
 
