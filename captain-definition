@@ -1,4 +1,8 @@
- {
+{
   "schemaVersion": 2,
-  "templateId": "node/8.7.0"
- }
+  "dockerfileLines": [
+    "FROM socialengine/nginx-spa:latest", 
+    "COPY ./www /app", 
+    "RUN chmod -R 777 /app"
+  ]
+}
