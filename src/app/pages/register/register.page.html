@@ -1,9 +1,57 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>register</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content>
-
+  <ion-grid class="ion-no-padding ion-no-margin">
+    <ion-row class="ion-no-padding ion-no-margin">
+      <ion-col size="12" size-md="6" class="ion-hide-sm-down"
+        style="background-image: url(/assets/images/microsound-fondo.jpg); background-size: cover; background-position: center; height: 100vh">
+      </ion-col>
+      <ion-col size="12" size-md="6" style="height: 100vh">
+        <form action="" style="max-width: 400px; margin: 0 auto; margin-top: 20vh">
+          <ion-img src="assets/images/logo-microsound.svg" class="ion-margin-vertical"></ion-img>
+          <ion-text class="ion-text-center" color="primary">
+            <h1>{{language==='esp'?'Registro de doctores':'Doctors registration'}}</h1>
+          </ion-text>
+          <ion-item class="ion-margin-top" lines="full">
+            <ion-label position="floating" *ngIf="language==='esp'">Nombre completo</ion-label>
+            <ion-label position="floating" *ngIf="language==='eng'">Full name</ion-label>
+            <ion-input type="text" [(ngModel)]="name" [ngModelOptions]="{standalone: true}"
+              [placeholder]="language==='esp'?'Nombre completo':'Full name'" (keyup.enter)="register()">
+            </ion-input>
+          </ion-item>
+          <ion-item lines="full">
+            <ion-label position="floating" *ngIf="language==='esp'">Correo electrónico</ion-label>
+            <ion-label position="floating" *ngIf="language==='eng'">E-mail</ion-label>
+            <ion-input type="text" [(ngModel)]="email" [ngModelOptions]="{standalone: true}"
+              [placeholder]="language==='esp'?'Correo electrónico':'E-mail'" (keyup.enter)="register()">
+            </ion-input>
+          </ion-item>
+          <ion-item lines="full">
+            <ion-label position="floating" *ngIf="language==='esp'">Contraseña</ion-label>
+            <ion-label position="floating" *ngIf="language==='eng'">Password</ion-label>
+            <ion-input type="password" [(ngModel)]="password" [ngModelOptions]="{standalone: true}"
+              [placeholder]="language==='esp'?'Contraseña':'Password'" (keyup.enter)="register()">
+            </ion-input>
+          </ion-item>
+          <ion-item lines="full">
+            <ion-label position="floating" *ngIf="language==='esp'">Repita contraseña</ion-label>
+            <ion-label position="floating" *ngIf="language==='eng'">Repeat password</ion-label>
+            <ion-input type="password" [(ngModel)]="password2" [ngModelOptions]="{standalone: true}"
+              [placeholder]="language==='esp'?'Repita contraseña':'Repeat password'"
+              (keyup.enter)="register()">
+            </ion-input>
+          </ion-item>
+          <ion-button (click)="register()" expand="full" class="ion-margin-top">
+            <ion-icon slot="start" name="log-in"></ion-icon>
+            <ion-label *ngIf="language==='esp'">Registrarse</ion-label>
+            <ion-label *ngIf="language==='eng'">Register</ion-label>
+          </ion-button>
+          <div style="text-align: center" class="ion-margin-top">
+            <img src="/assets/images/spain.svg" alt="Spanish"
+              style="max-width: 32px; margin-right: 1rem; cursor: pointer;" (click)="changeLanguage('esp')">
+            <img src="/assets/images/united-kingdom.svg" alt="English"
+              style="max-width: 32px; cursor: pointer;" (click)="changeLanguage('eng')">
+          </div>
+        </form>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

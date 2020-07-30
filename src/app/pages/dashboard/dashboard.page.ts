@@ -45,6 +45,8 @@ export class DashboardPage implements OnInit {
   ionViewDidEnter() {
     this.userSub = this.authService.user$.subscribe((user) => {
       this.userData = user;
+      console.log(this.userData);
+      
       this.subjectsService
         .getSubjectsByDoctor(this.userData.id)
         .then((data) => {

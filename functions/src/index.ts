@@ -153,6 +153,14 @@ app.post("/createSubjectFromPacs", (request, response) => {
 });
 
 /**
+ * QUIBIM API
+ */
+
+app.post("createSubjectFromQuibim", (request, response) => {
+  response.send("from quibim");
+});
+
+/**
  * EXPORTACIÓN DE LA API
  */
 export const api = functions.https.onRequest(app);

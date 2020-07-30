@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from "@angular/core";
 import { Subscription } from "rxjs";
 import { AuthService } from "./services/auth.service";
 import { LanguageService } from "./services/language.service";
-import { PopoverController, AlertController } from "@ionic/angular";
+import { PopoverController, AlertController, MenuController } from "@ionic/angular";
 import { NotificationsPage } from "./components/notifications/notifications.page";
 
 @Component({
@@ -144,7 +144,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     public lang: LanguageService,
     private popoverController: PopoverController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private menuController: MenuController
   ) {}
 
   ngOnInit() {
