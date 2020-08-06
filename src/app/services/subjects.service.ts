@@ -71,7 +71,7 @@ export class SubjectsService {
   getSubjectByDoctor(doctorId: string): Observable<any> {
     return this.db
       .collection(`subjects`, (ref) =>
-        ref.where("doctors", "array-contains", doctorId)
+        ref.where("doctors", "array-contains", doctorId).orderBy("identifier", "asc")
       )
       .valueChanges();
   }
@@ -80,14 +80,33 @@ export class SubjectsService {
    * Crea un sujeto
    * @param data Datos del sujeto
    */
-  createSubject(data: any): Promise<any> {
-    data.createdAt = moment().format();
-    return this.db
-      .collection("subjects")
-      .add(data)
-      .then((doc) => {
-        this.db.doc(`subjects/${doc.id}`).update({ id: doc.id });
-      });
+   async createSubject(data: any): Promise<any> {
+    return this.getSubjectsByDoctor(data.mainDoctor).then(async subjects => {
+      if (subjects.length > 0) {
+        let found = false;
+
+        for await (const subject of subjects) {
+          if (subject.data().identifier.trim().toLowerCase() === data.identifier.trim().toLowerCase()) {
+            found = true;
+          }
+        }
+
+        if (found) {
+          return new Promise((resolve,reject) => {
+            reject("El identificador ya está en uso")
+          })
+        } else {
+          data.createdAt = moment().format();
+          return this.db
+            .collection("subjects")
+            .add(data)
+            .then((doc) => {
+              this.db.doc(`subjects/${doc.id}`).update({ id: doc.id });
+            });
+        }
+      }
+    });
+    
   }
 
   /**

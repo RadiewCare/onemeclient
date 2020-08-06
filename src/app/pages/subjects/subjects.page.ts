@@ -4,11 +4,12 @@ import { LanguageService } from "src/app/services/language.service";
 import { AuthService } from "src/app/services/auth.service";
 import { DoctorsService } from "src/app/services/doctors.service";
 import { SubjectsService } from "src/app/services/subjects.service";
+import * as moment from "moment";
 
 @Component({
   selector: "app-subjects",
   templateUrl: "./subjects.page.html",
-  styleUrls: ["./subjects.page.scss"]
+  styleUrls: ["./subjects.page.scss"],
 })
 export class SubjectsPage implements OnInit, OnDestroy {
   user$: any;
@@ -29,6 +30,10 @@ export class SubjectsPage implements OnInit, OnDestroy {
 
   sharedSubjectsData = [];
 
+  centrosReferentes = [];
+
+  order: string = "ninguno";
+
   constructor(
     private subjectsService: SubjectsService,
     private doctorsService: DoctorsService,
@@ -36,20 +41,21 @@ export class SubjectsPage implements OnInit, OnDestroy {
     private auth: AuthService
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit(): void {}
+
+  ionViewDidEnter() {
     this.userSub = this.auth.user$.subscribe((data) => {
       this.userData = data;
-      this.getSubjects();
+      this.getSubjects().then(() => {
+        this.sortAlphanumeric();
+        this.getCentrosReferentes();
+      });
       this.getDoctorData();
     });
   }
 
-  ionViewDidEnter() {}
-
   getDoctorData() {
     this.doctorsService.getDoctorData(this.userData.id).then((data) => {
-      console.log(data.data());
-
       this.sharedSubjectsPhenotypic =
         data.data().sharedSubjectsPhenotypic || [];
 
@@ -64,24 +70,68 @@ export class SubjectsPage implements OnInit, OnDestroy {
   }
 
   getSubjects(): Promise<any> {
-    console.log(this.userData.id);
-
+    this.querySubjects = null;
     this.subjects$ = this.subjectsService.getSubjectByDoctor(this.userData.id);
     return new Promise((resolve) => {
       this.subjectsSub = this.subjects$.subscribe((subjects) => {
-        console.log(subjects);
-
-        this.subjects = subjects.sort((a, b) => {
-          if (a.identifier < b.identifier) {
-            return -1;
-          }
-          if (a.identifier > b.identifier) {
-            return 1;
-          }
-          return 0;
-        });
+        this.subjects = subjects;
         resolve();
       });
+    });
+  }
+
+  sortAlphanumeric() {
+    var reA = /[^a-zA-Z]/g;
+    var reN = /[^0-9]/g;
+
+    if (this.querySubjects) {
+      this.querySubjects = this.subjects.sort((a, b) => {
+        var aA = a.identifier.replace(reA, "");
+        var bA = b.identifier.replace(reA, "");
+        if (aA === bA) {
+          var aN = parseInt(a.identifier.replace(reN, ""), 10);
+          var bN = parseInt(b.identifier.replace(reN, ""), 10);
+          return aN === bN ? 0 : aN > bN ? 1 : -1;
+        } else {
+          return aA > bA ? 1 : -1;
+        }
+      });
+    } else {
+      this.subjects = this.subjects.sort((a, b) => {
+        var aA = a.identifier.replace(reA, "");
+        var bA = b.identifier.replace(reA, "");
+        if (aA === bA) {
+          var aN = parseInt(a.identifier.replace(reN, ""), 10);
+          var bN = parseInt(b.identifier.replace(reN, ""), 10);
+          return aN === bN ? 0 : aN > bN ? 1 : -1;
+        } else {
+          return aA > bA ? 1 : -1;
+        }
+      });
+    }
+  }
+
+  sortDateAsc() {
+    this.subjects = this.subjects.sort((a, b) => {
+      return <any>new Date(a.createdAt) - <any>new Date(b.createdAt);
+    });
+  }
+
+  sortDateDesc() {
+    this.subjects = this.subjects.sort((a, b) => {
+      return <any>new Date(b.createdAt) - <any>new Date(a.createdAt);
+    });
+  }
+
+  getCentrosReferentes() {
+    this.subjects.forEach((element) => {
+      if (
+        element.history &&
+        element.history.centroReferente &&
+        !this.centrosReferentes.includes(element.history.centroReferente)
+      ) {
+        this.centrosReferentes.push(element.history.centroReferente);
+      }
     });
   }
 
@@ -96,8 +146,6 @@ export class SubjectsPage implements OnInit, OnDestroy {
 
     for await (const sub of this.sharedSubjects) {
       await this.subjectsService.getSubjectData(sub).then((userData) => {
-        console.log(userData.data());
-
         this.sharedSubjectsData.push(userData.data());
       });
     }
@@ -110,6 +158,43 @@ export class SubjectsPage implements OnInit, OnDestroy {
       );
     } else {
       this.querySubjects = null;
+    }
+  }
+
+  onDateChange(order: string): void {
+    this.order = order;
+
+    if (order === "asc") {
+      this.sortDateAsc();
+    } else if (order === "desc") {
+      this.sortDateDesc();
+    } else {
+      this.sortAlphanumeric();
+    }
+  }
+
+  onCentroChange(centro: string): void {
+    console.log(centro);
+    if (centro !== "ninguno") {
+      console.log(this.subjects);
+
+      this.subjects = this.subjects.filter((subject) => {
+        return (
+          subject.history &&
+          subject.history &&
+          subject.history.centroReferente === centro
+        );
+      });
+    } else {
+      this.getSubjects().then(() => {
+        if (this.order === "ninguno") {
+          this.sortAlphanumeric();
+        } else if (this.order === "asc") {
+          this.sortDateAsc();
+        } else {
+          this.sortDateDesc();
+        }
+      });
     }
   }
 

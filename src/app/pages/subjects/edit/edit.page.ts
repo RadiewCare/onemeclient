@@ -4,7 +4,7 @@ import {
   AlertController,
   IonSegment,
   LoadingController,
-  ModalController
+  ModalController,
 } from "@ionic/angular";
 import { ToastService } from "src/app/services/toast.service";
 import { Observable, Subscription } from "rxjs";
@@ -21,11 +21,12 @@ import { AnalyticStudiesService } from "src/app/services/analytic-studies.servic
 import { ImageStudiesService } from "src/app/services/image-studies.service";
 import { SubjectsService } from "src/app/services/subjects.service";
 import { DoctorsService } from "src/app/services/doctors.service";
+import { EditQuibimPage } from "./edit-quibim/edit-quibim.page";
 
 @Component({
   selector: "app-edit",
   templateUrl: "./edit.page.html",
-  styleUrls: ["./edit.page.scss"]
+  styleUrls: ["./edit.page.scss"],
 })
 export class EditPage implements OnInit, OnDestroy {
   @ViewChild(IonSegment, { static: true }) segment: IonSegment;
@@ -58,6 +59,13 @@ export class EditPage implements OnInit, OnDestroy {
   currentUserId: string;
 
   // DATOS FENOTÍPICOS
+
+  /* Actualpacs */
+  actualpacsId: string;
+  accessionNumber: number;
+  inicialesDelSujeto: string;
+  centroReferente: string;
+
   /* Datos biométricos */
   genre: string;
   birthDate: string;
@@ -115,23 +123,23 @@ export class EditPage implements OnInit, OnDestroy {
   columnDefs = [
     {
       headerName: "Genetic Variant",
-      field: "geneticVariant"
+      field: "geneticVariant",
     },
     {
       headerName: "Frequency",
-      field: "frequency"
+      field: "frequency",
     },
     {
       headerName: "Magnitude",
-      field: "magnitude"
-    }
+      field: "magnitude",
+    },
   ];
 
   defaultColDef = {
     resizable: true,
     sortable: true,
     filter: true,
-    minWidth: 100
+    minWidth: 100,
   };
 
   // ANALISIS CLÍNICOS
@@ -204,6 +212,10 @@ export class EditPage implements OnInit, OnDestroy {
       this.hasClinicAnalysis = this.subject.hasClinicAnalysis;
       if (data.history) {
         const history = data.history;
+        this.actualpacsId = history.actualpacsId;
+        this.accessionNumber = history.accesionNumber;
+        this.inicialesDelSujeto = history.inicialesDelSujeto;
+        this.centroReferente = history.centroReferente;
         this.genre = history.genre;
         this.birthDate = history.birthDate;
         this.height = history.height;
@@ -335,7 +347,7 @@ export class EditPage implements OnInit, OnDestroy {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {}
+          handler: (blah) => {},
         },
         {
           text: "Aceptar",
@@ -363,9 +375,9 @@ export class EditPage implements OnInit, OnDestroy {
                   "Error al eliminar el análisis clínico"
                 );
               });
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();
@@ -380,7 +392,7 @@ export class EditPage implements OnInit, OnDestroy {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {}
+          handler: (blah) => {},
         },
         {
           text: "Aceptar",
@@ -400,9 +412,9 @@ export class EditPage implements OnInit, OnDestroy {
                   "Error al eliminar el análisis clínico"
                 );
               });
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();
@@ -424,7 +436,7 @@ export class EditPage implements OnInit, OnDestroy {
         name,
         value,
         metricUnit,
-        category
+        category,
       });
     } else {
       this.analyticValues[index] = {
@@ -432,7 +444,7 @@ export class EditPage implements OnInit, OnDestroy {
         name,
         value,
         metricUnit,
-        category
+        category,
       };
     }
   }
@@ -455,7 +467,7 @@ export class EditPage implements OnInit, OnDestroy {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {}
+          handler: (blah) => {},
         },
         {
           text: "Aceptar",
@@ -463,12 +475,12 @@ export class EditPage implements OnInit, OnDestroy {
             this.imageTests.splice(index, 1);
             this.subjectsService
               .updateSubject(this.id, {
-                imageTests: this.imageTests
+                imageTests: this.imageTests,
               })
               .then(() => {
                 if (this.imageTests.length === 0) {
                   this.subjectsService.updateSubject(this.id, {
-                    hasImageAnalysis: false
+                    hasImageAnalysis: false,
                   });
                 }
                 this.toastService.show(
@@ -482,9 +494,9 @@ export class EditPage implements OnInit, OnDestroy {
                   "Error al eliminar la prueba de imagen"
                 );
               });
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();
@@ -543,6 +555,10 @@ export class EditPage implements OnInit, OnDestroy {
 
   async savePhenotypic(): Promise<any> {
     const data = {
+      actualpacsId: this.actualpacsId || null,
+      accessionNumber: this.accessionNumber || null,
+      inicialesDelSujeto: this.inicialesDelSujeto || null,
+      centroReferente: this.centroReferente || null,
       genre: this.genre || null,
       birthDate: this.birthDate || null,
       height: this.height || null,
@@ -578,7 +594,7 @@ export class EditPage implements OnInit, OnDestroy {
       otherBackground: this.otherBackground || null,
       currentTreatment: this.currentTreatment || null,
       symptoms: this.symptoms || null,
-      signs: this.signs || null
+      signs: this.signs || null,
     };
     if (this.identifier.length > 0) {
       await this.subjectsService
@@ -605,8 +621,8 @@ export class EditPage implements OnInit, OnDestroy {
       component: AddImagePage,
       componentProps: {
         id: this.id,
-        field
-      }
+        field,
+      },
     });
     return await modal.present();
   }
@@ -616,9 +632,21 @@ export class EditPage implements OnInit, OnDestroy {
       component: GalleryPage,
       componentProps: {
         id: this.id,
-        field
+        field,
       },
-      cssClass: "my-custom-modal-css"
+      cssClass: "my-custom-modal-css",
+    });
+    return await modal.present();
+  }
+
+  async openQuibim(index: number) {
+    const modal = await this.modalController.create({
+      component: EditQuibimPage,
+      componentProps: {
+        id: this.id,
+        index,
+      },
+      cssClass: "my-custom-modal-css",
     });
     return await modal.present();
   }
@@ -627,10 +655,10 @@ export class EditPage implements OnInit, OnDestroy {
     const modal = await this.modalController.create({
       component: AddAnalyticStudyPage,
       componentProps: {
-        id: this.id
+        id: this.id,
       },
       cssClass: "my-custom-modal-css",
-      backdropDismiss: false
+      backdropDismiss: false,
     });
     return await modal.present();
   }
@@ -640,10 +668,10 @@ export class EditPage implements OnInit, OnDestroy {
       component: EditAnalyticStudyPage,
       componentProps: {
         id: this.id,
-        testId
+        testId,
       },
       cssClass: "my-custom-modal-css",
-      backdropDismiss: false
+      backdropDismiss: false,
     });
     return await modal.present();
   }
@@ -652,10 +680,10 @@ export class EditPage implements OnInit, OnDestroy {
     const modal = await this.modalController.create({
       component: AddImageStudyPage,
       componentProps: {
-        id: this.id
+        id: this.id,
       },
       cssClass: "my-custom-modal-css",
-      backdropDismiss: false
+      backdropDismiss: false,
     });
     return await modal.present();
   }
@@ -665,10 +693,10 @@ export class EditPage implements OnInit, OnDestroy {
       component: EditImageStudyPage,
       componentProps: {
         id: this.id,
-        index
+        index,
       },
       cssClass: "my-custom-modal-css",
-      backdropDismiss: false
+      backdropDismiss: false,
     });
     return await modal.present();
   }
@@ -704,7 +732,7 @@ export class EditPage implements OnInit, OnDestroy {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {}
+          handler: (blah) => {},
         },
         {
           text: "Aceptar",
@@ -724,9 +752,9 @@ export class EditPage implements OnInit, OnDestroy {
               .catch(() => {
                 this.toastService.show("danger", "Error al eliminar el sujeto");
               });
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
     await alert.present();
   }

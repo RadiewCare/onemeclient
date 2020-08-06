@@ -3,7 +3,6 @@ import { Router } from "@angular/router";
 import { ReportsService } from "src/app/services/reports.service";
 import { ToastService } from "src/app/services/toast.service";
 import { Subscription, Observable } from "rxjs";
-import { UsersService } from "src/app/services/users.service";
 import { AngularFirestore } from "@angular/fire/firestore";
 import { AuthService } from "src/app/services/auth.service";
 import * as moment from "moment";
@@ -21,6 +20,8 @@ export class CreatePage implements OnInit, OnDestroy {
 
   subject: any;
   subjects$: Observable<any>;
+  subjects = [];
+  subjectsSub: Subscription;
 
   mainDoctor: string;
   doctors = [];
@@ -43,7 +44,22 @@ export class CreatePage implements OnInit, OnDestroy {
   ionViewDidEnter() {
     new Promise((resolve) => {
       this.userSub = this.authService.user$.subscribe((user) => {
-        this.subjects$ = this.subjectsService.getSubjectByDoctor(user.id);
+        this.subjectsSub = this.subjectsService.getSubjectByDoctor(user.id).subscribe(data => {
+          var reA = /[^a-zA-Z]/g;
+          var reN = /[^0-9]/g;
+          this.subjects = data.sort((a, b) => {
+            var aA = a.identifier.replace(reA, "");
+            var bA = b.identifier.replace(reA, "");
+            if (aA === bA) {
+              var aN = parseInt(a.identifier.replace(reN, ""), 10);
+              var bN = parseInt(b.identifier.replace(reN, ""), 10);
+              return aN === bN ? 0 : aN > bN ? 1 : -1;
+            } else {
+              return aA > bA ? 1 : -1;
+            }
+          });;
+        });
+
         this.currentUser = user;
         this.mainDoctor = this.currentUser.id;
         this.doctors.push(this.currentUser.id);

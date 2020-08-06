@@ -31,6 +31,10 @@ const routes: Routes = [
   {
     path: 'edit-image-study',
     loadChildren: () => import('./edit-image-study/edit-image-study.module').then( m => m.EditImageStudyPageModule)
+  },
+  {
+    path: 'edit-quibim',
+    loadChildren: () => import('./edit-quibim/edit-quibim.module').then( m => m.EditQuibimPageModule)
   }
 ];
 
