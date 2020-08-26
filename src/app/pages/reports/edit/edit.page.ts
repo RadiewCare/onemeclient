@@ -20,7 +20,7 @@ import { SubjectsService } from "src/app/services/subjects.service";
 @Component({
   selector: "app-edit",
   templateUrl: "./edit.page.html",
-  styleUrls: ["./edit.page.scss"]
+  styleUrls: ["./edit.page.scss"],
 })
 export class EditPage implements OnInit, OnDestroy {
   id: string;
@@ -105,8 +105,8 @@ export class EditPage implements OnInit, OnDestroy {
   ionViewDidEnter() {
     this.getUser().then(() => {
       this.getTemplates().then(() => {
-        this.getReport().then(() => {
-          this.getSubject();
+        this.getReport().then(async () => {
+          await this.getSubject();
           this.getTables().then(() => {
             this.buildTables()
               .then(() => this.loading.dismiss())
@@ -130,7 +130,7 @@ export class EditPage implements OnInit, OnDestroy {
     this.loading = await this.loadingController.create({
       message: this.lang.isSpanish()
         ? "Recogiendo datos del informe, por favor espere"
-        : "Retrieving report data, please wait"
+        : "Retrieving report data, please wait",
     });
     this.loading.present();
     return new Promise((resolve) => {
@@ -252,6 +252,7 @@ export class EditPage implements OnInit, OnDestroy {
         const relevantClinicStudies = [];
 
         console.log("Analisis clinicos del sujeto", this.clinicStudies);
+
         if (
           this.subject.imageTests !== null &&
           this.subject.imageTests !== undefined &&
@@ -438,8 +439,8 @@ export class EditPage implements OnInit, OnDestroy {
                 name: diseaseData.data().name,
                 disposition: "high",
                 oddRatio: oddRatio,
-                productRatio: productRatio
-              })
+                productRatio: productRatio,
+              }),
             })
             .then(() => {
               // Recopilamos datos  de la enfermedad
@@ -459,7 +460,7 @@ export class EditPage implements OnInit, OnDestroy {
                 highRiskGenes: highRiskGenes,
                 dispositionColor: ratio,
                 relevantImageTests: relevantImageTests,
-                relevantClinicStudies: relevantClinicStudies
+                relevantClinicStudies: relevantClinicStudies,
               });
             })
             .catch((error) => console.error(error));
@@ -473,8 +474,8 @@ export class EditPage implements OnInit, OnDestroy {
                 name: diseaseData.data().name,
                 disposition: "low",
                 oddRatio: oddRatio,
-                productRatio: productRatio
-              })
+                productRatio: productRatio,
+              }),
             })
             .then(() => {
               // Recopilamos datos  de la enfermedad
@@ -494,7 +495,7 @@ export class EditPage implements OnInit, OnDestroy {
                 highRiskGenes: highRiskGenes,
                 dispositionColor: ratio,
                 relevantImageTests: relevantImageTests,
-                relevantClinicStudies: relevantClinicStudies
+                relevantClinicStudies: relevantClinicStudies,
               });
             })
             .catch((error) => console.error(error));
@@ -508,8 +509,8 @@ export class EditPage implements OnInit, OnDestroy {
                 name: diseaseData.data().name,
                 disposition: "medium",
                 oddRatio: oddRatio,
-                productRatio: productRatio
-              })
+                productRatio: productRatio,
+              }),
             })
             .then(() => {
               // Recopilamos datos  de la enfermedad
@@ -529,7 +530,7 @@ export class EditPage implements OnInit, OnDestroy {
                 highRiskGenes: highRiskGenes,
                 dispositionColor: ratio,
                 relevantImageTests: relevantImageTests,
-                relevantClinicStudies: relevantClinicStudies
+                relevantClinicStudies: relevantClinicStudies,
               });
             })
             .catch((error) => console.error(error));
@@ -545,7 +546,7 @@ export class EditPage implements OnInit, OnDestroy {
       this.realTables.push({
         name: table.name,
         shortcode: table.shortcode,
-        rows: this.tablesBuilding
+        rows: this.tablesBuilding,
       });
 
       this.tablesBuilding = [];
@@ -615,7 +616,7 @@ export class EditPage implements OnInit, OnDestroy {
             if (diseaseRatio.id === disease.id) {
               querySubjects.push({
                 oddRatio: subject.geneticDiseasesRatios[index].oddRatio,
-                productRatio: subject.geneticDiseasesRatios[index].productRatio
+                productRatio: subject.geneticDiseasesRatios[index].productRatio,
               });
               totalNumberofSubjectsWithDisease++;
             }
@@ -637,7 +638,7 @@ export class EditPage implements OnInit, OnDestroy {
 
       this.diseasesService.updateDisease(disease.id, {
         averageOddRatio: resultRatio,
-        averageProductRatio: productRatio
+        averageProductRatio: productRatio,
       });
 
       return resultRatio;
@@ -646,7 +647,7 @@ export class EditPage implements OnInit, OnDestroy {
       // Retornamos el odd ratio original (el único que hay ahora mismo)
       this.diseasesService.updateDisease(disease.id, {
         averageOddRatio: subjectOddRatio,
-        averageProductRatio: subjectProductRatio
+        averageProductRatio: subjectProductRatio,
       });
 
       return subjectOddRatio;
@@ -683,7 +684,7 @@ export class EditPage implements OnInit, OnDestroy {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: () => {}
+          handler: () => {},
         },
         {
           text: "Aceptar",
@@ -704,9 +705,9 @@ export class EditPage implements OnInit, OnDestroy {
                   "Ha ocurrido un error al eliminar el informe"
                 );
               });
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();
@@ -728,7 +729,7 @@ export class EditPage implements OnInit, OnDestroy {
   save() {
     this.reportsService
       .updateReport(this.currentUser.id, this.id, {
-        template: this.templateId
+        template: this.templateId,
       })
       .then(() => {
         this.toastService.show(

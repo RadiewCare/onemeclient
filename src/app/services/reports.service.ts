@@ -1,12 +1,12 @@
 import { Injectable } from "@angular/core";
 import { AngularFirestore } from "@angular/fire/firestore";
 import { Observable } from "rxjs";
-import * as jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { ToastService } from "./toast.service";
 
 @Injectable({
-  providedIn: "root"
+  providedIn: "root",
 })
 export class ReportsService {
   doc: any;
@@ -62,7 +62,7 @@ export class ReportsService {
       .add(body)
       .then((doc) => {
         this.db.doc(`doctors/${userId}/reports/${doc.id}`).update({
-          id: doc.id
+          id: doc.id,
         });
       });
   }
@@ -120,13 +120,13 @@ export class ReportsService {
           geneticVariant: split[0],
           alleles: {
             father: alelos[0],
-            mother: alelos[1]
+            mother: alelos[1],
           },
           frequency: varianteGenetica.Freq === null ? 0 : varianteGenetica.Freq,
           magnitude: varianteGenetica.Magnitude,
           chromosome: varianteGenetica.Chrom,
           position: varianteGenetica.Pos,
-          genes: arrayGenes
+          genes: arrayGenes,
         });
       } else {
         transformedData.push({
@@ -136,7 +136,7 @@ export class ReportsService {
           magnitude: varianteGenetica.Magnitude,
           chromosome: varianteGenetica.Chrom,
           position: varianteGenetica.Pos,
-          genes: arrayGenes
+          genes: arrayGenes,
         });
       }
     });
@@ -161,7 +161,7 @@ export class ReportsService {
     this.doc = new jsPDF({
       orientation: "portrait",
       unit: "px",
-      format: "a4"
+      format: "a4",
     });
 
     this.pageHeight =
@@ -326,7 +326,7 @@ export class ReportsService {
                 if (element.value) {
                   body.push([
                     element.name,
-                    element.value + " " + element.metricUnit + status
+                    element.value + " " + element.metricUnit + status,
                   ]);
                 }
               }
@@ -336,12 +336,12 @@ export class ReportsService {
                 columnStyles: {
                   0: {
                     cellWidth: 250,
-                    fontSize: 9
+                    fontSize: 9,
                   },
                   1: {
                     cellWidth: 100,
-                    fontSize: 9
-                  }
+                    fontSize: 9,
+                  },
                 },
                 didParseCell: (data) => {
                   console.log(data);
@@ -364,7 +364,7 @@ export class ReportsService {
                   }
                 },
                 head: [["Elemento", "Valor"]],
-                body: body
+                body: body,
                 // ...
               });
               body.forEach((row) => {
