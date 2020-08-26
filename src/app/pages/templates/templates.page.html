@@ -11,7 +11,7 @@
         <ion-label *ngIf="lang.isSpanish()">Nuevo</ion-label>
         <ion-label *ngIf="!lang.isSpanish()">New</ion-label>
       </ion-button>
-      <ion-button (click)="save()" color="success" *ngIf="templateData">
+      <ion-button (click)="save()" color="success">
         <ion-icon slot="start" name="save"></ion-icon>
         <ion-label *ngIf="lang.isSpanish()">Guardar</ion-label>
         <ion-label *ngIf="!lang.isSpanish()">Save</ion-label>
@@ -22,32 +22,59 @@
 
 <ion-content>
   <ion-grid>
-
     <ion-row>
-      <ion-col size="12" size-lg="3" class="ion-padding-vertical ion-padding-start">
+      <ion-col
+        size="12"
+        size-lg="3"
+        class="ion-padding-vertical ion-padding-start"
+      >
         <ion-list lines="full" class="ion-no-padding">
-          <ion-item *ngFor="let template of templates | async" style="cursor: pointer"
-            (click)="changeTemplate(template.id)">
+          <ion-item
+            *ngFor="let template of templates | async"
+            style="cursor: pointer;"
+            (click)="changeTemplate(template.id)"
+          >
             <ion-label>{{template.name}}</ion-label>
-            <ion-badge *ngIf="template.id === currentId && lang.isSpanish()" color="primary">Seleccionado
+            <ion-badge
+              *ngIf="template.id === currentId && lang.isSpanish()"
+              color="primary"
+              >Seleccionado
             </ion-badge>
-            <ion-badge *ngIf="template.id === currentId && !lang.isSpanish()" color="primary">Selected
+            <ion-badge
+              *ngIf="template.id === currentId && !lang.isSpanish()"
+              color="primary"
+              >Selected
             </ion-badge>
           </ion-item>
         </ion-list>
-        <div *ngIf="(templates|async)?.length === 0 && lang.isSpanish()">No hay plantillas creadas</div>
-        <div *ngIf="(templates|async)?.length === 0 && !lang.isSpanish()">No templates yet</div>
+        <div *ngIf="(templates|async)?.length === 0 && lang.isSpanish()">
+          No hay plantillas creadas
+        </div>
+        <div *ngIf="(templates|async)?.length === 0 && !lang.isSpanish()">
+          No templates yet
+        </div>
       </ion-col>
 
       <ion-col size="12" size-lg="9" class="ion-padding">
         <ion-item class="ion-margin-bottom">
-          <ion-label position="floating" *ngIf="lang.isSpanish()">Nombre de la plantilla</ion-label>
-          <ion-label position="floating" *ngIf="!lang.isSpanish()">Template's name</ion-label>
-          <ion-input type="text" [(ngModel)]="templateName"
-            [placeholder]="lang.isSpanish()?'Introduzca nombre':'Enter name'">
+          <ion-label position="floating" *ngIf="lang.isSpanish()"
+            >Nombre de la plantilla</ion-label
+          >
+          <ion-label position="floating" *ngIf="!lang.isSpanish()"
+            >Template's name</ion-label
+          >
+          <ion-input
+            type="text"
+            [(ngModel)]="templateName"
+            [placeholder]="lang.isSpanish()?'Introduzca nombre':'Enter name'"
+          >
           </ion-input>
           <ion-buttons slot="end">
-            <ion-button *ngIf="templateName !== undefined" (click)="delete(currentId)" color="danger">
+            <ion-button
+              *ngIf="templateName !== undefined"
+              (click)="delete(currentId)"
+              color="danger"
+            >
               <ion-icon slot="icon-only" name="trash"></ion-icon>
             </ion-button>
           </ion-buttons>
@@ -57,6 +84,5 @@
         </ion-card>
       </ion-col>
     </ion-row>
-
   </ion-grid>
 </ion-content>

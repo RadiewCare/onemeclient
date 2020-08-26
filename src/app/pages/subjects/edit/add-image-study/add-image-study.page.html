@@ -11,10 +11,16 @@
         <ion-item lines="full">
           <ion-label *ngIf="lang.isSpanish()">Prueba de imagen</ion-label>
           <ion-label *ngIf="!lang.isSpanish()">Image test</ion-label>
-          <ion-select [placeholder]="lang.isSpanish()?'Seleccione prueba de imagen':'Select image test'"
-            [(ngModel)]="currentImageTest" cancelText="Cancelar"
-            (ionChange)="getCurrentImageTest($event.target.value)">
-            <ion-select-option *ngFor="let test of imageTests" [value]="test.id">
+          <ion-select
+            [placeholder]="lang.isSpanish()?'Seleccione prueba de imagen':'Select image test'"
+            [(ngModel)]="currentImageTest"
+            cancelText="Cancelar"
+            (ionChange)="getCurrentImageTest($event.target.value)"
+          >
+            <ion-select-option
+              *ngFor="let test of imageTests"
+              [value]="test.id"
+            >
               {{ test.name }}
             </ion-select-option>
           </ion-select>
@@ -22,62 +28,136 @@
       </ion-col>
       <ion-col size="12" *ngIf="currentImageTestData">
         <ion-item lines="full">
-          <ion-label position="floating" *ngIf="lang.isSpanish()">Fecha de realización</ion-label>
-          <ion-label position="floating" *ngIf="!lang.isSpanish()">Date of realization</ion-label>
-          <ion-datetime display-format="DD/MM/YYYY" [(ngModel)]="date" cancelText="Cancelar"
-            doneText="Aceptar">
+          <ion-label position="floating" *ngIf="lang.isSpanish()"
+            >Fecha de realización</ion-label
+          >
+          <ion-label position="floating" *ngIf="!lang.isSpanish()"
+            >Date of realization</ion-label
+          >
+          <ion-datetime
+            display-format="DD/MM/YYYY"
+            [(ngModel)]="date"
+            cancelText="Cancelar"
+            doneText="Aceptar"
+          >
           </ion-datetime>
         </ion-item>
       </ion-col>
-      <ion-col size="12" *ngIf="date">
-        <ion-item *ngFor="let field of currentImageTestData.fields; let i = index" lines="full"
-          [color]="field.status==='positive'?'danger':'light'">
-          <ion-label position="floating" [ngStyle]="{'padding-bottom': field.type==='interval'?'5px':'0px'}">
-            {{ field.name }}</ion-label>
-          <ion-input *ngIf="field.type==='text'" type="text"
+
+      <!-- Caso por defecto -->
+      <ion-col
+        size="12"
+        *ngIf="date && currentImageTestData.name !== 'Endometriosis'"
+      >
+        <ion-item
+          *ngFor="let field of currentImageTestData.fields; let i = index"
+          lines="full"
+          [color]="field.status==='positive'?'danger':'light'"
+        >
+          <ion-label
+            position="floating"
+            [ngStyle]="{'padding-bottom': field.type==='interval'?'5px':'0px'}"
+          >
+            {{ field.name }}</ion-label
+          >
+          <ion-input
+            *ngIf="field.type==='text'"
+            type="text"
             [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            (ionChange)="editImageField($event.target.value,i)" [value]="field.value">
+            (ionChange)="editImageField($event.target.value,i)"
+            [value]="field.value"
+          >
           </ion-input>
-          <ion-textarea *ngIf="field.type==='textarea'"
+          <ion-textarea
+            *ngIf="field.type==='textarea'"
             [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            rows="4" (ionChange)="editImageField($event.target.value,i)" [value]="field.value">
+            rows="4"
+            (ionChange)="editImageField($event.target.value,i)"
+            [value]="field.value"
+          >
           </ion-textarea>
-          <ion-textarea *ngIf="field.type==='conclusion'"
+          <ion-textarea
+            *ngIf="field.type==='conclusion'"
             [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            rows="4" (ionChange)="editImageField($event.target.value,i)" [value]="field.value">
+            rows="4"
+            (ionChange)="editImageField($event.target.value,i)"
+            [value]="field.value"
+          >
           </ion-textarea>
-          <ion-select *ngIf="field.type==='multiple'"
+          <ion-select
+            *ngIf="field.type==='multiple'"
             [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            (ionChange)="editImageField($event.target.value,i)" [value]="field.value" cancelText="Cancelar">
-            <ion-select-option *ngFor="let option of field.options" [value]="option">{{option}}
+            (ionChange)="editImageField($event.target.value,i)"
+            [value]="field.value"
+            cancelText="Cancelar"
+          >
+            <ion-select-option
+              *ngFor="let option of field.options"
+              [value]="option"
+              >{{option}}
             </ion-select-option>
           </ion-select>
           <ion-select
             [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            *ngIf="field.type==='binary'" [value]="field.value" cancelText="Cancelar"
-            (ionChange)="editImageField($event.target.value,i)">
-            <ion-select-option *ngIf="!field.defaultInput" [value]="field.falseInput">
+            *ngIf="field.type==='binary'"
+            [value]="field.value"
+            cancelText="Cancelar"
+            (ionChange)="editImageField($event.target.value,i)"
+          >
+            <ion-select-option
+              *ngIf="!field.defaultInput"
+              [value]="field.falseInput"
+            >
               {{field.falseInput}}
             </ion-select-option>
-            <ion-select-option *ngIf="!field.defaultInput" [value]="field.trueInput">{{field.trueInput}}
+            <ion-select-option
+              *ngIf="!field.defaultInput"
+              [value]="field.trueInput"
+              >{{field.trueInput}}
             </ion-select-option>
-            <ion-select-option *ngIf="field.defaultInput" [value]="field.trueInput">{{field.trueInput}}
+            <ion-select-option
+              *ngIf="field.defaultInput"
+              [value]="field.trueInput"
+              >{{field.trueInput}}
             </ion-select-option>
-            <ion-select-option *ngIf="field.defaultInput" [value]="field.falseInput">
+            <ion-select-option
+              *ngIf="field.defaultInput"
+              [value]="field.falseInput"
+            >
               {{field.falseInput}}
             </ion-select-option>
           </ion-select>
-          <ion-input *ngIf="field.type==='number'" type="number"
+          <ion-input
+            *ngIf="field.type==='number'"
+            type="number"
             [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            (ionChange)="editImageField($event.target.value,i)" [value]="field.value"></ion-input>
-          <ion-range *ngIf="field.type==='interval'" (ionChange)="editImageField($event.target.value,i)"
-            [min]="field.min" [max]="field.max" pin="true" snaps="true" step="1" ticks="true" value="0"
-            color="primary" [value]="field.value">
+            (ionChange)="editImageField($event.target.value,i)"
+            [value]="field.value"
+          ></ion-input>
+          <ion-range
+            *ngIf="field.type==='interval'"
+            (ionChange)="editImageField($event.target.value,i)"
+            [min]="field.min"
+            [max]="field.max"
+            pin="true"
+            snaps="true"
+            step="1"
+            ticks="true"
+            value="0"
+            color="primary"
+            [value]="field.value"
+          >
           </ion-range>
-          <ion-input *ngIf="field.type==='unit'" type="number"
+          <ion-input
+            *ngIf="field.type==='unit'"
+            type="number"
             [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            (ionChange)="editImageField($event.target.value,i)" [value]="field.value"></ion-input>
-          <ion-note slot="end" *ngIf="field.type==='unit'">{{field.unit}}</ion-note>
+            (ionChange)="editImageField($event.target.value,i)"
+            [value]="field.value"
+          ></ion-input>
+          <ion-note slot="end" *ngIf="field.type==='unit'"
+            >{{field.unit}}</ion-note
+          >
           <ion-buttons slot="end" *ngIf="values[i] && field.value">
             <ion-button (click)="showGallery(i,field.name)">
               <ion-icon slot="icon-only" name="photos"></ion-icon>
@@ -86,6 +166,536 @@
               <ion-icon slot="icon-only" name="add"></ion-icon>
             </ion-button>
           </ion-buttons>
+        </ion-item>
+      </ion-col>
+
+      <!-- Caso especial: Endometriosis -->
+      <ion-col
+        size="12"
+        *ngIf="date && currentImageTestData.name === 'Endometriosis'"
+      >
+        <div class="ion-margin-vertical">CLINICAL INFORMATION</div>
+        <ion-item>
+          <ion-label>Subject ID</ion-label>
+          <ion-input type="text" placeholder="Awesome Input"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>Site</ion-label>
+          <ion-input type="text" placeholder="Awesome Input"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>Was MRI performed?</ion-label>
+          <ion-select value="MRI" multiple="false" placeholder="Select Pizza">
+            <ion-select-option value="yes">YES</ion-select-option>
+            <ion-select-option value="no">NO</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-textarea
+            placeholder="If no, reason not performed"
+          ></ion-textarea>
+        </ion-item>
+        <ion-item>
+          <ion-label>Acquisition date</ion-label>
+          <ion-datetime display-format="DD/MM/YYYY"></ion-datetime>
+        </ion-item>
+        <ion-item>
+          <ion-label>Acquisition time</ion-label>
+          <ion-datetime display-format="HH:mm"></ion-datetime>
+        </ion-item>
+        <ion-item>
+          <ion-label
+            >Did subject fast for 3-4 hours before the MRI
+            examination?</ion-label
+          >
+          <ion-select
+            value="fastBeforeMRI"
+            multiple="false"
+            placeholder="Select Pizza"
+          >
+            <ion-select-option value="yes">YES</ion-select-option>
+            <ion-select-option value="no">NO</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-textarea placeholder="If no, reason not fasted"></ion-textarea>
+        </ion-item>
+
+        <div class="ion-margin-top">TECHNIQUE</div>
+        <div class="ion-margin-bottom">
+          Female Pelvis MRI with iv contrast, clinical trial protocol
+          Ferring-000295 (FSE/TSE, DWI with more than 2 b values, GRE-FS, DCE)
+        </div>
+        <ion-item>
+          <ion-label>Time point</ion-label>
+          <ion-select
+            value="timePoint"
+            multiple="false"
+            placeholder="Select Pizza"
+          >
+            <ion-select-option value="screening">Screening</ion-select-option>
+            <ion-select-option value="endOfTreatment"
+              >End of treatment</ion-select-option
+            >
+          </ion-select>
+        </ion-item>
+
+        <div class="ion-margin-vertical">REPORT</div>
+
+        <div class="ion-margin-bottom">
+          DEEP INFILTRATING ENDIOMETRIOSIS (DIE)
+        </div>
+
+        <div class="ion-margin-bottom"><b>Anterior compartment (CA)</b></div>
+        <ion-row>
+          <ion-col size="4"><div>Compartments</div></ion-col>
+          <ion-col size="2"><div>Nº lesions</div></ion-col>
+          <ion-col size="2"><div>Lesion Id</div></ion-col>
+          <ion-col size="2"><div>Diameter[mm]</div></ion-col>
+          <ion-col size="2"><div>Is an update</div></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Bladder (B)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Vesico Uterinepouch (VU)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Vesico Vaginal septum (VV)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+
+        <div class="ion-margin-vertical"><b>Posterior compartment (CP)</b></div>
+        <ion-row>
+          <ion-col size="4"><div>Compartments</div></ion-col>
+          <ion-col size="2"><div>Nº lesions</div></ion-col>
+          <ion-col size="2"><div>Lesion Id</div></ion-col>
+          <ion-col size="2"><div>Diameter[mm]</div></ion-col>
+          <ion-col size="2"><div>Is an update</div></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Rectum (R)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Posterior Vaginal fornix (V)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Recto vaginal septum (RV)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Retrocervical area (C)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Peritoneum (P) - Douglas</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Recto Uterine pouch (RU)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+
+        <div class="ion-margin-vertical"><b>Lateral compartment</b></div>
+        <ion-row>
+          <ion-col size="4"><div>Compartments</div></ion-col>
+          <ion-col size="2"><div>Nº lesions</div></ion-col>
+          <ion-col size="2"><div>Lesion Id</div></ion-col>
+          <ion-col size="2"><div>Diameter[mm]</div></ion-col>
+          <ion-col size="2"><div>Is an update</div></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Ureters (U)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+
+        <div class="ion-margin-bottom">
+          ENDOMETRIOMA
+        </div>
+
+        <ion-row>
+          <ion-col size="4"><div>Compartments</div></ion-col>
+          <ion-col size="2"><div>Nº lesions</div></ion-col>
+          <ion-col size="2"><div>Lesion Id</div></ion-col>
+          <ion-col size="2"><div>Diameter[mm]</div></ion-col>
+          <ion-col size="2"><div>Is an update</div></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Left Ovary</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Right Ovary</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+
+        <div class="ion-margin-bottom">
+          ADENOMYOSIS
+        </div>
+
+        <div class="ion-margin-bottom">
+          <b>Sagittal image of the uterus (CM)</b>
+        </div>
+        <ion-row>
+          <ion-col size="4"><div>Compartments</div></ion-col>
+          <ion-col size="2"><div>Nº lesions</div></ion-col>
+          <ion-col size="2"><div>Lesion Id</div></ion-col>
+          <ion-col size="2"><div>Diameter[mm]</div></ion-col>
+          <ion-col size="2"><div>Is an update</div></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Uterus (UT)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Uterus (focal lesions)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div></div></ion-col>
+          <ion-col size="2"><div>Thickness [mm]</div></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"
+            ><div>Maximum junctional zone thickness [mm]</div></ion-col
+          >
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <div class="ion-margin-bottom">
+          <b>Uterine fibroids</b>
+        </div>
+        <ion-row>
+          <ion-col size="4"><div>Compartments</div></ion-col>
+          <ion-col size="2"><div>Nº lesions</div></ion-col>
+          <ion-col size="2"><div>Lesion Id</div></ion-col>
+          <ion-col size="2"><div>Diameter[mm]</div></ion-col>
+          <ion-col size="2"><div>Is an update</div></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Intramural (IM)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Subserosal (SS)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Submucosal (SM)</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4"><div>Other</div></ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item> <ion-input></ion-input> </ion-item
+          ></ion-col>
+          <ion-col size="2"
+            ><ion-item lines="full">
+              <ion-checkbox slot="start"></ion-checkbox> </ion-item
+          ></ion-col>
+        </ion-row>
+
+        <div class="ion-margin-vertical">
+          CONCLUSIONS
+        </div>
+
+        <ion-item>
+          <ion-label
+            >Is the subject eligible enter the trial per inclusion criterion 6
+            (Y/N)?</ion-label
+          >
+          <ion-select multiple="false" placeholder="Select option">
+            <ion-select-option value="yes">YES</ion-select-option>
+            <ion-select-option value="no">NO</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item disabled>
+          <ion-label
+            >If yes, specify which subgroup(s) the subject is elegible for:
+            (select ALL subgroups where the subject meets the inclusion
+            criterion)</ion-label
+          >
+          <ion-select multiple="true" placeholder="Select option">
+            <ion-select-option value="endometrioma"
+              >Endometrioma</ion-select-option
+            >
+            <ion-select-option value="adenomyosis"
+              >Endometriosis</ion-select-option
+            >
+            <ion-select-option value="deepInfiltratingEndometriosis"
+              >Deep Infiltrating Endometriosis</ion-select-option
+            >
+          </ion-select>
+        </ion-item>
+        <ion-item disabled>
+          <ion-label
+            >Any incidental abnormal findings identified? If yes, specify (free
+            txt field)</ion-label
+          >
+          <ion-select multiple="false" placeholder="Select option">
+            <ion-select-option value="yes">YES</ion-select-option>
+            <ion-select-option value="no">NO</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="false">
+          <ion-textarea
+            placeholder="Type here any abnormal finding"
+          ></ion-textarea>
         </ion-item>
       </ion-col>
     </ion-row>

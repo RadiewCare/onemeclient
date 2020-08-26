@@ -6,6 +6,39 @@ admin.initializeApp(functions.config().firebase);
 import * as express from "express";
 import * as cors from "cors";
 
+const firestore = require("@google-cloud/firestore");
+const client = new firestore.v1.FirestoreAdminClient();
+
+const bucket = "gs://radiewcare-app.appspot.com";
+
+exports.scheduledFirestoreExport = functions.pubsub
+  .schedule("every 24 hours")
+  .onRun((context) => {
+    const databaseName = client.databasePath(
+      process.env.GCP_PROJECT,
+      "(default)"
+    );
+
+    return client
+      .exportDocuments({
+        name: databaseName,
+        outputUriPrefix: bucket,
+        // Leave collectionIds empty to export all collections
+        // or set to a list of collection IDs to export,
+        // collectionIds: ['users', 'posts']
+        collectionIds: [],
+      })
+      .then((responses: any) => {
+        const response = responses[0];
+        console.log(`Operation Name: ${response["name"]}`);
+        return response;
+      })
+      .catch((err: any) => {
+        console.error(err);
+        throw new Error("Export operation failed");
+      });
+  });
+
 /**
  * MIDDLEWARE
  */
@@ -135,7 +168,7 @@ app.post("/importGeneticDataFromPromethease", async (request, response) => {
     });*/
   const importResponse = {
     data,
-    subjectId
+    subjectId,
   };
 
   response.send(importResponse);

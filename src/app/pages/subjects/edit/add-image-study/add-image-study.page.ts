@@ -12,7 +12,7 @@ import { SubjectsService } from "src/app/services/subjects.service";
 @Component({
   selector: "app-add-image-study",
   templateUrl: "./add-image-study.page.html",
-  styleUrls: ["./add-image-study.page.scss"]
+  styleUrls: ["./add-image-study.page.scss"],
 })
 export class AddImageStudyPage implements OnInit, OnDestroy {
   @Input() id: string;
@@ -28,6 +28,26 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
   userSub: Subscription;
   user: any;
 
+  // MODELO DE DATOS DE PRUEBA ENDOMETRIOSIS
+
+  endometriosisData: any;
+  clinical_info: string;
+  technique: string;
+  report: object;
+  conclusions: object;
+  subjectKey: string;
+  locationOID: string;
+  mriyn: string;
+  mrirsn: string;
+  mridat: string;
+  mritim: string;
+  fastyn: string;
+  fastrsnd: string;
+  abnormal_findings: {
+    exists: string;
+    value: string;
+  };
+
   constructor(
     public lang: LanguageService,
     private imageStudiesService: ImageStudiesService,
@@ -38,29 +58,33 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.userSub = this.subjectsService.getSubject(this.id).subscribe(data => {
-      this.user = data;
-    });
+    this.userSub = this.subjectsService
+      .getSubject(this.id)
+      .subscribe((data) => {
+        this.user = data;
+      });
     this.getImageTests();
   }
 
   getImageTests() {
     this.imageTests$ = this.imageTestsService.getImageTests();
-    this.imageTestsSub = this.imageTests$.subscribe(data => {
+    this.imageTestsSub = this.imageTests$.subscribe((data) => {
       console.log("imageTests", data);
       this.imageTests = data;
     });
   }
 
   getCurrentImageTest(imageTest: any) {
-    this.imageTestsService.getImageTestData(imageTest).then(data => {
+    this.imageTestsService.getImageTestData(imageTest).then((data) => {
       this.currentImageTestData = data.data();
-      this.values = this.currentImageTestData.fields;
-      this.values.forEach(element => {
-        element.value = null;
-        element.status = null;
-      });
-      console.log("currentImageTestData", this.currentImageTestData);
+      if (this.currentImageTestData.fields) {
+        this.values = this.currentImageTestData.fields;
+        this.values.forEach((element) => {
+          element.value = null;
+          element.status = null;
+        });
+        console.log("currentImageTestData", this.currentImageTestData);
+      }
     });
   }
 
@@ -83,9 +107,11 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
   }
 
   saveWithoutExit() {
-    if (this.isValid()) {
+    if (this.endometriosisData && this.isValidEndometriosis()) {
+      this.saveEndometriosis();
+    } else if (this.isValid()) {
       const positive = this.values.some(
-        element => element.status === "positive"
+        (element) => element.status === "positive"
       );
       if (this.counter === 0) {
         this.counter++;
@@ -97,7 +123,7 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
             imageTestId: this.currentImageTestData.id,
             shortcode:
               "[IMA" + Math.floor(Math.random() * 1000 + 1).toString(10) + "]",
-            status: positive ? "positive" : "negative"
+            status: positive ? "positive" : "negative",
           })
           .then(async () => {
             this.toastService.show(
@@ -105,7 +131,7 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
               "Prueba de imagen creada con éxito"
             );
           })
-          .catch(async error => {
+          .catch(async (error) => {
             this.toastService.show(
               "danger",
               "Ha habido algún problema con la creación de la prueba de imagen: " +
@@ -118,7 +144,7 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
         ].values = this.values;
         this.subjectsService
           .updateSubject(this.id, {
-            imageTests: this.user.imageTests
+            imageTests: this.user.imageTests,
           })
           .then(async () => {
             this.toastService.show(
@@ -126,7 +152,7 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
               "Prueba de imagen editada con éxito"
             );
           })
-          .catch(async error => {
+          .catch(async (error) => {
             this.toastService.show(
               "danger",
               "Ha habido algún problema con la edición de la prueba de imagen: " +
@@ -147,9 +173,9 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
       componentProps: {
         id: this.id,
         field: field,
-        test: test
+        test: test,
       },
-      cssClass: "my-custom-modal-css"
+      cssClass: "my-custom-modal-css",
     });
     return await modal.present();
   }
@@ -160,14 +186,30 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
       componentProps: {
         id: this.id,
         field: field,
-        test: test
-      }
+        test: test,
+      },
     });
     return await modal.present();
   }
 
   async dismissModal(): Promise<any> {
     return await this.modalController.dismiss();
+  }
+
+  addLesion(key: any, value: any) {
+    this.report[key] = value;
+  }
+
+  addData(key: any, value) {
+    this.endometriosisData[key] = value;
+  }
+
+  isValidEndometriosis() {
+    return true;
+  }
+
+  async saveEndometriosis() {
+    await this.dismissModal();
   }
 
   ngOnDestroy() {
