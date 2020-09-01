@@ -456,6 +456,15 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
     this.validateReport();
     this.endometriosisData = {
       ...this.endometriosisData,
+      subjectKey: this.subjectKey,
+      locationOID: this.locationOID,
+      mriyn: this.mriyn,
+      mrirsnd: this.mrirsnd,
+      mridat: this.mridat,
+      mritim: this.mritim,
+      fastyn: this.fastyn,
+      fastrsnd: this.fastrsnd,
+      technique: this.technique,
       report: this.report,
       conclusions: {
         exists: this.conclusionExists,
@@ -526,6 +535,15 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
     this.endometriosisData = {
       ...this.endometriosisData,
       report: this.report,
+      subjectKey: this.subjectKey,
+      locationOID: this.locationOID,
+      mriyn: this.mriyn,
+      mrirsnd: this.mrirsnd,
+      mridat: this.mridat,
+      mritim: this.mritim,
+      fastyn: this.fastyn,
+      fastrsnd: this.fastrsnd,
+      technique: this.technique,
       conclusions: {
         exists: this.conclusionExists,
         motor_m1: this.motor_m1,

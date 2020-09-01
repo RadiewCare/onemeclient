@@ -803,7 +803,7 @@
             <ion-select-option value="2">NO</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item *ngIf="conclusionExists==1">
+        <ion-item *ngIf="conclusionExists==='1'">
           <ion-label>If yes, specify which subgroup(s) the subject is elegible for:
             (select ALL subgroups where the subject meets the inclusion
             criterion)</ion-label>
@@ -824,7 +824,7 @@
             <ion-select-option value="2">NO</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item *ngIf="abnormalFindingsExists==1">
+        <ion-item *ngIf="abnormalFindingsExists==='1'">
           <ion-textarea [(ngModel)]="abnormalFindingsValue" placeholder="Type here any abnormal finding">
           </ion-textarea>
         </ion-item>
