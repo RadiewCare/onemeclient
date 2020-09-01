@@ -11,12 +11,13 @@
         <ion-item lines="full">
           <ion-label position="floating" *ngIf="lang.isSpanish()">Fecha de realización</ion-label>
           <ion-label position="floating" *ngIf="!lang.isSpanish()">Date of realization</ion-label>
-          <ion-datetime display-format="DD/MM/YYYY" [(ngModel)]="date" cancelText="Cancelar"
-            doneText="Aceptar">
+          <ion-datetime display-format="DD/MM/YYYY" [(ngModel)]="date" cancelText="Cancelar" doneText="Aceptar">
           </ion-datetime>
         </ion-item>
       </ion-col>
-      <ion-col size="12">
+
+      <!-- Caso por defecto -->
+      <ion-col size="12" *ngIf="currentImageTestData && currentImageTestData.name !== 'Endometriosis'">
         <ion-item *ngFor="let field of currentImageTestData?.values; let i = index" lines="full"
           [color]="field.status==='positive'?'danger':'light'">
           <ion-label position="floating" [ngStyle]="{'padding-bottom': field.type==='interval'?'5px':'0px'}">
@@ -58,8 +59,8 @@
             [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
             (ionChange)="editImageField($event.target.value,i)" [value]="field.value"></ion-input>
           <ion-range *ngIf="field.type==='interval'" (ionChange)="editImageField($event.target.value,i)"
-            [min]="field.min" [max]="field.max" pin="true" snaps="true" step="1" ticks="true" value="0"
-            color="primary" [value]="field.value">
+            [min]="field.min" [max]="field.max" pin="true" snaps="true" step="1" ticks="true" value="0" color="primary"
+            [value]="field.value">
           </ion-range>
           <ion-input *ngIf="field.type==='unit'" type="number"
             [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
@@ -75,12 +76,772 @@
           </ion-buttons>
         </ion-item>
       </ion-col>
+
+
+      <!-- ENDOMETRIOSIS -->
+
+      <!-- Caso especial: Endometriosis -->
+      <ion-col size="12" *ngIf="currentImageTestData && currentImageTestData.name === 'Endometriosis'">
+        <div class="ion-margin-vertical">CLINICAL INFORMATION</div>
+        <ion-item>
+          <ion-label>Subject ID</ion-label>
+          <ion-input type="text" placeholder="Enter subject ID" [(ngModel)]="endometriosisData.subjectKey"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>Site</ion-label>
+          <ion-input type="text" placeholder="Enter Site" [(ngModel)]="endometriosisData.locationOID"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>Was MRI performed?</ion-label>
+          <ion-select value="MRI" multiple="false" placeholder="Select option" [(ngModel)]="endometriosisData.mriyn">
+            <ion-select-option value="1">YES</ion-select-option>
+            <ion-select-option value="2">NO</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="endometriosisData.mriyn == 2">
+          <ion-textarea [(ngModel)]="endometriosisData.mrirsnd" placeholder="If no, reason not performed">
+          </ion-textarea>
+        </ion-item>
+        <ion-item>
+          <ion-label>Acquisition date</ion-label>
+          <ion-datetime display-format="DD/MM/YYYY" [(ngModel)]="endometriosisData.mridat"></ion-datetime>
+        </ion-item>
+        <ion-item>
+          <ion-label>Acquisition time</ion-label>
+          <ion-datetime display-format="HH:mm" [(ngModel)]="endometriosisData.mritim"></ion-datetime>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            Did subject fast for 3-4 hours before the MRI
+            examination?
+          </ion-label>
+          <ion-select multiple="false" placeholder="Select option" [(ngModel)]="endometriosisData.fastyn">
+            <ion-select-option value="1">YES</ion-select-option>
+            <ion-select-option value="2">NO</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item *ngIf="endometriosisData.fastyn == 2">
+          <ion-textarea placeholder="If no, reason not fasted" [(ngModel)]="endometriosisData.fastrsnd"></ion-textarea>
+        </ion-item>
+
+        <div class="ion-margin-top">TECHNIQUE</div>
+        <div class="ion-margin-bottom">
+          Female Pelvis MRI with iv contrast, clinical trial protocol
+          Ferring-000295 (FSE/TSE, DWI with more than 2 b values, GRE-FS, DCE)
+        </div>
+        <ion-item>
+          <ion-label>Time point</ion-label>
+          <ion-select value="timePoint" multiple="false" placeholder="Select option"
+            [(ngModel)]="endometriosisData.technique">
+            <ion-select-option value="VISIT1">Screening</ion-select-option>
+            <ion-select-option value="VISIT8">End of treatment</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <div class="ion-margin-vertical">REPORT</div>
+
+        <div class="ion-margin-bottom">
+          DEEP INFILTRATING ENDIOMETRIOSIS (DIE)
+        </div>
+
+        <div class="ion-margin-bottom"><b>Anterior compartment (CA)</b></div>
+        <ion-row>
+          <ion-col size="4">
+            <div>Compartments</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Nº lesions</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Lesion Id</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Diameter[mm]</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Is an update</div>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Bladder (B)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="bnLesions" (ionChange)="bLesions = [].constructor(bnLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of bLesions; let i = index">
+              <ion-input>B-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of bLesions; let i = index">
+              <ion-input [(value)]="bDiamLesions[i]" (ionChange)="changeDiameter('B', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of bLesions; let i = index">
+              <ion-checkbox [(ngModel)]="bIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('B', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Vesico Uterinepouch (VU)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="vunLesions" (ionChange)="vuLesions = [].constructor(vunLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of vuLesions; let i = index">
+              <ion-input>VU-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of vuLesions; let i = index">
+              <ion-input [(value)]="vuDiamLesions[i]" (ionChange)="changeDiameter('VU', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of vuLesions; let i = index">
+              <ion-checkbox [(ngModel)]="vuIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('VU', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Vesico Vaginal septum (VV)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="vvnLesions" (ionChange)="vvLesions = [].constructor(vvnLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of vvLesions; let i = index">
+              <ion-input>VV-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of vvLesions; let i = index">
+              <ion-input [(value)]="vvDiamLesions[i]" (ionChange)="changeDiameter('VV', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of vvLesions; let i = index">
+              <ion-checkbox [(ngModel)]="vvIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('VV', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <div class="ion-margin-vertical"><b>Posterior compartment (CP)</b></div>
+        <ion-row>
+          <ion-col size="4">
+            <div>Compartments</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Nº lesions</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Lesion Id</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Diameter[mm]</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Is an update</div>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Rectum (R)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="rnLesions" (ionChange)="rLesions = [].constructor(rnLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of rLesions; let i = index">
+              <ion-input>R-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of rLesions; let i = index">
+              <ion-input [(value)]="rDiamLesions[i]" (ionChange)="changeDiameter('R', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of rLesions; let i = index">
+              <ion-checkbox [(ngModel)]="rIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('R', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Posterior Vaginal fornix (V)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="vnLesions" (ionChange)="vLesions = [].constructor(vnLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of vLesions; let i = index">
+              <ion-input>V-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of vLesions; let i = index">
+              <ion-input [(value)]="vDiamLesions[i]" (ionChange)="changeDiameter('V', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of vLesions; let i = index">
+              <ion-checkbox [(ngModel)]="vIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('V', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Recto vaginal septum (RV)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="rvnLesions" (ionChange)="rvLesions = [].constructor(rvnLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of rvLesions; let i = index">
+              <ion-input>RV-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of rvLesions; let i = index">
+              <ion-input [(value)]="rvDiamLesions[i]" (ionChange)="changeDiameter('RV', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of rvLesions; let i = index">
+              <ion-checkbox [(ngModel)]="rvIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('RV', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Retrocervical area (C)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="cnLesions" (ionChange)="cLesions = [].constructor(cnLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of cLesions; let i = index">
+              <ion-input>C-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of cLesions; let i = index">
+              <ion-input [(value)]="cDiamLesions[i]" (ionChange)="changeDiameter('C', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of cLesions; let i = index">
+              <ion-checkbox [(ngModel)]="cIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('C', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Peritoneum (P) - Douglas</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="pnLesions" (ionChange)="pLesions = [].constructor(pnLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of pLesions; let i = index">
+              <ion-input>P-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of pLesions; let i = index">
+              <ion-input [(value)]="pDiamLesions[i]" (ionChange)="changeDiameter('P', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of pLesions; let i = index">
+              <ion-checkbox [(ngModel)]="pIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('P', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Recto Uterine pouch (RU)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="runLesions" (ionChange)="ruLesions = [].constructor(runLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of ruLesions; let i = index">
+              <ion-input>RU-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of ruLesions; let i = index">
+              <ion-input [(value)]="ruDiamLesions[i]" (ionChange)="changeDiameter('RU', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of ruLesions; let i = index">
+              <ion-checkbox [(ngModel)]="ruIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('RU', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <div class="ion-margin-vertical"><b>Lateral compartment</b></div>
+        <ion-row>
+          <ion-col size="4">
+            <div>Compartments</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Nº lesions</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Lesion Id</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Diameter[mm]</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Is an update</div>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Ureters (U)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="unLesions" (ionChange)="uLesions = [].constructor(unLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of uLesions; let i = index">
+              <ion-input>U-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of uLesions; let i = index">
+              <ion-input [(value)]="uDiamLesions[i]" (ionChange)="changeDiameter('U', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of uLesions; let i = index">
+              <ion-checkbox [(ngModel)]="uIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('U', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <div class="ion-margin-bottom">ENDOMETRIOMA</div>
+
+        <ion-row>
+          <ion-col size="4">
+            <div>Compartments</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Nº lesions</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Lesion Id</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Diameter[mm]</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Is an update</div>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Left Ovary</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="leftOvarynLesions"
+                (ionChange)="leftOvaryLesions = [].constructor(leftOvarynLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of leftOvaryLesions; let i = index">
+              <ion-input>Left_Ovary-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of leftOvaryLesions; let i = index">
+              <ion-input [(value)]="leftOvaryDiamLesions[i]"
+                (ionChange)="changeDiameter('leftOvary', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of leftOvaryLesions; let i = index">
+              <ion-checkbox [(ngModel)]="leftOvaryIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('leftOvary', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Right Ovary</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="rightOvarynLesions"
+                (ionChange)="rightOvaryLesions = [].constructor(rightOvarynLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of rightOvaryLesions; let i = index">
+              <ion-input>Right_Ovary-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of rightOvaryLesions; let i = index">
+              <ion-input [(value)]="rightOvaryDiamLesions[i]"
+                (ionChange)="changeDiameter('rightOvary', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of rightOvaryLesions; let i = index">
+              <ion-checkbox [(ngModel)]="rightOvaryIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('rightOvary', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <div class="ion-margin-vertical">ADENOMYOSIS</div>
+
+        <div class="ion-margin-bottom">
+          <b>Sagittal image of the uterus (CM)</b>
+        </div>
+        <ion-row>
+          <ion-col size="4">
+            <div>Compartments</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Nº lesions</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Lesion Id</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Diameter[mm]</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Is an update</div>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Uterus (UT)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="utnLesions" (ionChange)="utLesions = [].constructor(utnLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of utLesions; let i = index">
+              <ion-input>UT-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of utLesions; let i = index">
+              <ion-input [(value)]="utDiamLesions[i]" (ionChange)="changeDiameter('UT', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of utLesions; let i = index">
+              <ion-checkbox [(ngModel)]="utIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('UT', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Uterus (focal lesions)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="uflnLesions" (ionChange)="uflLesions = [].constructor(uflnLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of uflLesions; let i = index">
+              <ion-input>UFL-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of uflLesions; let i = index">
+              <ion-input [(value)]="uflDiamLesions[i]" (ionChange)="changeDiameter('UFL', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of uflLesions; let i = index">
+              <ion-checkbox [(ngModel)]="uflIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('UFL', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div></div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Thickness [mm]</div>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Maximum junctional zone thickness [mm]</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input [(ngModel)]="thickness"></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <div class="ion-margin-vertical">
+          <b>Uterine fibroids</b>
+        </div>
+        <ion-row>
+          <ion-col size="4">
+            <div>Compartments</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Nº lesions</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Lesion Id</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Diameter[mm]</div>
+          </ion-col>
+          <ion-col size="2">
+            <div>Is an update</div>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Intramural (IM)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="imnLesions" (ionChange)="imLesions = [].constructor(imnLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of imLesions; let i = index">
+              <ion-input>IM-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of imLesions; let i = index">
+              <ion-input [(value)]="imDiamLesions[i]" (ionChange)="changeDiameter('IM', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of imLesions; let i = index">
+              <ion-checkbox [(ngModel)]="imIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('IM', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Subserosal (SS)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="ssnLesions" (ionChange)="ssLesions = [].constructor(ssnLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of ssLesions; let i = index">
+              <ion-input>SS-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of ssLesions; let i = index">
+              <ion-input [(value)]="ssDiamLesions[i]" (ionChange)="changeDiameter('SS', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of ssLesions; let i = index">
+              <ion-checkbox [(ngModel)]="ssIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('SS', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Submucosal (SM)</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="smnLesions" (ionChange)="smLesions = [].constructor(smnLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of smLesions; let i = index">
+              <ion-input>SM-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of smLesions; let i = index">
+              <ion-input [(value)]="smDiamLesions[i]" (ionChange)="changeDiameter('SM', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of smLesions; let i = index">
+              <ion-checkbox [(ngModel)]="smIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('SM', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="4">
+            <div>Other</div>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="otherufnLesions"
+                (ionChange)="otherufLesions = [].constructor(otherufnLesions)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of otherufLesions; let i = index">
+              <ion-input>other_UF-{{i}}</ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item *ngFor="let lesion of otherufLesions; let i = index">
+              <ion-input [(value)]="otherufDiamLesions[i]" (ionChange)="changeDiameter('V', i, $event.detail.value)">
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="2">
+            <ion-item lines="full" *ngFor="let lesion of otherufLesions; let i = index">
+              <ion-checkbox [(ngModel)]="otherufIsAnUpdate[i]" slot="start"
+                (ionChange)="changeIsAnUpdate('V', i, $event.detail.checked)"></ion-checkbox>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+
+        <div class="ion-margin-vertical">CONCLUSIONS</div>
+
+        <ion-item>
+          <ion-label>Is the subject eligible enter the trial per inclusion criterion 6
+            (Y/N)?</ion-label>
+          <ion-select multiple="false" placeholder="Select option" [(ngModel)]="conclusionExists">
+            <ion-select-option value="1">YES</ion-select-option>
+            <ion-select-option value="2">NO</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="conclusionExists==1">
+          <ion-label>If yes, specify which subgroup(s) the subject is elegible for:
+            (select ALL subgroups where the subject meets the inclusion
+            criterion)</ion-label>
+          <ion-select multiple="true" placeholder="Select option" [(ngModel)]="findingsEdit"
+            (ionChange)="changeFindings($event.detail.value)">
+            <ion-select-option value="motor_m1">Endometrioma</ion-select-option>
+            <ion-select-option value="motor_0">Endometriosis</ion-select-option>
+            <ion-select-option value="motor_1">Deep Infiltrating
+              Endometriosis
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label>Any incidental abnormal findings identified? If yes, specify (free
+            txt field)</ion-label>
+          <ion-select multiple="false" placeholder="Select option" [(ngModel)]="abnormalFindingsExists">
+            <ion-select-option value="1">YES</ion-select-option>
+            <ion-select-option value="2">NO</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="abnormalFindingsExists==1">
+          <ion-textarea [(ngModel)]="abnormalFindingsValue" placeholder="Type here any abnormal finding">
+          </ion-textarea>
+        </ion-item>
+      </ion-col>
+
     </ion-row>
   </ion-grid>
 </ion-content>
 
 <ion-footer>
   <ion-toolbar>
+    <ion-buttons slot="start" *ngIf="date && currentImageTestData.name === 'Endometriosis'">
+      <ion-button color="primary" (click)="dynamicDownloadJson()">
+        <ion-icon slot="start" name="document"></ion-icon>
+        Exportar JSON
+      </ion-button>
+    </ion-buttons>
     <ion-buttons slot="end">
       <ion-button (click)="dismissModal()">
         <ion-icon slot="start" name="close"></ion-icon>
