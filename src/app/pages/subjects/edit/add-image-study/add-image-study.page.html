@@ -96,44 +96,44 @@
         <div class="ion-margin-vertical">CLINICAL INFORMATION</div>
         <ion-item>
           <ion-label>Subject ID</ion-label>
-          <ion-input type="text" placeholder="Enter subject ID" [(ngModel)]="endometriosisData.subjectKey"></ion-input>
+          <ion-input type="text" placeholder="Enter subject ID" [(ngModel)]="subjectKey"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label>Site</ion-label>
-          <ion-input type="text" placeholder="Enter Site" [(ngModel)]="endometriosisData.locationOID"></ion-input>
+          <ion-input type="text" placeholder="Enter Site" [(ngModel)]="locationOID"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label>Was MRI performed?</ion-label>
-          <ion-select value="MRI" multiple="false" placeholder="Select option" [(ngModel)]="endometriosisData.mriyn">
+          <ion-select value="MRI" multiple="false" placeholder="Select option" [(ngModel)]="mriyn">
             <ion-select-option value="1">YES</ion-select-option>
             <ion-select-option value="2">NO</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item *ngIf="endometriosisData.mriyn == 2">
-          <ion-textarea [(ngModel)]="endometriosisData.mrirsnd" placeholder="If no, reason not performed">
+        <ion-item *ngIf="mriyn === '2'">
+          <ion-textarea [(ngModel)]="mrirsnd" placeholder="If no, reason not performed">
           </ion-textarea>
         </ion-item>
         <ion-item>
           <ion-label>Acquisition date</ion-label>
-          <ion-datetime display-format="DD/MM/YYYY" [(ngModel)]="endometriosisData.mridat"></ion-datetime>
+          <ion-datetime display-format="DD/MM/YYYY" [(ngModel)]="mridat"></ion-datetime>
         </ion-item>
         <ion-item>
           <ion-label>Acquisition time</ion-label>
-          <ion-datetime display-format="HH:mm" [(ngModel)]="endometriosisData.mritim"></ion-datetime>
+          <ion-datetime display-format="HH:mm" [(ngModel)]="mritim"></ion-datetime>
         </ion-item>
         <ion-item>
           <ion-label>
             Did subject fast for 3-4 hours before the MRI
             examination?
           </ion-label>
-          <ion-select multiple="false" placeholder="Select option" [(ngModel)]="endometriosisData.fastyn">
+          <ion-select multiple="false" placeholder="Select option" [(ngModel)]="fastyn">
             <ion-select-option value="1">YES</ion-select-option>
             <ion-select-option value="2">NO</ion-select-option>
           </ion-select>
         </ion-item>
 
-        <ion-item *ngIf="endometriosisData.fastyn == 2">
-          <ion-textarea placeholder="If no, reason not fasted" [(ngModel)]="endometriosisData.fastrsnd"></ion-textarea>
+        <ion-item *ngIf="fastyn === '2'">
+          <ion-textarea placeholder="If no, reason not fasted" [(ngModel)]="fastrsnd"></ion-textarea>
         </ion-item>
 
         <div class="ion-margin-top">TECHNIQUE</div>
@@ -143,8 +143,7 @@
         </div>
         <ion-item>
           <ion-label>Time point</ion-label>
-          <ion-select value="timePoint" multiple="false" placeholder="Select option"
-            [(ngModel)]="endometriosisData.technique">
+          <ion-select value="timePoint" multiple="false" placeholder="Select option" [(ngModel)]="technique">
             <ion-select-option value="VISIT1">Screening</ion-select-option>
             <ion-select-option value="VISIT8">End of treatment</ion-select-option>
           </ion-select>
@@ -814,7 +813,7 @@
             <ion-select-option value="2">NO</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item *ngIf="conclusionExists==1">
+        <ion-item *ngIf="conclusionExists==='1'">
           <ion-label>If yes, specify which subgroup(s) the subject is elegible for:
             (select ALL subgroups where the subject meets the inclusion
             criterion)</ion-label>
@@ -834,7 +833,7 @@
             <ion-select-option value="2">NO</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item *ngIf="abnormalFindingsExists==1">
+        <ion-item *ngIf="abnormalFindingsExists==='1'">
           <ion-textarea [(ngModel)]="abnormalFindingsValue" placeholder="Type here any abnormal finding">
           </ion-textarea>
         </ion-item>

@@ -44,7 +44,7 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
   subjectKey: string = "";
   locationOID: string = "";
   mriyn: string = "";
-  mrirsn: string = "";
+  mrirsnd: string = "";
   mridat: string = "";
   mritim: string = "";
   fastyn: string = "";
