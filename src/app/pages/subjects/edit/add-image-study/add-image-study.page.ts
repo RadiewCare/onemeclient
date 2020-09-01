@@ -34,10 +34,10 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
   // MODELO DE DATOS DE PRUEBA ENDOMETRIOSIS
 
   endometriosisData = {};
-  clinical_info: string;
-  technique: string;
+  clinical_info: string = "";
+  technique: string = "";
   report = {};
-  conclusionExists: string;
+  conclusionExists: string = "";
   motor_m1: boolean = false;
   motor_0: boolean = false;
   motor_1: boolean = false;
@@ -48,7 +48,7 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
   mridat: string = "";
   mritim: string = "";
   fastyn: string = "";
-  fastrsnd: string;
+  fastrsnd: string = "";
   abnormalFindingsExists: string = "";
   abnormalFindingsValue: string = "";
 
@@ -506,7 +506,6 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
         );
       });
 
-    await this.dismissModal();
   }
 
   changeFindings(values: any) {

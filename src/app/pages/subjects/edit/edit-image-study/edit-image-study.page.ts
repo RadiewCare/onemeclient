@@ -364,7 +364,6 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
       }
 
       this.updatedImageTests = this.user.imageTests;
-      console.log(this.endometriosisData);
 
     });
   }
@@ -543,6 +542,7 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
   save() {
 
     if (
+      this.endometriosisData &&
       Object.keys(this.endometriosisData).length > 0 &&
       this.endometriosisData.constructor === Object
     ) {
@@ -613,14 +613,12 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
         imageTests: this.updatedImageTests
       })
       .then(async () => {
-        await this.dismissModal();
         this.toastService.show(
           "success",
           "Prueba de imagen editada con éxito"
         );
       })
       .catch(async error => {
-        await this.dismissModal();
         this.toastService.show(
           "danger",
           "Ha habido algún problema con la edición de la prueba de imagen: " +
