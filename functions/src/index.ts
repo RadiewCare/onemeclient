@@ -142,25 +142,38 @@ app.post("/importGeneticDataFromPromethease", async (request, response) => {
 });
 
 /**
- * ACTUALPACS API
+ * API
  */
 
 /**
- * createSubjectFromPacs
- */
-app.post("/createSubjectFromPacs", (request, response) => {
-  response.send("from pacs");
-});
-
-/**
- * QUIBIM API
- */
-
-app.post("createSubjectFromQuibim", (request, response) => {
+* LISTA LOS SUJETOS DE UN DOCTOR DADO POR ID
+*/
+app.post("/listSubjects", (request, response) => {
   response.send("from quibim");
 });
 
 /**
- * EXPORTACIÓN DE LA API
+ * CREA UN SUJETO EN UN DOCTOR DADO POR ID
  */
-export const api = functions.https.onRequest(app);
+app.post("/createSubject", (request, response) => {
+  response.send("from pacs");
+});
+
+/**
+ * AÑADE DATOS DE QUIBIM EN UNA PRUEBA DE IMAGEN
+ */
+app.post("/addQuibimDataToImageTest", (request, response) => {
+  response.send("from pacs");
+});
+
+/**
+ * AÑADE DATOS DE ACTUALPACS EN UN SUJETO
+ */
+app.post("/addPacsDataToImageTest", (request, response) => {
+  response.send("from pacs");
+});
+
+/**
+ * EXPORTACIÓN DE LA API COMO CLOUD FUNCTION
+ */
+export const api = functions.region('europe-west3').https.onRequest(app);
