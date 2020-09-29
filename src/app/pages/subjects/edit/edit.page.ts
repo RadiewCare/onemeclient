@@ -22,6 +22,7 @@ import { ImageStudiesService } from "src/app/services/image-studies.service";
 import { SubjectsService } from "src/app/services/subjects.service";
 import { DoctorsService } from "src/app/services/doctors.service";
 import { EditQuibimPage } from "./edit-quibim/edit-quibim.page";
+import { CreateReportPage } from './create-report/create-report.page';
 
 @Component({
   selector: "app-edit",
@@ -173,7 +174,7 @@ export class EditPage implements OnInit, OnDestroy {
     public lang: LanguageService,
     private auth: AuthService,
     private doctorsService: DoctorsService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.id = this.activatedRoute.snapshot.params.id;
@@ -347,7 +348,7 @@ export class EditPage implements OnInit, OnDestroy {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {},
+          handler: (blah) => { },
         },
         {
           text: "Aceptar",
@@ -392,7 +393,7 @@ export class EditPage implements OnInit, OnDestroy {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {},
+          handler: (blah) => { },
         },
         {
           text: "Aceptar",
@@ -467,7 +468,7 @@ export class EditPage implements OnInit, OnDestroy {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {},
+          handler: (blah) => { },
         },
         {
           text: "Aceptar",
@@ -651,6 +652,18 @@ export class EditPage implements OnInit, OnDestroy {
     return await modal.present();
   }
 
+  async openReports(imageTest: any) {
+    const modal = await this.modalController.create({
+      component: CreateReportPage,
+      componentProps: {
+        id: this.id,
+        imageTest,
+      },
+      cssClass: "my-custom-modal-css",
+    });
+    return await modal.present();
+  }
+
   async showAddAnalytic() {
     const modal = await this.modalController.create({
       component: AddAnalyticStudyPage,
@@ -720,7 +733,7 @@ export class EditPage implements OnInit, OnDestroy {
       });
   }*/
 
-  async import(): Promise<any> {}
+  async import(): Promise<any> { }
 
   async delete(): Promise<any> {
     const alert = await this.alertController.create({
@@ -732,7 +745,7 @@ export class EditPage implements OnInit, OnDestroy {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {},
+          handler: (blah) => { },
         },
         {
           text: "Aceptar",

@@ -22,7 +22,7 @@ export class ReportsService {
   constructor(
     private db: AngularFirestore,
     private toastService: ToastService
-  ) {}
+  ) { }
 
   /**
    * Devuelve todos los informes de un usuario
@@ -417,6 +417,68 @@ export class ReportsService {
       });
   }
 
+  async exportImageTest(imageTest: any) {
+    console.log(imageTest);
+
+    this.x = 40;
+    this.y = 40;
+    this.doc = new jsPDF({
+      orientation: "portrait",
+      unit: "px",
+      format: "a4",
+    });
+
+    this.pageHeight =
+      this.doc.internal.pageSize.height ||
+      this.doc.internal.pageSize.getHeight();
+
+    this.pageWidth =
+      this.doc.internal.pageSize.width || this.doc.internal.pageSize.getWidth();
+
+    this.doc.text(imageTest.name, this.x, this.y);
+
+    this.y = this.y + 20;
+
+    this.doc.setFontSize(10);
+
+    for await (const value of imageTest.values) {
+      const splitTitle = this.doc.splitTextToSize(
+        value.name,
+        this.pageWidth - 2 * this.x
+      );
+      for await (const text of splitTitle) {
+        if (text.length > 0) {
+          if (this.y > this.pageHeight - 40) {
+            this.renderDelimiter();
+          }
+
+          this.doc.setFont("helvetica", "bold")
+          // Nombre
+          await this.doc.text(text, this.x, this.y);
+          this.y = this.y + 10;
+        }
+      }
+
+      this.doc.setFont("helvetica", "normal")
+      // Valor
+      if (value.value) {
+        await this.doc.text("Hallazgo: " + value.value, this.x, this.y);
+        this.y = this.y + 10;
+      }
+
+      // Estado
+      if (value.status) {
+        await this.doc.text(value.status === 'positive' ? "Estado: POSITIVO" : "Estado: NEGATIVO", this.x, this.y);
+      } else {
+        await this.doc.text("Sin determinar", this.x, this.y);
+      }
+
+      this.y = this.y + 20;
+    }
+
+    this.saveReport(imageTest.name);
+  }
+
   async renderTable(block: any, userId: string, reportId: string) {
     const corporativo = [181, 64, 124];
     const verde = [198, 240, 214];
@@ -565,11 +627,11 @@ export class ReportsService {
             ) {
               analyticTestsString = analyticTestsString.concat(
                 analyticTest.name +
-                  ": " +
-                  analyticTest.value +
-                  " " +
-                  analyticTest.metricUnit +
-                  " "
+                ": " +
+                analyticTest.value +
+                " " +
+                analyticTest.metricUnit +
+                " "
               );
             }
           }
