@@ -6,6 +6,30 @@ admin.initializeApp(functions.config().firebase);
 import * as express from "express";
 import * as cors from "cors";
 
+const { validate, ValidationError, Joi } = require('express-validation');
+
+const createSubjectDataValidation = {
+  body: Joi.object({
+    subjectId: Joi.string()
+      .required(),
+    mainDoctor: Joi.string()
+      .required(),
+  }),
+}
+
+const editSubjectDataValidation = {
+  body: Joi.object({
+    subjectId: Joi.string()
+      .required(),
+  }),
+}
+
+const deleteSubjectDataValidation = {
+  body: Joi.object({
+    subjectId: Joi.string()
+      .required(),
+  }),
+}
 
 /**
  * MIDDLEWARE DE AUTORIZACIÓN
@@ -32,119 +56,12 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(auth);
 
-/**
- * ONE-ME BACKEND FUNCTIONS
- */
-
-/**
- * importGeneticDataFromPromethease
- */
-app.post("/importGeneticDataFromPromethease", async (request, response) => {
-  const data = request.body.data;
-  const subjectId = request.body.subjectId;
-  /*
-  const transformedData = [];
-
-  for await (const varianteGenetica of data) {
-    // Separamos el nombre de la variante
-    const split = varianteGenetica.Name.split("(");
-    // Descomponemos los alelos
-    if (split.length > 1) {
-      const alelo = split[1].substring(0, split[1].length - 1);
-      const alelos = alelo.split(";");
-      // Agregamos a la transformación de datos
-      transformedData.push({
-        geneticVariant: split[0],
-        alleles: {
-          father: alelos[0],
-          mother: alelos[1]
-        },
-        frequency: varianteGenetica.Freq === null ? 0 : varianteGenetica.Freq,
-        magnitude: varianteGenetica.Magnitude
-      });
-    } else {
-      transformedData.push({
-        geneticVariant: split[0],
-        alleles: null,
-        frequency: varianteGenetica.Freq === null ? 0 : varianteGenetica.Freq,
-        magnitude: varianteGenetica.Magnitude
-      });
-    }
+app.use(function (error: any, request: any, response: any, next: any) {
+  if (error instanceof ValidationError) {
+    return response.status(error.statusCode).json(error)
   }
-
-  const arr1 = transformedData.slice(0, transformedData.length / 4);
-  const arr2 = transformedData.slice(
-    transformedData.length / 4,
-    transformedData.length / 2
-  );
-  const arr3 = transformedData.slice(
-    transformedData.length / 2,
-    transformedData.length - transformedData.length / 4
-  );
-  const arr4 = transformedData.slice(
-    transformedData.length - transformedData.length / 4
-  );
-
-  if (transformedData.length > 0) {
-    await admin
-      .firestore()
-      .doc(`subjects/${subjectId}`)
-      .update({ numberOfVariants: transformedData.length });
-  }
-
-  const promise1 = new Promise(async (resolve) => {
-    for await (const element of arr1) {
-      await admin
-        .firestore()
-        .collection(`subjects/${subjectId}/geneticData`)
-        .add(element);
-    }
-    resolve();
-  });
-  const promise2 = new Promise(async (resolve) => {
-    for await (const element of arr2) {
-      await admin
-        .firestore()
-        .collection(`subjects/${subjectId}/geneticData`)
-        .add(element);
-    }
-    resolve();
-  });
-  const promise3 = new Promise(async (resolve) => {
-    for await (const element of arr3) {
-      await admin
-        .firestore()
-        .collection(`subjects/${subjectId}/geneticData`)
-        .add(element);
-    }
-    resolve();
-  });
-  const promise4 = new Promise(async (resolve) => {
-    for await (const element of arr4) {
-      await admin
-        .firestore()
-        .collection(`subjects/${subjectId}/geneticData`)
-        .add(element);
-    }
-    resolve();
-  });
-
-  return Promise.all([promise1, promise2, promise3, promise4])
-    .then((importResponse) => {
-      // Crear notificación en el usuario (TO DO)
-      response.send(importResponse);
-    })
-    .catch((error) => {
-      // Crear notificación en el usuario (TO DO)
-      response.send(error);
-    });*/
-  const importResponse = {
-    data,
-    subjectId,
-  };
-
-  response.send(importResponse);
-});
+  return response.status(500).json(error)
+})
 
 /**
  * API
@@ -167,7 +84,7 @@ app.post("/listSubjects", (request, response) => {
 /**
  * CREA UN SUJETO EN UN DOCTOR DADO POR ID
  */
-app.post("/createSubject", (request, response) => {
+/*app.post("/createSubject", (request, response) => {
   console.log(request);
 
   admin.firestore().collection(`subjects`).where('doctorId', '==', request.body.doctorId).get()
@@ -181,7 +98,7 @@ app.post("/createSubject", (request, response) => {
     }).catch((error) => {
       response.send(error)
     })
-});
+});*/
 
 /**
  * AÑADE DATOS DE QUIBIM EN UNA PRUEBA DE IMAGEN
@@ -257,6 +174,35 @@ app.get("/getSubjectsFromDoctorId", (request, response) => {
     })
 });
 
+app.post("/createSubject", validate(createSubjectDataValidation, {}, {}), (request, response) => {
+  admin.firestore().collection(`subjects`).add(request.body)
+    .then((data) => {
+      response.send({ "subject": data });
+    }).catch((error) => {
+      response.status(500).send(error)
+    });
+});
+
+app.post("/editSubject", validate(editSubjectDataValidation, {}, {}), (request, response) => {
+  admin.firestore().doc(`subjects/${request.body.subjectId}`).update(request.body)
+    .then((data) => {
+      response.send({ "subject": data });
+    }).catch((error) => {
+      response.status(500).send(error)
+    });
+});
+
+app.post("/deleteSubject", validate(deleteSubjectDataValidation, {}, {}), (request, response) => {
+  admin.firestore().doc(`subjects/${request.body.subjectId}`)
+    .delete().then(() => {
+      response.send({ "delete": "ok" });
+    }).catch((error) => {
+      response.status(500).send(error)
+    });
+});
+
+
+// Revisar
 app.post("/addImageTestToSubject", (request, response) => {
   const imageTest = request.body.imageTest;
 
