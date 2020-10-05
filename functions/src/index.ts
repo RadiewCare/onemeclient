@@ -1,6 +1,8 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
+const moment = require('moment');
+
 admin.initializeApp(functions.config().firebase);
 
 import * as express from "express";
@@ -10,26 +12,21 @@ const { validate, ValidationError, Joi } = require('express-validation');
 
 const createSubjectDataValidation = {
   body: Joi.object({
-    subjectId: Joi.string()
+    identifier: Joi.string()
       .required(),
     mainDoctor: Joi.string()
       .required(),
   }),
 }
 
-const editSubjectDataValidation = {
+/*const deleteSubjectDataValidation = {
   body: Joi.object({
-    subjectId: Joi.string()
+    id: Joi.string()
+      .required(),
+    mainDoctor: Joi.string()
       .required(),
   }),
-}
-
-const deleteSubjectDataValidation = {
-  body: Joi.object({
-    subjectId: Joi.string()
-      .required(),
-  }),
-}
+}*/
 
 /**
  * MIDDLEWARE DE AUTORIZACIÓN
@@ -56,11 +53,11 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(auth);
 
-app.use(function (error: any, request: any, response: any, next: any) {
+app.use(function (error: any, request: express.Request, response: express.Response, next: any) {
   if (error instanceof ValidationError) {
     return response.status(error.statusCode).json(error)
   }
-  return response.status(500).json(error)
+  return response.status(400).json(error)
 })
 
 /**
@@ -175,32 +172,87 @@ app.get("/getSubjectsFromDoctorId", (request, response) => {
 });
 
 app.post("/createSubject", validate(createSubjectDataValidation, {}, {}), (request, response) => {
-  admin.firestore().collection(`subjects`).add(request.body)
-    .then((data) => {
-      response.send({ "subject": data });
-    }).catch((error) => {
-      response.status(500).send(error)
-    });
+  console.log(request.body);
+
+  admin.firestore().collection(`subjects`).get().then(async (data) => {
+    const subjects = data.docs.filter(
+      (subject) =>
+        subject.data().mainDoctor === request.body.mainDoctor ||
+        subject.data().doctors.includes(request.body.mainDoctor)
+    );
+    if (subjects.length > 0) {
+      let found = false;
+
+      for await (const subject of subjects) {
+        if (subject.data().identifier.trim().toLowerCase() === request.body.identifier.trim().toLowerCase()) {
+          found = true;
+        }
+      }
+
+      if (found) {
+        response.status(500).send({ message: "El identificador del sujeto ya está en uso en el doctor dado" })
+      } else {
+        request.body.createdAt = moment().format();
+        admin.firestore()
+          .collection("subjects")
+          .add(request.body)
+          .then((doc) => {
+            admin.firestore().doc(`subjects/${doc.id}`).update({ id: doc.id })
+              .then((success) => {
+                request.body.id = doc.id;
+                response.send({ "create": "ok", "id": doc.id });
+              }).catch(() => {
+                response.status(500).send({ error: "No se ha podido actualizar el sujeto, inténtelo de nuevo" })
+              });
+          }).catch(() => {
+            response.status(500).send({ error: "No se ha podido actualizar el sujeto, inténtelo de nuevo" })
+          });
+      }
+    } else {
+      response.status(500).send({ error: "El id del doctor no existe" })
+    }
+  }).catch(() => {
+    response.status(500).send({ error: "Error al consultar los sujetos" })
+  })
 });
 
-app.post("/editSubject", validate(editSubjectDataValidation, {}, {}), (request, response) => {
-  admin.firestore().doc(`subjects/${request.body.subjectId}`).update(request.body)
-    .then((data) => {
-      response.send({ "subject": data });
-    }).catch((error) => {
-      response.status(500).send(error)
-    });
+app.put("/editSubject", (request, response) => {
+  console.log(request.body);
+
+  admin.firestore().collection(`subjects`).where("mainDoctor", "==", request.body.mainDoctor).get().then((data) => {
+    if (data.docs.length > 0) {
+      admin.firestore().doc(`subjects/${request.body.id}`).update(request.body)
+        .then((subject) => {
+          response.send({ "update": "ok" });
+        }).catch((error) => {
+          response.status(500).send({ error: "No se ha podido actualizar el sujeto" })
+        });
+    } else {
+      response.status(500).send({ error: "El sujeto dado no existe para ese doctor" })
+    }
+  }).catch(() => {
+    response.status(500).send({ error: "Error al consultar los sujetos" });
+  })
 });
 
-app.post("/deleteSubject", validate(deleteSubjectDataValidation, {}, {}), (request, response) => {
-  admin.firestore().doc(`subjects/${request.body.subjectId}`)
-    .delete().then(() => {
-      response.send({ "delete": "ok" });
-    }).catch((error) => {
-      response.status(500).send(error)
-    });
-});
+app.delete("/deleteSubject", (request, response) => {
+  console.log(request.query);
 
+  admin.firestore().collection(`subjects`).where("id", "==", request.query.id).get().then((data) => {
+    if (data.docs.length > 0 && data.docs[0].data().mainDoctor === request.query.mainDoctor) {
+      admin.firestore().doc(`subjects/${request.query.id}`).delete()
+        .then(() => {
+          response.send({ "delete": "ok" });
+        }).catch((error) => {
+          response.status(500).send({ error: "No se ha podido eliminar el sujeto" })
+        });
+    } else {
+      response.status(500).send({ error: "El sujeto dado no existe" })
+    }
+  }).catch(() => {
+    response.status(500).send({ error: "Error al consultar los sujetos" });
+  })
+});
 
 // Revisar
 app.post("/addImageTestToSubject", (request, response) => {
