@@ -258,9 +258,11 @@ export class EditPage implements OnInit, OnDestroy {
           this.symptoms = history.symptoms;
         }
       }
-      this.imageTests = data.imageTests.sort((a, b) => {
-        return b.date - a.date;
-      });
+      if (data.imageTests) {
+        this.imageTests = data.imageTests.sort((a, b) => {
+          return b.date - a.date;
+        });
+      }
     });
   }
 

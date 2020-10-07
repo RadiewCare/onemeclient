@@ -7,7 +7,7 @@ import * as moment from "moment";
   providedIn: "root"
 })
 export class SubjectsService {
-  constructor(private db: AngularFirestore) {}
+  constructor(private db: AngularFirestore) { }
 
   /**
    * Devuelve todos los sujetos como observable
@@ -42,8 +42,7 @@ export class SubjectsService {
       .then((data) => {
         return data.docs.filter(
           (subject) =>
-            subject.data().mainDoctor === id ||
-            subject.data().doctors.includes(id)
+            subject.data().mainDoctor === id
         );
       });
   }
@@ -80,7 +79,7 @@ export class SubjectsService {
    * Crea un sujeto
    * @param data Datos del sujeto
    */
-   async createSubject(data: any): Promise<any> {
+  async createSubject(data: any): Promise<any> {
     return this.getSubjectsByDoctor(data.mainDoctor).then(async subjects => {
       if (subjects.length > 0) {
         let found = false;
@@ -92,7 +91,7 @@ export class SubjectsService {
         }
 
         if (found) {
-          return new Promise((resolve,reject) => {
+          return new Promise((resolve, reject) => {
             reject("El identificador ya está en uso")
           })
         } else {
@@ -106,7 +105,7 @@ export class SubjectsService {
         }
       }
     });
-    
+
   }
 
   /**
