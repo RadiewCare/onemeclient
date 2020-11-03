@@ -33,6 +33,9 @@ export class CreatePage implements OnInit {
 
   imageTest: any;
 
+  relatedTestsData: any;
+  relatedDiseasesData: any;
+
   constructor(
     private imageTestsService: ImageTestsService,
     private imageTestsElementsService: ImageTestsElementsService,

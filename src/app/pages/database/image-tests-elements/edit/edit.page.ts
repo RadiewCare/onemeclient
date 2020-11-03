@@ -39,6 +39,8 @@ export class EditPage implements OnInit, OnDestroy {
   relatedTests: any;
   relatedTestsData = [];
 
+  relatedDiseasesData: any;
+
   areIllustrated = false;
 
   temporaryImages: any;

@@ -12,7 +12,7 @@ export class CreateReportPage implements OnInit {
   @Input() id: string;
   @Input() imageTest: any;
 
-  constructor(private lang: LanguageService, private modalController: ModalController, private reportsService: ReportsService) { }
+  constructor(public lang: LanguageService, private modalController: ModalController, private reportsService: ReportsService) { }
 
   ngOnInit() {
   }
