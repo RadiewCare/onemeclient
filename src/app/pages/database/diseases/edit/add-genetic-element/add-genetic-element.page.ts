@@ -41,13 +41,15 @@ export class AddGeneticElementPage implements OnInit {
 
   impliedGenes: string[];
 
+  customTestName: string;
+
   constructor(
     private diseasesService: DiseasesService,
     private geneticElementsService: GeneticElementsService,
     private modalController: ModalController,
     private toastService: ToastService,
     private polymorphismsService: PolymorphismsService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.getDisease();

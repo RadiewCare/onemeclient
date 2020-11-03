@@ -78,7 +78,7 @@ export class EditPage implements OnInit {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {}
+          handler: (blah) => { }
         },
         {
           text: "Aceptar",
@@ -109,14 +109,29 @@ export class EditPage implements OnInit {
     await alert.present();
   }
 
+  doReorder(ev: any) {
+    const item = this.imageTest.fields.splice(ev.detail.from, 1)[0];
+    this.imageTest.fields.splice(ev.detail.to, 0, item);
+    let index = 0;
+    this.imageTest.fields.forEach(element => {
+      element.order = index;
+      index = index + 1;
+    });
+    ev.detail.complete();
+    console.log(this.imageTest.fields);
+  }
+
   save() {
     if (this.name.length !== 0) {
       this.imageTestsService
         .updateImageTest(this.id, {
           name: this.name,
+          fields: this.imageTest.fields,
           updatedAt: moment().format()
         })
         .then(() => {
+          // TODO: ACTUALIZAR LOS ORDENES DE LAS PRUEBAS EXISTENTES
+
           this.router.navigate(["/database/image-tests"]).then(() => {
             this.toastService.show(
               "success",
@@ -145,7 +160,7 @@ export class EditPage implements OnInit {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {}
+          handler: (blah) => { }
         },
         {
           text: "Aceptar",

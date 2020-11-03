@@ -11,7 +11,7 @@ export class ImageTestsElementsService {
   constructor(
     private db: AngularFirestore,
     private imageTestsService: ImageTestsService
-  ) {}
+  ) { }
 
   getImageTestElements(): Observable<any> {
     return this.db.collection("imageTestElements").valueChanges();
@@ -54,10 +54,13 @@ export class ImageTestsElementsService {
   }
 
   async updateImageTestElement(id: string, data: any): Promise<any> {
+    // TODO: Actualizar las pruebas que contengan este elemento comprobando que los valores existentes pueden editarse
     return await this.db.doc(`imageTestElements/${id}`).update(data);
+
   }
 
   async deleteImageTestElement(id: string): Promise<any> {
+    // TODO: Borrar de las pruebas que contengan este elemento la referencia
     return await this.db.doc(`imageTestElements/${id}`).delete();
   }
 }

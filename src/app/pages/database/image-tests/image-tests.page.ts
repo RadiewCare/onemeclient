@@ -8,10 +8,12 @@ import { ImageTestsService } from "src/app/services/image-tests.service";
   styleUrls: ["./image-tests.page.scss"]
 })
 export class ImageTestsPage implements OnInit, OnDestroy {
+
   imageTests: any;
   queryImageTests: any;
   imageTestsSub: Subscription;
-  constructor(private imageTestsService: ImageTestsService) {}
+
+  constructor(private imageTestsService: ImageTestsService) { }
 
   ngOnInit() {
     this.imageTestsSub = this.imageTestsService

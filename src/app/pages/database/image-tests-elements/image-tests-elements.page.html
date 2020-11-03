@@ -1,0 +1,47 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/database"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Elementos de pruebas de imagen</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [routerLink]="['./create']">
+        <ion-icon slot="start" name="add"></ion-icon>
+        <ion-label class="ion-hide-md-down">Nuevo</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ion-searchbar #searchbar placeholder="Buscar..." (ionChange)="onSearchChange($event.detail.value)"
+          [debounce]="250" class="ion-no-padding">
+        </ion-searchbar>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ng-container *ngIf="!queryImageTestsElements; else elseTemplate">
+          <ion-item *ngFor="let element of imageTestsElements" [routerLink]="['./edit', element.id]" lines="full">
+            <ion-label>
+              <h2>{{ element.name }}</h2>
+            </ion-label>
+          </ion-item>
+        </ng-container>
+        <ng-template #elseTemplate>
+          <ion-item *ngFor="let element of queryImageTestsElements" [routerLink]="['./edit', element.id]" lines="full">
+            <ion-label>
+              <h2>{{ element.name }}</h2>
+            </ion-label>
+          </ion-item>
+        </ng-template>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>

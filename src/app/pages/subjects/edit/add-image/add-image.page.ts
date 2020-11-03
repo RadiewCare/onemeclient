@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from "@angular/core";
-import { ModalController } from "@ionic/angular";
+import { LoadingController, ModalController } from "@ionic/angular";
 import { ToastService } from "src/app/services/toast.service";
 import { LanguageService } from "src/app/services/language.service";
 import { SubjectsService } from "src/app/services/subjects.service";
@@ -13,6 +13,8 @@ import { ImageTestsService } from "src/app/services/image-tests.service";
 export class AddImagePage implements OnInit {
   @Input() id: string;
   @Input() field: number;
+  @Input() value: any;
+  @Input() indexTest: any;
 
   test: any;
   tests: any;
@@ -21,17 +23,33 @@ export class AddImagePage implements OnInit {
   currentY: number;
   currentZ: number;
   preview: any;
+
+  images = [];
+
+  biomarkers = [];
+
+  subject: any;
+
   constructor(
     private modalController: ModalController,
     private toastService: ToastService,
     private subjectsService: SubjectsService,
     private imageTestsService: ImageTestsService,
-    public lang: LanguageService
-  ) {}
+    public lang: LanguageService,
+    private loadingController: LoadingController
+  ) { }
 
   ngOnInit() {
-    console.log(this.id);
-    console.log(this.field);
+    this.loadLocation()
+  }
+
+  loadLocation() {
+    this.subjectsService
+      .getSubjectData(this.id).then(data => {
+        this.subject = data.data();
+        console.log(this.subject);
+
+      })
   }
 
   loadImage(files: any) {
@@ -51,27 +69,67 @@ export class AddImagePage implements OnInit {
     console.log(this.preview);
   }
 
+  /**
+   * 
+   * @param index 
+   * @param type 
+   * @param value 
+   */
+  addData(index: any, type: any, value: any) {
+    if (this.biomarkers.length > 0 && this.biomarkers.length > index) {
+      switch (type) {
+        case "number":
+          this.biomarkers[index].number = value;
+          break;
+        case "x":
+          this.biomarkers[index].x = value;
+          break;
+        case "y":
+          this.biomarkers[index].y = value;
+          break;
+        case "section":
+          this.biomarkers[index].section = value;
+          break;
+        default:
+          break;
+      }
+    } else {
+      switch (type) {
+        case "number":
+          this.biomarkers.push({ number: value });
+          break;
+        case "x":
+          this.biomarkers.push({ x: value });
+          break;
+        case "y":
+          this.biomarkers.push({ y: value });
+          break;
+        case "section":
+          this.biomarkers.push({ section: value });
+          break;
+        default:
+          break;
+      }
+    }
+
+  }
+
   dismissModal() {
     this.modalController.dismiss();
   }
 
   isValid() {
     if (
-      this.preview === undefined ||
-      this.currentSection === undefined ||
-      this.currentX === undefined ||
-      this.currentY === undefined ||
-      this.currentZ === undefined ||
-      this.test === undefined ||
-      this.test === null
+      this.images.length > 0
     ) {
-      return false;
-    } else {
       return true;
+    } else {
+      return false;
     }
   }
 
   save() {
+    /*
     console.log(this.id);
 
     if (this.isValid()) {
@@ -115,5 +173,39 @@ export class AddImagePage implements OnInit {
         "Error: Hay campos erróneos o incompletos"
       );
     }
+    */
+
+    if (this.isValid) {
+      this.presentLoading();
+      this.subjectsService
+        .getSubjectData(this.id)
+        .then(data => {
+          const newImageTests = data.data().imageTests;
+          console.log(newImageTests);
+          newImageTests[this.indexTest].values[this.field].locations = this.biomarkers;
+          console.log(newImageTests);
+
+          this.subjectsService.updateSubject(this.id, {
+            imageTests: newImageTests
+          }).then(async () => {
+            await this.toastService.show("success", "Coordenadas añadidas con éxito");
+            this.loadingController.dismiss();
+            this.modalController.dismiss();
+          }).catch(async () => {
+            await this.toastService.show("danger", "Error al añadir las coordenadas");
+            this.loadingController.dismiss();
+            this.modalController.dismiss();
+          })
+        })
+    }
+
+
+  }
+
+  async presentLoading() {
+    const loading = await this.loadingController.create({
+      message: 'Guardando...',
+    });
+    await loading.present();
   }
 }

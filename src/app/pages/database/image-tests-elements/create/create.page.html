@@ -1,0 +1,136 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/database/image-tests-elements"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Crear elemento de prueba de imagen</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" color="primary">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label>Guardar</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12" class="ion-margin-top">
+        <ion-item color="primary">
+          <ion-label>Configuración del formulario de la prueba de imagen</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label position="floating">Nombre del biomarcador</ion-label>
+          <ion-input type="text" placeholder="Nombre del biomarcador" [(ngModel)]="name"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label position="floating">Tipo de campo</ion-label>
+          <ion-select placeholder="Seleccione tipo de campo" [(ngModel)]="type" cancelText="Cancelar"
+            okText="Aceptar">
+            <ion-select-option value="text">Texto</ion-select-option>
+            <ion-select-option value="binary">Binario</ion-select-option>
+            <ion-select-option value="multiple">Múltiples opciones</ion-select-option>
+            <ion-select-option value="textarea">Área de texto</ion-select-option>
+            <ion-select-option value="conclusion">Conclusión (Área de texto)</ion-select-option>
+            <ion-select-option value="number">Número</ion-select-option>
+            <ion-select-option value="interval">Intervalo</ion-select-option>
+            <ion-select-option value="unit">Unidad métrica</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'binary'">
+        <ion-item>
+          <ion-label>Binario 0 (Falso)</ion-label>
+          <ion-input type="text" placeholder="Falso" [(ngModel)]="falseInput"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'binary'">
+        <ion-item>
+          <ion-label>Binario 1 (Verdadero)</ion-label>
+          <ion-input type="text" placeholder="Verdadero" [(ngModel)]="trueInput"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'binary'">
+        <ion-item>
+          <ion-label>¿Verdadero por defecto?</ion-label>
+          <ion-checkbox [(ngModel)]="defaultInput"></ion-checkbox>
+        </ion-item>
+      </ion-col>
+      <ion-col size="6" *ngIf="type === 'interval'">
+        <ion-item lines="none">
+          <ion-label position="floating">Mínimo</ion-label>
+          <ion-input type="number" placeholder="Mínimo" [(ngModel)]="min"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="6" *ngIf="type === 'interval'">
+        <ion-item lines="none">
+          <ion-label position="floating">Máximo</ion-label>
+          <ion-input type="number" placeholder="Máximo" [(ngModel)]="max"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'multiple'">
+        <ion-item lines="none">
+          <ion-label position="floating">Opciones</ion-label>
+          <ion-input type="text" placeholder="Introduzca texto de la opción"
+            (keyup.enter)="addOption($event.target.value)" [(ngModel)]="currentOption"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'multiple'">
+        <ion-button (click)="addOption(currentOption)" expand="full" color="secondary">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Añadir opción
+        </ion-button>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'multiple'">
+        <ion-chip *ngFor="let option of options" lines="none" [color]="positiveOptions.includes(option)? 'danger' : 'dark'">
+          <ion-label>{{ option }}</ion-label>
+          <ion-icon name="close" (click)="removeOption(option)"></ion-icon>
+        </ion-chip>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'multiple' && options.length>0">
+        <ion-item lines="none">
+          <ion-label position="floating">Opciones que dan positivo en la prueba</ion-label>
+          <ion-select multiple="true" placeholder="Seleccione campos que sugieren positivo"
+            (ionChange)="addPositiveOptions($event.target.value)" [value]="positiveOptions" cancelText="Cancelar">
+            <ion-select-option *ngFor="let option of options" [value]="option">{{option}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="type === 'unit'">
+        <ion-item>
+          <ion-label position="floating">Unidad métrica</ion-label>
+          <ion-input type="text" placeholder="Escribir unidad" [(ngModel)]="unit"></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="relatedTestsData">
+      <ion-col size="12" class="ion-margin-top">
+       <ion-item color="primary">
+         <ion-label>Pruebas de imagen relacionadas</ion-label>
+       </ion-item>
+       <ion-item *ngFor="let test of relatedTestsData" [routerLink]="['/database/image-tests/edit', test.id]">
+         <ion-label>{{test.name}}</ion-label>
+       </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="relatedDiseasesData">
+      <ion-col size="12" class="ion-margin-top">
+        <ion-item color="primary">
+          <ion-label>Enfermedades relacionadas</ion-label>
+        </ion-item>
+       <ion-item color="primary" *ngFor="let disease of relatedDiseasesData" [routerLink]="['/database/diseases/edit', disease.id]">
+         <ion-label></ion-label>
+       </ion-item>
+      </ion-col>
+    </ion-row>
+
+  </ion-grid>
+</ion-content>
+

@@ -81,39 +81,6 @@
               </ion-input>
             </ion-item>
           </ion-col>
-          <ion-col size="12" class="ion-padding-top">
-            <ion-item lines="none" color="primary">
-              <ion-label>ACTUALPACS</ion-label>
-            </ion-item>
-          </ion-col>
-          <ion-col size="6" class="ion-padding-top">
-            <ion-item lines="none">
-              <ion-label position="floating">Actualpacs ID</ion-label>
-              <ion-input type="text" placeholder="Identificador de Actualpacs" [(ngModel)]="actualpacsId">
-              </ion-input>
-            </ion-item>
-          </ion-col>
-          <ion-col size="6" class="ion-padding-top">
-            <ion-item lines="none">
-              <ion-label position="floating">Accession number</ion-label>
-              <ion-input type="text" placeholder="Accession number" [(ngModel)]="accessionNumber">
-              </ion-input>
-            </ion-item>
-          </ion-col>
-          <ion-col size="6" class="ion-padding-top">
-            <ion-item lines="none">
-              <ion-label position="floating">Iniciales del sujeto</ion-label>
-              <ion-input type="text" placeholder="Iniciales del sujeto" [(ngModel)]="inicialesDelSujeto">
-              </ion-input>
-            </ion-item>
-          </ion-col>
-          <ion-col size="6" class="ion-padding-top">
-            <ion-item lines="none">
-              <ion-label position="floating">Centro referente</ion-label>
-              <ion-input type="text" placeholder="Centro referente" [(ngModel)]="centroReferente">
-              </ion-input>
-            </ion-item>
-          </ion-col>
           <!-- DATOS BIOMÉTRICOS -->
           <ion-col size="12" class="ion-padding-top">
             <ion-item lines="none" color="primary">
@@ -687,6 +654,24 @@
     <!-- ESTUDIO DE IMAGEN -->
     <ng-container *ngIf="userData?.id === subject?.mainDoctor || userData?.sharedSubjectsImage.includes(id)">
       <ion-row *ngSwitchCase="'image-study'" class="ion-padding-vertical">
+        <ion-col size="4">
+          <ion-item>
+            <ion-label position="floating">Iniciales del paciente</ion-label>
+            <ion-input placeholder="Introduzca iniciales" [(ngModel)]="inicialesDelSujeto"></ion-input>
+          </ion-item>
+         </ion-col>
+         <ion-col size="4">
+          <ion-item>
+            <ion-label position="floating">ID paciente ActualPacs</ion-label>
+            <ion-input placeholder="Introduzca ID" [(ngModel)]="actualpacsId"></ion-input>
+          </ion-item>
+         </ion-col>
+         <ion-col size="4">
+          <ion-item>
+            <ion-label position="floating">Centro referente</ion-label>
+            <ion-input [(ngModel)]="centroReferente"></ion-input>
+          </ion-item>
+         </ion-col>
         <ion-col size="12">
           <ion-button (click)="showAddImage()" expand="full" color="secondary">
             <ion-icon slot="start" name="add"></ion-icon>
@@ -703,12 +688,13 @@
               <p>
                 Fecha de realización: {{ imageTest.date | date: 'dd/MM/yy' }}
               </p>
+              <p>Accesion number (ActualPacs): {{imageTest.accessionNumber}}</p>
               <p>
                 <span (click)="copyToClipboard(imageTest.shortcode)" style="cursor: pointer;">Shortcode:
                   {{ imageTest.shortcode }}
                 </span>
                 <ion-icon name="copy" style="
-                    font-size: 18px;
+                    font-size: 16px;
                     position: relative;
                     top: 3px;
                     cursor: pointer;

@@ -16,6 +16,27 @@
         </ion-item>
       </ion-col>
 
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating">Accesion number (ActualPacs)</ion-label>
+          <ion-input placeholder="Introduzca accesion number" [(ngModel)]="accessionNumber"></ion-input>
+        </ion-item>
+       </ion-col>
+
+      <ion-col size="6">
+        <ion-button (click)="onClick()" expand="block" color="light" disabled>
+          <ion-icon slot="start" name="download"></ion-icon>
+          Importar datos de ACTUALPACS
+        </ion-button>
+    </ion-col>
+
+      <ion-col size="6">
+          <ion-button (click)="onClick()" expand="block" color="primary" disabled>
+            <ion-icon slot="start" name="images"></ion-icon>
+            Consultar imágenes de ACTUALPACS
+          </ion-button>
+      </ion-col>
+
       <!-- Caso por defecto -->
       <ion-col size="12" *ngIf="currentImageTestData && currentImageTestData.name !== 'Endometriosis'">
         <ion-item *ngFor="let field of currentImageTestData?.values; let i = index" lines="full"
@@ -36,8 +57,8 @@
           </ion-textarea>
           <ion-select *ngIf="field.type==='multiple'"
             [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            (ionChange)="editImageField($event.target.value,i)" [value]="field.value" cancelText="Cancelar">
-            <ion-select-option *ngFor="let option of field.options" [value]="option">{{option}}
+            (ionChange)="editImageField($event.target.value,i)" [value]="field.value" cancelText="Cancelar" multiple>
+            <ion-select-option *ngFor="let option of field.options" [value]="option" class="ion-text-wrap">{{option}}
             </ion-select-option>
           </ion-select>
           <ion-select
@@ -66,12 +87,12 @@
             [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
             (ionChange)="editImageField($event.target.value,i)" [value]="field.value"></ion-input>
           <ion-note slot="end" *ngIf="field.type==='unit'">{{field.unit}}</ion-note>
-          <ion-buttons slot="end" *ngIf="user.imageTests[index] && field.value">
-            <ion-button (click)="showGallery(i,field.name)">
-              <ion-icon slot="icon-only" name="photos"></ion-icon>
+          <ion-buttons slot="end" *ngIf="user.imageTests[index] && field.value && field.value.length>0">
+            <ion-button (click)="addImage(i,field.name, field.value)">
+              <ion-icon slot="icon-only" name="location"></ion-icon>
             </ion-button>
-            <ion-button (click)="addImage(i,field.name)">
-              <ion-icon slot="icon-only" name="add"></ion-icon>
+            <ion-button (click)="showGallery(i,field.name)">
+              <ion-icon slot="icon-only" name="images"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-item>

@@ -30,7 +30,7 @@
       <ion-col size="12" class="ion-padding-top">
         <ion-item color="primary" lines="none">
           <ion-icon slot="start" name="images"></ion-icon>
-          <ion-label>Biomarcadores</ion-label>
+          <ion-label>Elementos de la prueba de imagen (hallazgos)</ion-label>
           <ion-buttons slot="end">
             <ion-button (click)="addImageTestElement()">
               <ion-icon slot="start" name="add"></ion-icon>
@@ -38,19 +38,24 @@
             </ion-button>
           </ion-buttons>
         </ion-item>
-        <ion-item *ngFor="let element of imageTest?.fields; let i = index" lines="full">
-          <ion-label class="ion-text-wrap">{{ element.name }}</ion-label>
-          <ion-buttons slot="end">
-            <ion-button (click)="deleteImageTestElement(element.name)" color="danger">
-              <ion-icon slot="start" name="close"></ion-icon>
-              <ion-label>Eliminar</ion-label>
-            </ion-button>
-            <ion-button (click)="editImageTestElement(element.name, i)">
-              <ion-icon slot="start" name="create"></ion-icon>
-              <ion-label>Editar</ion-label>
-            </ion-button>
-          </ion-buttons>
-        </ion-item>
+
+        <ion-reorder-group (ionItemReorder)="doReorder($event)" disabled="false">
+          <ion-item *ngFor="let element of imageTest?.fields; let i = index" lines="full">
+            <ion-reorder slot="start" title="Arrastra para re-ordenar los elementos de la prueba"></ion-reorder>
+            <ion-label class="ion-text-wrap">{{ element.name }}</ion-label>
+            <ion-buttons slot="end">
+              <ion-button (click)="deleteImageTestElement(element.name)" color="danger">
+                <ion-icon slot="start" name="close"></ion-icon>
+                <ion-label>Eliminar</ion-label>
+              </ion-button>
+              <ion-button (click)="editImageTestElement(element.name, i)">
+                <ion-icon slot="start" name="create"></ion-icon>
+                <ion-label>Editar</ion-label>
+              </ion-button>
+            </ion-buttons>
+          </ion-item>
+        </ion-reorder-group>
+     
       </ion-col>
     </ion-row>
   </ion-grid>

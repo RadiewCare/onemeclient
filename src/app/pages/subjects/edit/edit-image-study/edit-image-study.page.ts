@@ -1,13 +1,12 @@
 import { Component, OnInit, Input, OnDestroy } from "@angular/core";
 import { Subscription, of } from "rxjs";
 import { LanguageService } from "src/app/services/language.service";
-import { ModalController } from "@ionic/angular";
+import { LoadingController, ModalController } from "@ionic/angular";
 import { ToastService } from "src/app/services/toast.service";
 import { SubjectsService } from "src/app/services/subjects.service";
 import { AddImagePage } from "../add-image/add-image.page";
 import { GalleryPage } from "../gallery/gallery.page";
 import { ImageStudiesService } from 'src/app/services/image-studies.service';
-import { IfStmt } from '@angular/compiler';
 
 @Component({
   selector: "app-edit-image-study",
@@ -23,6 +22,8 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
   user: any;
   userSub: Subscription;
   updatedImageTests: any;
+
+  accessionNumber: string = "";
 
   // MODELO DE DATOS DE PRUEBA ENDOMETRIOSIS
 
@@ -154,10 +155,16 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
     public lang: LanguageService,
     private modalController: ModalController,
     private toastService: ToastService,
-    private usersService: SubjectsService
+    private usersService: SubjectsService,
+    private loadingController: LoadingController
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    console.log(this.id);
+    console.log(this.index);
+
+
+  }
 
   ionViewDidEnter() {
     this.getSubjectImageTests();
@@ -166,8 +173,11 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
   getSubjectImageTests() {
     this.userSub = this.usersService.getSubject(this.id).subscribe(data => {
       this.user = data;
+      console.log(this.user);
+
       this.currentImageTestData = this.user.imageTests[this.index];
       this.date = this.currentImageTestData.date;
+      this.accessionNumber = this.currentImageTestData.accessionNumber || "";
       this.values = this.currentImageTestData.values;
       if (this.currentImageTestData.name == "Endometriosis") {
         this.endometriosisData = this.values;
@@ -375,7 +385,7 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
     if (
       value === this.values[index].trueInput ||
       (this.values[index].positiveOptions &&
-        this.values[index].positiveOptions.includes(value))
+        this.values[index].positiveOptions.includes(value)) || this.values[index].positiveOptions.some((element) => value.includes(element))
     ) {
       this.values[index].status = "positive";
     } else {
@@ -550,6 +560,7 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
     }
     else {
       if (this.isValid()) {
+        this.presentLoading();
         const positive = this.values.some(
           element => element.status === "positive"
         );
@@ -560,11 +571,15 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
           this.updatedImageTests[this.index].status = "negative";
         }
 
+        this.updatedImageTests[this.index].accessionNumber = this.accessionNumber;
+        this.updatedImageTests[this.index].date = this.date;
+
         this.usersService
           .updateSubject(this.id, {
             imageTests: this.updatedImageTests
           })
           .then(async () => {
+            await this.loadingController.dismiss();
             await this.dismissModal();
             this.toastService.show(
               "success",
@@ -572,6 +587,7 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
             );
           })
           .catch(async error => {
+            await this.loadingController.dismiss();
             await this.dismissModal();
             this.toastService.show(
               "danger",
@@ -579,11 +595,17 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
               error
             );
           });
+      } else {
+        this.toastService.show(
+          "danger",
+          "Ha habido algún problema con la edición de la prueba de imagen");
       }
     }
   }
 
   async saveEndometriosis() {
+    this.presentLoading();
+
     console.log("Save endo");
 
     this.validateReport();
@@ -608,6 +630,9 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
 
     this.updatedImageTests[this.index].values = this.endometriosisData;
 
+    this.updatedImageTests[this.index].accessionNumber = this.accessionNumber;
+    this.updatedImageTests[this.index].date = this.date;
+
     this.usersService
       .updateSubject(this.id, {
         imageTests: this.updatedImageTests
@@ -626,6 +651,7 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
         );
       });
 
+    await this.loadingController.dismiss();
     await this.dismissModal();
   }
 
@@ -1040,13 +1066,15 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
     return await modal.present();
   }
 
-  async addImage(field: number, test: string) {
+  async addImage(field: number, test: string, value: any) {
     const modal = await this.modalController.create({
       component: AddImagePage,
       componentProps: {
         id: this.id,
         field: field,
-        test: test
+        test: test,
+        value: value,
+        indexTest: this.index
       }
     });
     return await modal.present();
@@ -1054,6 +1082,13 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
 
   async dismissModal(): Promise<any> {
     return await this.modalController.dismiss();
+  }
+
+  async presentLoading() {
+    const loading = await this.loadingController.create({
+      message: 'Guardando...',
+    });
+    await loading.present();
   }
 
   ngOnDestroy() {

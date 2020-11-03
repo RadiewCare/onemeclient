@@ -540,7 +540,7 @@ export class EditPage implements OnInit, OnDestroy {
   }
 
   save() {
-    switch (this.segment.value) {
+    /* switch (this.segment.value) {
       case "phenotypic-data":
         this.savePhenotypic();
         break;
@@ -549,11 +549,13 @@ export class EditPage implements OnInit, OnDestroy {
       case "analytic-study":
         break;
       case "image-study":
-        /*this.saveImage();*/
+        /*this.saveImage();
         break;
       default:
-        break;
-    }
+    break;     
+    } */
+
+    this.savePhenotypic()
   }
 
   async savePhenotypic(): Promise<any> {
@@ -605,13 +607,13 @@ export class EditPage implements OnInit, OnDestroy {
         .then(() => {
           this.toastService.show(
             "success",
-            "Datos fenotípicos del sujeto actualizados con éxito"
+            "Datos del sujeto actualizados con éxito"
           );
         })
         .catch((error) => {
           this.toastService.show(
             "danger",
-            "Error al actualizar los datos fenotípicos del sujeto"
+            "Error al actualizar los datos del sujeto"
           );
         });
     } else {

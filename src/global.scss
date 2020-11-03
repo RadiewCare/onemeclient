@@ -45,7 +45,7 @@ ion-card {
 }
 
 /* Ancho del split pane */
-.split-pane-md.split-pane-visible > .split-pane-side {
+.split-pane-md.split-pane-visible>.split-pane-side {
   max-width: 15%;
 }
 
@@ -68,10 +68,12 @@ ion-card {
   width: 1em;
   display: block !important;
 }
+
 .alert-radio-group::-webkit-scrollbar-track,
 .alert-checkbox-group::-webkit-scrollbar-track {
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
 }
+
 .alert-radio-group::-webkit-scrollbar-thumb,
 .alert-checkbox-group::-webkit-scrollbar-thumb {
   background-color: var(--ion-color-primary);
@@ -97,9 +99,13 @@ ion-card {
 }
 
 .alert-wrapper.sc-ion-alert-md {
-  width: 600px;
+  width: 1024px;
   min-width: 300px;
-  max-width: 600px;
+  max-width: 1024px;
+}
+
+.alert-checkbox-label.sc-ion-alert-md {
+  white-space: pre-wrap;
 }
 
 .item-has-focus.label-floating.sc-ion-label-md-h,

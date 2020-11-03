@@ -71,6 +71,10 @@ const routes: Routes = [
     path: "symptoms",
     loadChildren: () =>
       import("./symptoms/symptoms.module").then((m) => m.SymptomsPageModule)
+  },
+  {
+    path: 'image-tests-elements',
+    loadChildren: () => import('./image-tests-elements/image-tests-elements.module').then( m => m.ImageTestsElementsPageModule)
   }
 ];
 

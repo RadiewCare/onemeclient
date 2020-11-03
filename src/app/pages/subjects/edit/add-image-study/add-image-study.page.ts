@@ -9,6 +9,9 @@ import { GalleryPage } from "../gallery/gallery.page";
 import { AddImagePage } from "../add-image/add-image.page";
 import { SubjectsService } from "src/app/services/subjects.service";
 import { DomSanitizer } from '@angular/platform-browser';
+import { ImageTestsElementsService } from 'src/app/services/image-tests-elements.service';
+import * as moment from "moment";
+import { AngularFirestore } from '@angular/fire/firestore';
 
 @Component({
   selector: "app-add-image-study",
@@ -26,10 +29,16 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
   values: any;
   counter = 0;
 
+  isCustom = false;
+
   userSub: Subscription;
   user: any;
 
   json: any;
+
+  imageTestsElements: Observable<any>;
+
+  customTestName: string;
 
   // MODELO DE DATOS DE PRUEBA ENDOMETRIOSIS
 
@@ -161,7 +170,9 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
     private imageTestsService: ImageTestsService,
     private subjectsService: SubjectsService,
     private modalController: ModalController,
-    private toastService: ToastService, private sanitizer: DomSanitizer
+    private toastService: ToastService, private sanitizer: DomSanitizer,
+    private imageTestsElementsService: ImageTestsElementsService,
+    private db: AngularFirestore
   ) { }
 
   ngOnInit() {
@@ -171,6 +182,7 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
         this.user = data;
       });
     this.getImageTests();
+    this.getImageTestElements();
   }
 
   getImageTests() {
@@ -179,6 +191,15 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
       console.log("imageTests", data);
       this.imageTests = data;
     });
+  }
+
+  getTestsElements() {
+    console.log(this.currentImageTestData);
+
+  }
+
+  getImageTestElements() {
+    this.imageTestsElements = this.imageTestsElementsService.getImageTestElements();
   }
 
   getCurrentImageTest(imageTest: any) {
@@ -197,10 +218,11 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
 
   editImageField(value: any, index: number) {
     this.values[index].value = value;
+
     if (
       value === this.values[index].trueInput ||
       (this.values[index].positiveOptions &&
-        this.values[index].positiveOptions.includes(value))
+        this.values[index].positiveOptions.includes(value)) || this.values[index].positiveOptions.some((element) => value.includes(element))
     ) {
       this.values[index].status = "positive";
     } else {
@@ -274,7 +296,40 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
       this.endometriosisData.constructor === Object
     ) {
       this.saveEndometriosis();
+    } else if (this.isCustom) {
+
+      const data = {
+        name: this.customTestName,
+        isCustom: true,
+        owner: this.user.mainDoctor,
+        values: this.currentImageTestData,
+        date: this.date,
+        createdAt: moment().format(),
+      }
+
+      this.db
+        .collection("imageTests")
+        .add(data)
+        .then((doc) => {
+          this.db.doc(`imageTests/${doc.id}`).update({ id: doc.id }).then(() => {
+            this.user.imageTests.push({
+              ...data,
+              imageTestId: doc.id,
+              shortcode:
+                "[IMA" + Math.floor(Math.random() * 1000 + 1).toString(10) + "]",
+            });
+
+            this.subjectsService.updateSubject(this.user.id, {
+              imageTests: this.user.imageTests,
+            })
+
+            this.toastService.show("success", "Prueba de imagen creada con éxito");
+          }).catch(() => {
+            this.toastService.show("danger", "Error al crear la prueba de imagen");
+          });
+        });
     }
+
     this.dismissModal();
   }
 
