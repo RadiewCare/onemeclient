@@ -12,8 +12,8 @@ import { ToastService } from "src/app/services/toast.service";
 })
 export class GalleryPage implements OnInit {
   @Input() id: string;
-  @Input() test: string;
   @Input() field: number;
+  @Input() index: number;
 
   images = [];
   tests: any;
@@ -24,27 +24,26 @@ export class GalleryPage implements OnInit {
     private modalController: ModalController,
     public lang: LanguageService,
     private toastService: ToastService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.subjectsService.getSubjectData(this.id).then(data => {
       this.subject = data.data();
-      console.log(this.subject);
-      if (data.data().imageTests) {
-        data.data().imageTests.forEach(test => {
-          if (test.images) {
-            test.images.forEach(image => {
-              if (image.test === this.test) {
-                this.images.push(image);
-              }
-            });
-          }
-        });
-      } else {
-        this.images = [];
-      }
+
+      const loadedOptions = this.subject.imageTests[this.index].values[this.field].options;
+      const loadedImages = this.subject.imageTests[this.index].values[this.field].images;
+
+      loadedImages.forEach(element => {
+        let index = loadedImages.indexOf(element);
+        if (element) {
+          this.images.push({ image: element, index: loadedOptions[index] });
+        }
+      });
 
       console.log(this.images);
+
+
+
     });
   }
 

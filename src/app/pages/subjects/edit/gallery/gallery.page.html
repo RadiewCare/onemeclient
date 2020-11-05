@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title *ngIf="lang.isSpanish()">Galería</ion-title>
-    <ion-title *ngIf="!lang.isSpanish()">Gallery</ion-title>
+    <ion-title *ngIf="lang.isSpanish()">Imágenes ilustrativas de los biomarcadores</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Illustrative images of biomarkers</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismissModal()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -16,28 +16,9 @@
       <ion-col size="3" *ngFor="let image of images; let i = index">
         <ion-card>
           <ion-card-header>
-            <ion-img [src]="image.url" style="cursor: pointer" (click)="openImage(image.url)"></ion-img>
-            <ion-card-subtitle>{{image.test}}</ion-card-subtitle>
-            <ion-card-title>{{image.section}}</ion-card-title>
+            <ion-img [src]="image.image" style="cursor: pointer" (click)="openImage(image.image)"></ion-img>
+            <ion-card-title>{{image.index}}</ion-card-title>
           </ion-card-header>
-          <ion-card-content>
-            <ion-chip color="primary" mode="ios" outline="true">
-              <ion-label>X: {{image.coordinates[0]}}</ion-label>
-            </ion-chip>
-            <ion-chip color="primary" mode="ios" outline="true">
-              <ion-label>Y: {{image.coordinates[1]}}</ion-label>
-            </ion-chip>
-            <ion-chip color="primary" mode="ios" outline="true">
-              <ion-label>Z: {{image.coordinates[2]}}</ion-label>
-            </ion-chip>
-          </ion-card-content>
-          <ion-item>
-            <ion-buttons slot="end">
-              <ion-button slot="icon-only" (click)="deleteImage(i)" color="danger">
-                <ion-icon name="trash"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-          </ion-item>
         </ion-card>
       </ion-col>
     </ion-row>

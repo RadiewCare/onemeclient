@@ -38,7 +38,7 @@ export class AddImageTestElementPage implements OnInit, OnDestroy {
     private imageTestsElementsService: ImageTestsElementsService,
     private modalController: ModalController,
     private toastService: ToastService
-  ) {}
+  ) { }
 
   ngOnInit() {
     if (this.action === "edit") {
@@ -125,6 +125,9 @@ export class AddImageTestElementPage implements OnInit, OnDestroy {
           return true;
 
         case "number":
+          return true;
+
+        case "conclusion":
           return true;
 
         default:

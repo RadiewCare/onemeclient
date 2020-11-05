@@ -1053,13 +1053,14 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
     element.dispatchEvent(event);
   }
 
-  async showGallery(field: number, test: string) {
+  async showGallery(field: number) {
     const modal = await this.modalController.create({
       component: GalleryPage,
       componentProps: {
         id: this.id,
         field: field,
-        test: test
+        index: this.index
+
       },
       cssClass: "my-custom-modal-css"
     });
