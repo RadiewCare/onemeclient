@@ -334,70 +334,6 @@ export class EditPage implements OnInit, OnDestroy {
       this.toastService.show("danger", "Todos los campos son obligatorios");
     }
 
-
-
-    /*if (this.isValid()) {
-      const data = {
-        name: this.name,
-        type: this.type,
-        options: this.options || null,
-        min: this.min || null,
-        max: this.max || null,
-        trueInput: this.trueInput || null,
-        falseInput: this.falseInput || null,
-        defaultInput: this.defaultInput || null,
-        unit: this.unit || null,
-        positiveOptions: this.positiveOptions || []
-      };
-      if (this.action === "create") {
-        // Crear elemento
-        this.imageTestsService
-          .updateImageTest(this.id, {
-            fields: firebase.firestore.FieldValue.arrayUnion(data),
-            updatedAt: moment().format()
-          })
-          .then(() => {
-            this.dismissModal().then(() => {
-              this.toastService.show(
-                "success",
-                "Elemento de prueba de imagen añadido"
-              );
-            });
-          })
-          .catch(() => {
-            this.toastService.show(
-              "danger",
-              "Error al añadir elemento de prueba de imagen"
-            );
-          });
-      } else {
-        // Editar elemento
-        const fieldsArray = this.imageTest.fields;
-        fieldsArray[this.index] = data;
-        this.imageTestsService
-          .updateImageTest(this.id, {
-            fields: fieldsArray,
-            updatedAt: moment().format()
-          })
-          .then(() => {
-            this.dismissModal().then(() => {
-              this.toastService.show(
-                "success",
-                "Elemento de prueba de imagen editado"
-              );
-            });
-          })
-          .catch(() => {
-            this.toastService.show(
-              "danger",
-              "Error al editar elemento de prueba de imagen"
-            );
-          });
-      }
-    } else {
-      this.toastService.show("danger", "Todos los campos son obligatorios");
-    }
-    */
   }
 
   async saveImages(): Promise<any> {
@@ -429,13 +365,6 @@ export class EditPage implements OnInit, OnDestroy {
       }))
     }
     return Promise.all(promises);
-  }
-
-  arrayEquals(a, b) {
-    return Array.isArray(a) &&
-      Array.isArray(b) &&
-      a.length === b.length &&
-      a.every((val, index) => val === b[index]);
   }
 
   generateCode() {
