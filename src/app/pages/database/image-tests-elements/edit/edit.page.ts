@@ -165,9 +165,14 @@ export class EditPage implements OnInit, OnDestroy {
         this.falseInput = data.falseInput;
         this.defaultInput = data.defaultInput;
         this.unit = data.unit;
-        this.positiveOptions = data.positiveOptions;
+        if (data.positiveOptions) {
+          this.positiveOptions = data.positiveOptions;
+        } else {
+          this.positiveOptions = [];
+        }
+        console.log(this.positiveOptions)
 
-        this.areIllustrated = data.isIllustrated;
+        this.areIllustrated = data.isIllustrated || false;
 
         this.relatedTests = data.relatedTests;
         this.loadRelatedTests();
@@ -318,10 +323,10 @@ export class EditPage implements OnInit, OnDestroy {
             );
             this.loadingController.dismiss();
           })
-          .catch(() => {
+          .catch((error) => {
             this.toastService.show(
               "danger",
-              "Error al editar elemento de prueba de imagen"
+              "Error al editar elemento de prueba de imagen " + error
             );
             this.loadingController.dismiss();
           })

@@ -117,3 +117,12 @@ ion-card {
   transform: translate3d(0, 0, 0) scale(1) !important;
   padding-top: 0.5rem;
 }
+
+.ionic-selectable-value-item {
+  white-space: normal !important;
+}
+
+.item.sc-ion-label-md-h,
+.item .sc-ion-label-md-h {
+  white-space: normal !important;
+}

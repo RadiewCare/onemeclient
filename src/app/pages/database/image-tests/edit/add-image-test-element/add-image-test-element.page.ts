@@ -5,7 +5,7 @@ import { ToastService } from "src/app/services/toast.service";
 import { ImageTestsElementsService } from "src/app/services/image-tests-elements.service";
 import * as firebase from "firebase/app";
 import * as moment from "moment";
-import { Subscription } from "rxjs";
+import { Observable, Subscription } from "rxjs";
 
 @Component({
   selector: "app-add-image-test-element",
@@ -33,6 +33,15 @@ export class AddImageTestElementPage implements OnInit, OnDestroy {
   imageTest: any;
   imageTestSub: Subscription;
 
+  imageTests$: Observable<any>;
+  imageTestsSub: Subscription;
+  imageTests: any;
+
+  currentImageTestData: any;
+  imageTestsElements: any;
+  imageTestsElements$: Observable<any>;
+  imageTestsElementsSub: Subscription;
+
   constructor(
     private imageTestsService: ImageTestsService,
     private imageTestsElementsService: ImageTestsElementsService,
@@ -41,9 +50,46 @@ export class AddImageTestElementPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    if (this.action === "edit") {
+    /*if (this.action === "edit") {
       this.loadElement();
+    }*/
+    this.getImageTests();
+    this.loadElement();
+  }
+
+  getImageTests() {
+    this.imageTestsElements$ = this.imageTestsElementsService.getImageTestElements();
+    this.imageTestsElementsSub = this.imageTestsElements$.subscribe((data) => {
+      console.log("imageTestsElements", data);
+      this.imageTestsElements = data.sort((a, b) => (a.name < b.name) ? -1 : (a.name > b.name) ? 1 : 0);
+    });
+  }
+
+  async save() {
+
+    if (this.imageTest.elements) {
+      const imageTestElementsIds = this.imageTest.elements.map((element) => element.id);
+
+      for await (const element of this.currentImageTestData) {
+        if (!imageTestElementsIds.includes(element.id)) {
+          this.imageTest.elements.push({ id: element.id, name: element.name, order: this.imageTest.elements.length });
+        }
+      }
+
+    } else {
+      this.imageTest.elements = [];
+
+      for await (const element of this.currentImageTestData) {
+        this.imageTest.elements.push({ id: element.id, name: element.name, order: this.imageTest.elements.length });
+      }
     }
+
+    this.imageTestsService.updateImageTest(this.id, { elements: this.imageTest.elements }).then(async () => {
+      await this.dismissModal();
+      this.toastService.show("success", "Elementos de imagen añadidos con éxito")
+    }).catch((error) => {
+      this.toastService.show("danger", "Error al añadir los elementos de imágenes")
+    });
   }
 
   loadElement() {
@@ -51,16 +97,6 @@ export class AddImageTestElementPage implements OnInit, OnDestroy {
       .getImageTest(this.id)
       .subscribe((data) => {
         this.imageTest = data;
-        this.name = data.fields[this.index].name;
-        this.type = data.fields[this.index].type;
-        this.options = data.fields[this.index].options;
-        this.min = data.fields[this.index].min;
-        this.max = data.fields[this.index].max;
-        this.trueInput = data.fields[this.index].trueInput;
-        this.falseInput = data.fields[this.index].falseInput;
-        this.defaultInput = data.fields[this.index].defaultInput;
-        this.unit = data.fields[this.index].unit;
-        this.positiveOptions = data.fields[this.index].positiveOptions;
       });
   }
 
@@ -138,7 +174,7 @@ export class AddImageTestElementPage implements OnInit, OnDestroy {
     }
   }
 
-  save() {
+  /*save() {
     if (this.isValid()) {
       const data = {
         name: this.name,
@@ -200,7 +236,7 @@ export class AddImageTestElementPage implements OnInit, OnDestroy {
     } else {
       this.toastService.show("danger", "Todos los campos son obligatorios");
     }
-  }
+  }*/
 
   dismissModal(): Promise<any> {
     return this.modalController.dismiss();

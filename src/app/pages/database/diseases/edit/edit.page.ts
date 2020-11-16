@@ -17,6 +17,7 @@ import { MutationsService } from "src/app/services/mutations.service";
 import { AddPhenotypicElementPage } from "./add-phenotypic-element/add-phenotypic-element.page";
 import { ImageTestsService } from "src/app/services/image-tests.service";
 import { ImportPage } from "./import/import.page";
+import { ImageTestsElementsService } from 'src/app/services/image-tests-elements.service';
 
 @Component({
   selector: "app-edit",
@@ -48,6 +49,11 @@ export class EditPage implements OnInit, OnDestroy {
   imageTests: any;
   imageTestsSub: Subscription;
 
+  imageBiomarkers = [];
+  imageTestsElements: any;
+  imageTestsElementsSub: Subscription;
+  imageTestsElements$: Observable<any>;
+
   constructor(
     private diseasesService: DiseasesService,
     private clinicAnalysisService: ClinicAnalysisElementsService,
@@ -58,6 +64,7 @@ export class EditPage implements OnInit, OnDestroy {
     private modalController: ModalController,
     private alertController: AlertController,
     private mutationsService: MutationsService,
+    private imageTestsElementsService: ImageTestsElementsService,
     private imageTestsService: ImageTestsService
   ) {
     this.id = this.activatedRoute.snapshot.paramMap.get("id");
@@ -90,7 +97,66 @@ export class EditPage implements OnInit, OnDestroy {
         this.clinicAnalysisElements = analysisElements;
       }
     );
+
   }
+
+  /* MODIFICACIONES */
+
+  migrateImageBiomarkers() {
+
+    const diseasesResult = [];
+
+    this.imageTestsElements$ = this.imageTestsElementsService.getImageTestElements();
+
+    this.imageTestsElementsSub = this.imageTestsElements$.subscribe(imageTestsElements => {
+
+      const filteredBiomarkers = imageTestsElements.map(element => element.name);
+
+      this.diseasesService.getDiseasesData().then(async diseases => {
+
+        const diseasesList = [];
+
+        for await (const element of diseases.docs) {
+          diseasesList.push(element.data());
+        }
+
+        for await (const disease of diseasesList) {
+
+          if (disease.imageTests) {
+            const filteredImageTests = disease.imageTests.map(element => element.test);
+
+            filteredImageTests.forEach(imageTest => {
+              if (filteredBiomarkers.includes(imageTest)) {
+                const index = imageTestsElements.findIndex(element => element.name === imageTest);
+                if (!disease.imageBiomarkers) {
+                  disease.imageBiomarkers = [];
+                }
+                disease.imageBiomarkers.push({
+                  id: imageTestsElements[index].id,
+                  name: imageTestsElements[index].name,
+                  order: 0
+                })
+              }
+            });
+            diseasesResult.push(disease);
+
+            // update del disease
+
+            if (disease.id && disease.imageBiomarkers) {
+              this.diseasesService.updateDisease(disease.id, { imageBiomarkers: disease.imageBiomarkers });
+            }
+          }
+
+        }
+        console.log("terminado");
+
+      })
+
+      // this.diseasesService.updateDisease(this.id, { imageBiomarkers: this.imageBiomarkers });
+    })
+  }
+
+  /* MODIFICACIONES */
 
   async addPhenotypicElement() {
     const modal = await this.modalController.create({
@@ -147,7 +213,7 @@ export class EditPage implements OnInit, OnDestroy {
             this.toastService.show(
               "danger",
               "Error al eliminar la prueba de laboratorio en la enfermedad" +
-                error
+              error
             );
           });
       });
@@ -167,23 +233,23 @@ export class EditPage implements OnInit, OnDestroy {
     console.log(index);
 
     this.diseasesService.getDiseaseData(diseaseId).then((element) => {
-      const removed = element.data().imageTests.splice(index, 1);
+      const removed = element.data().imageBiomarkers.splice(index, 1);
 
       this.diseasesService
         .updateDisease(diseaseId, {
-          imageTests: firebase.firestore.FieldValue.arrayRemove(removed[0])
+          imageBiomarkers: firebase.firestore.FieldValue.arrayRemove(removed[0])
         })
         .then(() => {
           this.toastService.show(
             "success",
-            "Prueba de laboratorio eliminada de la enfermedad"
+            "Biomarcador de prueba de imagen eliminado de la enfermedad"
           );
         })
         .catch((error) => {
           this.toastService.show(
             "danger",
-            "Error al eliminar la prueba de laboratorio en la enfermedad" +
-              error
+            "Error al eliminar el biomarcador de la prueba de imagen en la enfermedad" +
+            error
           );
         });
     });
@@ -236,7 +302,7 @@ export class EditPage implements OnInit, OnDestroy {
   async deleteEpigeneticFeatures(
     diseaseId: string,
     epigeneticFeatureId: string
-  ) {}
+  ) { }
 
   async importGeneticElements() {
     const modal = await this.modalController.create({
@@ -284,7 +350,7 @@ export class EditPage implements OnInit, OnDestroy {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {}
+          handler: (blah) => { }
         },
         {
           text: "Aceptar",
@@ -325,6 +391,9 @@ export class EditPage implements OnInit, OnDestroy {
     }
     if (this.diseaseSub) {
       this.diseaseSub.unsubscribe();
+    }
+    if (this.imageTestsElementsSub) {
+      this.imageTestsElementsSub.unsubscribe();
     }
   }
 }

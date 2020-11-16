@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title *ngIf="lang.isSpanish()">Añadir prueba de imagen: {{ disease?.name }}</ion-title>
-    <ion-title *ngIf="!lang.isSpanish()">Add image test: {{ disease?.name }}</ion-title>
+    <ion-title *ngIf="lang.isSpanish()">Añadir elemento de prueba de imagen: {{ disease?.name }}</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Add image test element: {{ disease?.name }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -11,14 +11,14 @@
 
       <ion-col size="12">
         <ion-item lines="full">
-          <ion-label position="floating" *ngIf="lang.isSpanish()">Pruebas de imagen</ion-label>
-          <ion-label position="floating" *ngIf="!lang.isSpanish()">Image tests</ion-label>
-          <ionic-selectable [(ngModel)]="imageTestsData" [items]="imageTests$ | async" itemValueField="id"
+          <ion-label position="floating" *ngIf="lang.isSpanish()">Elementos de pruebas de imagen</ion-label>
+          <ion-label position="floating" *ngIf="!lang.isSpanish()">Image tests elements</ion-label>
+          <ionic-selectable [(ngModel)]="imageTestsData" [items]="imageTestsElements" itemValueField="id"
             itemTextField="name" [canSearch]="true"
             [confirmButtonText]="lang.isSpanish()?'Seleccionar':'Select'"
             [closeButtonText]="lang.isSpanish()?'Cancelar':'Cancel'" headerColor="primary"
             [searchFailText]="lang.isSpanish()?'No hay items disponibles':'No items available'"
-            [searchPlaceholder]="lang.isSpanish()?'Buscar':'Search'" (onChange)="getTestFields()">
+            [searchPlaceholder]="lang.isSpanish()?'Buscar':'Search'" (onClose)="addElementsOnList()" isMultiple="true">
             <ng-template ionicSelectableCloseButtonTemplate>
               <ion-icon name="close" style="font-size: 24px;"></ion-icon>
             </ng-template>
@@ -26,6 +26,7 @@
         </ion-item>
       </ion-col>
 
+      <!--  
       <ion-col size="12" *ngIf="imageTestsData">
         <ion-item lines="full">
           <ion-label position="floating">Hallazgo</ion-label>
@@ -104,6 +105,7 @@
 
         </ion-item>
       </ion-col>
+      -->
     </ion-row>
   </ion-grid>
 </ion-content>

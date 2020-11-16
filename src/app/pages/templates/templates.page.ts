@@ -37,9 +37,9 @@ export class TemplatesPage implements OnInit, OnDestroy {
     private toastService: ToastService,
     private alertController: AlertController,
     public lang: LanguageService
-  ) {}
+  ) { }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   ionViewDidEnter() {
     const promise = new Promise((resolve) => {
@@ -79,6 +79,7 @@ export class TemplatesPage implements OnInit, OnDestroy {
         this.currentId = template.id;
         this.templateName = template.name;
         this.templateData = template.data;
+        console.log(this.editor);
 
         this.editor.destroy();
         this.editor = new EditorJS({
@@ -161,7 +162,7 @@ export class TemplatesPage implements OnInit, OnDestroy {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {}
+          handler: (blah) => { }
         },
         {
           text: "Aceptar",

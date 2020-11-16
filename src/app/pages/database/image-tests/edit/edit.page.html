@@ -40,7 +40,7 @@
         </ion-item>
 
         <ion-reorder-group (ionItemReorder)="doReorder($event)" disabled="false">
-          <ion-item *ngFor="let element of imageTest?.fields; let i = index" lines="full">
+          <ion-item *ngFor="let element of imageTest?.elements; let i = index" lines="full">
             <ion-reorder slot="start" title="Arrastra para re-ordenar los elementos de la prueba"></ion-reorder>
             <ion-label class="ion-text-wrap">{{ element.name }}</ion-label>
             <ion-buttons slot="end">
@@ -48,7 +48,7 @@
                 <ion-icon slot="start" name="close"></ion-icon>
                 <ion-label>Eliminar</ion-label>
               </ion-button>
-              <ion-button (click)="editImageTestElement(element.name, i)">
+              <ion-button [routerLink]="[ '/database/image-tests-elements/edit', element.id ]">
                 <ion-icon slot="start" name="create"></ion-icon>
                 <ion-label>Editar</ion-label>
               </ion-button>

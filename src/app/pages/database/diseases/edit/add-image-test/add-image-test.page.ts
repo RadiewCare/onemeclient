@@ -3,9 +3,10 @@ import { ImageTestsService } from "src/app/services/image-tests.service";
 import { DiseasesService } from "src/app/services/diseases.service";
 import { ModalController } from "@ionic/angular";
 import { ToastService } from "src/app/services/toast.service";
-import { Observable } from "rxjs";
+import { Observable, Subscription } from "rxjs";
 import { LanguageService } from "src/app/services/language.service";
 import * as firebase from "firebase/app";
+import { ImageTestsElementsService } from 'src/app/services/image-tests-elements.service';
 
 @Component({
   selector: "app-add-image-test",
@@ -18,6 +19,8 @@ export class AddImageTestPage implements OnInit {
   disease: any;
   imageTests$: Observable<any>;
   imageTestsData: any;
+  imageTestsElements: any;
+  imageTestsElementsSub: Subscription;
   fields: any;
   currentField: any;
 
@@ -32,10 +35,11 @@ export class AddImageTestPage implements OnInit {
   constructor(
     private diseasesService: DiseasesService,
     private imageTestsService: ImageTestsService,
+    private imageTestsElementsService: ImageTestsElementsService,
     private modalController: ModalController,
     private toastService: ToastService,
     public lang: LanguageService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.getDisease();
@@ -49,7 +53,14 @@ export class AddImageTestPage implements OnInit {
   }
 
   getImageTests() {
-    this.imageTests$ = this.imageTestsService.getImageTests();
+    this.imageTests$ = this.imageTestsElementsService.getImageTestElements();
+    this.imageTestsElementsSub = this.imageTests$.subscribe(data => {
+      this.imageTestsElements = data.sort((a, b) => (a.name < b.name) ? -1 : (a.name > b.name) ? 1 : 0);
+    })
+  }
+
+  addElementsOnList() {
+    console.log(this.imageTestsData);
   }
 
   getTestFields() {
@@ -78,7 +89,30 @@ export class AddImageTestPage implements OnInit {
     }
   }
 
-  save() {
+  async save() {
+
+    if (!this.disease.imageBiomarkers) {
+      this.disease.imageBiomarkers = [];
+    }
+
+    if (this.imageTestsData && this.imageTestsData.length > 0) {
+
+      for await (const element of this.imageTestsData) {
+        this.disease.imageBiomarkers.push({ id: element.id, name: element.name, order: this.disease.imageBiomarkers.length })
+      }
+
+      this.diseasesService.updateDisease(this.disease.id, { imageBiomarkers: this.disease.imageBiomarkers }).then(() => {
+        this.toastService.show("success", "Elementos de prueba añadidos").then(() => {
+          this.dismissModal();
+        })
+      }).catch(() => {
+        this.toastService.show("success", "Eror al añadir los elementos de prueba")
+      });
+    } else {
+      this.dismissModal();
+    }
+
+    /*
     if (this.isValid()) {
       const element = {
         id: this.imageTestsData.id,
@@ -144,5 +178,10 @@ export class AddImageTestPage implements OnInit {
         "Error: Hay campos erróneos o incompletos"
       );
     }
+    */
   }
+
+
+
+
 }

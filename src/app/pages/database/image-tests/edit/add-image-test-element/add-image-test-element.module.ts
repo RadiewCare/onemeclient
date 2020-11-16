@@ -7,14 +7,16 @@ import { IonicModule } from '@ionic/angular';
 import { AddImageTestElementPageRoutingModule } from './add-image-test-element-routing.module';
 
 import { AddImageTestElementPage } from './add-image-test-element.page';
+import { IonicSelectableModule } from 'ionic-selectable';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    AddImageTestElementPageRoutingModule
+    AddImageTestElementPageRoutingModule,
+    IonicSelectableModule
   ],
   declarations: [AddImageTestElementPage]
 })
-export class AddImageTestElementPageModule {}
+export class AddImageTestElementPageModule { }

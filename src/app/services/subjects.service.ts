@@ -70,7 +70,7 @@ export class SubjectsService {
   getSubjectByDoctor(doctorId: string): Observable<any> {
     return this.db
       .collection(`subjects`, (ref) =>
-        ref.where("doctors", "array-contains", doctorId).orderBy("identifier", "asc")
+        ref.where("mainDoctor", "==", doctorId).orderBy("identifier", "asc")
       )
       .valueChanges();
   }

@@ -42,6 +42,8 @@ export class EditPage implements OnInit {
       .getImageTest(this.id)
       .subscribe((imageTest) => {
         this.imageTest = imageTest;
+        console.log(this.imageTest);
+
         this.name = this.imageTest.name;
       });
   }
@@ -57,8 +59,11 @@ export class EditPage implements OnInit {
     return await modal.present();
   }
 
-  async editImageTestElement(name: string, index: number) {
-    const modal = await this.modalController.create({
+  editImageTestElement(name: string, index: number) {
+    console.log(name, index);
+
+    // this.router.navigate(`/database/image-test-elements/`);
+    /*const modal = await this.modalController.create({
       component: AddImageTestElementPage,
       componentProps: {
         id: this.id,
@@ -66,13 +71,13 @@ export class EditPage implements OnInit {
         index: index
       }
     });
-    return await modal.present();
+    return await modal.present();*/
   }
 
   async deleteImageTestElement(name: string) {
     const alert = await this.alertController.create({
       header: "¿Estás seguro?",
-      message: "Pulse aceptar para eliminar el biomarcador",
+      message: "Pulse aceptar para eliminar el elemento de prueba",
       buttons: [
         {
           text: "Cancelar",
@@ -85,20 +90,20 @@ export class EditPage implements OnInit {
           handler: () => {
             this.imageTestsService
               .updateImageTest(this.id, {
-                fields: this.imageTest.fields.filter(
-                  (field) => field.name !== name
+                elements: this.imageTest.elements.filter(
+                  (element) => element.name !== name
                 )
               })
               .then(() => {
                 this.toastService.show(
                   "success",
-                  "Biomarcador eliminado con éxito"
+                  "Elemento de prueba eliminado con éxito"
                 );
               })
               .catch(() => {
                 this.toastService.show(
                   "danger",
-                  "Error al eliminar el biomarcador"
+                  "Error al eliminar el elemento de prueba"
                 );
               });
           }
@@ -110,15 +115,15 @@ export class EditPage implements OnInit {
   }
 
   doReorder(ev: any) {
-    const item = this.imageTest.fields.splice(ev.detail.from, 1)[0];
-    this.imageTest.fields.splice(ev.detail.to, 0, item);
+    const item = this.imageTest.elements.splice(ev.detail.from, 1)[0];
+    this.imageTest.elements.splice(ev.detail.to, 0, item);
     let index = 0;
-    this.imageTest.fields.forEach(element => {
+    this.imageTest.elements.forEach(element => {
       element.order = index;
       index = index + 1;
     });
     ev.detail.complete();
-    console.log(this.imageTest.fields);
+    console.log(this.imageTest.elements);
   }
 
   save() {
@@ -126,18 +131,14 @@ export class EditPage implements OnInit {
       this.imageTestsService
         .updateImageTest(this.id, {
           name: this.name,
-          fields: this.imageTest.fields,
+          elements: this.imageTest.elements,
           updatedAt: moment().format()
         })
         .then(() => {
-          // TODO: ACTUALIZAR LOS ORDENES DE LAS PRUEBAS EXISTENTES
-
-          this.router.navigate(["/database/image-tests"]).then(() => {
-            this.toastService.show(
-              "success",
-              "Prueba de imagen editada con éxito"
-            );
-          });
+          this.toastService.show(
+            "success",
+            "Prueba de imagen editada con éxito"
+          );
         })
         .catch(() => {
           this.toastService.show(

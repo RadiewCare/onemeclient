@@ -31,6 +31,12 @@
         </ion-item>
       </ion-col>
 
+      <ion-col size="12">
+        <ion-button (click)="migrateImageBiomarkers()" expand="block" color="primary">
+          MIGRATE
+        </ion-button>
+      </ion-col>
+
       <ion-col size="12" class="ion-margin-bottom">
         <ion-item>
           <ion-label position="floating">Notas</ion-label>
@@ -180,7 +186,7 @@
       <ion-col size="12" class="ion-padding-top">
         <ion-item color="secondary" lines="none">
           <ion-icon slot="start" name="images"></ion-icon>
-          <ion-label>Pruebas de imagen:</ion-label>
+          <ion-label>Biomarcadores en pruebas de imagen:</ion-label>
           <ion-buttons slot="end">
             <ion-button (click)="addImageTest()">
               <ion-icon slot="icon-only" name="add"></ion-icon>
@@ -188,20 +194,11 @@
           </ion-buttons>
         </ion-item>
       </ion-col>
-      <ion-col size="12" color="secondary" *ngFor="let imageTest of disease?.imageTests; let i = index">
+      <ion-col size="12" color="secondary" *ngFor="let imageBiomarker of disease?.imageBiomarkers; let i = index">
         <ion-item lines="none">
           <ion-label>
             <ion-text>
-              <div style="font-weight: bold;">{{imageTest.name}}</div>
-              <div class="ion-margin-bottom">Elemento de prueba / hallazgo: <i><b>"{{imageTest.test}}"</b></i>
-              </div>
-              <div>Biomarcadores:</div>
-              <ng-container *ngIf="imageTest.type==='multiple'">
-                <ul *ngIf="imageTest.value.length>0">
-                  <li *ngFor="let value of imageTest.value">{{value}}</li>
-                </ul>
-                <div *ngIf="imageTest.value===0">Ninguno</div>
-              </ng-container>
+              <div style="font-weight: bold;">{{imageBiomarker.name}}</div>
             </ion-text>
           </ion-label>
 
@@ -210,6 +207,9 @@
               [routerLink]="['/database/diseases/edit/edit-image-test', {id: imageTest.id, index: i}]">
               <ion-icon slot="icon-only" name="create"></ion-icon>
             </ion-button> -->
+            <ion-button [routerLink]="[ '/database/image-tests-elements/edit/', imageBiomarker.id ]">
+              <ion-icon slot="icon-only" name="create"></ion-icon>
+            </ion-button>
             <ion-button (click)="deleteImageTest(disease.id, i)">
               <ion-icon slot="icon-only" name="close"></ion-icon>
             </ion-button>
