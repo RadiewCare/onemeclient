@@ -207,6 +207,9 @@ export class EditPage implements OnInit, OnDestroy {
     this.subject$ = this.subjectsService.getSubject(this.id);
     this.subjectSub = this.subject$.subscribe((data) => {
       this.subject = data;
+
+      console.log(this.subject);
+
       this.identifier = this.subject.identifier;
       this.numberOfVariants = this.subject.numberOfVariants;
       this.mutations = this.subject.mutations;

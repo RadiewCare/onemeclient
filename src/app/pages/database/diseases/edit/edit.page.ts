@@ -75,6 +75,8 @@ export class EditPage implements OnInit, OnDestroy {
       .getDisease(this.id)
       .subscribe((disease) => {
         this.disease = disease;
+        console.log(this.disease);
+
         this.name = disease.name;
         this.notes = disease.notes;
         this.highRiskExplanation = disease.highRiskExplanation;

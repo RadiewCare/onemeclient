@@ -1,13 +1,13 @@
-import { Component, OnInit, Input, OnDestroy } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import { ImageTestsService } from "src/app/services/image-tests.service";
-import { AlertController, LoadingController, ModalController } from "@ionic/angular";
+import { AlertController, LoadingController } from "@ionic/angular";
 import { ToastService } from "src/app/services/toast.service";
 import { ImageTestsElementsService } from "src/app/services/image-tests-elements.service";
-import * as firebase from "firebase/app";
 import * as moment from "moment";
 import { Subscription } from "rxjs";
 import { ActivatedRoute, Router } from '@angular/router';
 import { AngularFireStorage } from '@angular/fire/storage';
+import { DiseasesService } from 'src/app/services/diseases.service';
 
 @Component({
   selector: 'app-edit',
@@ -19,6 +19,8 @@ export class EditPage implements OnInit, OnDestroy {
   id: string;
   action: string;
   //index: number;
+
+  previousName: string;
 
   name: string;
   type: string;
@@ -34,12 +36,12 @@ export class EditPage implements OnInit, OnDestroy {
   currentPositiveOption: string;
 
   imageTest: any;
-  imageTestSub: Subscription;
 
   relatedTests: any;
   relatedTestsData = [];
 
-  relatedDiseasesData: any;
+  relatedDiseases: any;
+  relatedDiseasesData: [];
 
   areIllustrated = false;
 
@@ -115,8 +117,8 @@ export class EditPage implements OnInit, OnDestroy {
   constructor(
     private imageTestsService: ImageTestsService,
     private imageTestsElementsService: ImageTestsElementsService,
-    private modalController: ModalController,
     private toastService: ToastService,
+    private diseasesService: DiseasesService,
     private activatedRoute: ActivatedRoute,
     private loadingController: LoadingController,
     private storage: AngularFireStorage,
@@ -131,13 +133,16 @@ export class EditPage implements OnInit, OnDestroy {
   }
 
   loadElement() {
-    this.imageTestSub = this.imageTestsElementsService
-      .getImageTestElement(this.id)
-      .subscribe((data) => {
+    this.imageTestsElementsService
+      .getImageTestElementData(this.id)
+      .then((datos) => {
+        const data = datos.data();
         this.imageTest = data;
         console.log(this.imageTest);
 
+
         this.name = data.name;
+        this.previousName = data.name;
         this.type = data.type;
 
         this.options = data.options;
@@ -155,10 +160,6 @@ export class EditPage implements OnInit, OnDestroy {
         this.files = new Array(this.images.length);
         this.files.fill(null);
 
-        console.log(this.images);
-        console.log(this.temporaryImages);
-        console.log(this.files);
-
         this.min = data.min;
         this.max = data.max;
         this.trueInput = data.trueInput;
@@ -170,11 +171,11 @@ export class EditPage implements OnInit, OnDestroy {
         } else {
           this.positiveOptions = [];
         }
-        console.log(this.positiveOptions)
 
         this.areIllustrated = data.isIllustrated || false;
 
-        this.relatedTests = data.relatedTests;
+        this.relatedTests = data.relatedTests || [];
+        this.relatedDiseases = data.relatedDiseases || [];
         this.loadRelatedTests();
       });
   }
@@ -182,8 +183,16 @@ export class EditPage implements OnInit, OnDestroy {
   async loadRelatedTests() {
     let result;
     this.relatedTests.forEach(async element => {
-      console.log(element);
       result = await this.imageTestsService.getImageTestData(element);
+      this.relatedTestsData.push(result.data());
+    });
+
+  }
+
+  async loadRelatedDiseases() {
+    let result;
+    this.relatedDiseases.forEach(async element => {
+      result = await this.diseasesService.getDiseaseData(element);
       this.relatedTestsData.push(result.data());
     });
 
@@ -216,9 +225,6 @@ export class EditPage implements OnInit, OnDestroy {
     reader.readAsDataURL(file);
     reader.onload = () => {
       this.images[index] = reader.result;
-      console.log(this.images);
-      console.log(this.temporaryImages);
-      console.log(this.files);
     };
     reader.onerror = error => {
       console.log("Error: ", error);
@@ -290,7 +296,6 @@ export class EditPage implements OnInit, OnDestroy {
       this.presentLoading();
 
       this.saveImages().then(() => {
-        console.log(this.temporaryImages);
 
         const data = {
           name: this.name,
@@ -308,19 +313,48 @@ export class EditPage implements OnInit, OnDestroy {
           isIllustrated: this.areIllustrated
         };
 
-        console.log(data);
-
 
         this.imageTestsElementsService
           .updateImageTestElement(this.id, {
             ...data,
             updatedAt: moment().format()
           })
-          .then(() => {
+          .then(async () => {
+
+
+            // TODO: ACTUALIZAR EL NOMBRE DEL ELEMENTO EN LAS PRUEBAS
+            console.log(this.id);
+
+            for await (const id of data.relatedTests) {
+              // Coger los elementos de la prueba y modificar el implicado
+              this.imageTestsService.getImageTestData(id).then((imageTestData) => {
+                const auxElements = imageTestData.data().elements;
+
+                const indexElement = imageTestData.data().elements.findIndex(element =>
+                  element.id === this.id
+                );
+
+                console.log(indexElement);
+
+                // Meter el elemento actualizado en elements
+                auxElements[indexElement].name = data.name;
+
+                // Actualizar la prueba
+                this.imageTestsService.updateImageTest(id, {
+                  elements: auxElements
+                })
+              }).catch(error => {
+                console.log(error);
+
+              })
+            }
+
+
             this.toastService.show(
               "success",
               "Elemento de prueba de imagen editado"
             );
+
             this.loadingController.dismiss();
           })
           .catch((error) => {
@@ -358,9 +392,7 @@ export class EditPage implements OnInit, OnDestroy {
                 .ref(`/biomarkers/${code}${this.files[index].name}`)
                 .getDownloadURL()
                 .subscribe(data => {
-                  console.log(data);
                   this.temporaryImages[index] = data;
-                  console.log(this.temporaryImages, "imagen salvada");
                   resolve();
                 });
             })
@@ -405,7 +437,31 @@ export class EditPage implements OnInit, OnDestroy {
         },
         {
           text: "Aceptar",
-          handler: () => {
+          handler: async () => {
+            // Eliminar las referencias de los relatedTests
+            for await (const relatedTest of this.relatedTests) {
+              this.imageTestsService.getImageTestData(relatedTest).then(data => {
+                const elements = data.data().elements;
+                const indexForDelete = elements.findIndex(element => element.id === relatedTest);
+                elements.splice(indexForDelete, 1);
+                this.imageTestsService.updateImageTest(relatedTest, {
+                  elements: elements
+                })
+              })
+            }
+
+            // Eliminar las referencias de los relatedDiseases
+            /* for await (const relatedDisease of this.relatedDiseases) {
+              this.diseasesService.getDiseaseData(relatedDisease).then(data => {
+                const elements = data.data().elements;
+                const indexForDelete = elements.findIndex(element => element.id === relatedDisease);
+                elements.splice(indexForDelete, 1);
+                this.diseasesService.updateDisease(relatedDisease, {
+                  //
+                })
+              })
+            } */
+
             this.imageTestsElementsService.deleteImageTestElement(this.id).then(() => {
               this.router.navigate(["/database/image-tests-elements"]).then(() => {
                 this.toastService.show("success", "Elemento de prueba de imagen eliminado con éxito")
@@ -413,6 +469,7 @@ export class EditPage implements OnInit, OnDestroy {
             }).catch(() => {
               this.toastService.show("danger", "Error al eliminar el elemento de prueba de imagen")
             });
+
           },
         },
       ],
@@ -421,9 +478,6 @@ export class EditPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.imageTestSub) {
-      this.imageTestSub.unsubscribe();
-    }
     if (this.imageSubscription) {
       this.imageSubscription.unsubscribe();
     }

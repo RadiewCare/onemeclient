@@ -162,12 +162,14 @@ app.get("/getSubjectsFromDoctorId", (request, response) => {
         return {
           "id": element.id,
           "identifier": element.identifier,
-          "imageTests": element.imageTests || null
+          "imageTests": element.imageTests || null,
+          "history": element.history || null,
+          "quibimData": element.quibimData || null
         }
       })
       response.send({ "subjects": result });
     }).catch(error => {
-      response.status(500).send(error)
+      response.status(500).send(error);
     })
 });
 

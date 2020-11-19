@@ -37,7 +37,6 @@ export class CreatePage implements OnInit {
   relatedDiseasesData: any;
 
   constructor(
-    private imageTestsService: ImageTestsService,
     private imageTestsElementsService: ImageTestsElementsService,
     private modalController: ModalController,
     private toastService: ToastService,

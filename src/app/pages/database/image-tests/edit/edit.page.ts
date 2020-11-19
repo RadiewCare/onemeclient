@@ -7,6 +7,7 @@ import { ModalController, AlertController } from "@ionic/angular";
 import { Observable, Subscription } from "rxjs";
 import { AddImageTestElementPage } from "./add-image-test-element/add-image-test-element.page";
 import * as moment from "moment";
+import * as firebase from 'firebase';
 
 @Component({
   selector: "app-edit",
@@ -74,7 +75,7 @@ export class EditPage implements OnInit {
     return await modal.present();*/
   }
 
-  async deleteImageTestElement(name: string) {
+  async deleteImageTestElement(id: string) {
     const alert = await this.alertController.create({
       header: "¿Estás seguro?",
       message: "Pulse aceptar para eliminar el elemento de prueba",
@@ -91,14 +92,24 @@ export class EditPage implements OnInit {
             this.imageTestsService
               .updateImageTest(this.id, {
                 elements: this.imageTest.elements.filter(
-                  (element) => element.name !== name
+                  (element) => element.id !== id
                 )
               })
               .then(() => {
-                this.toastService.show(
-                  "success",
-                  "Elemento de prueba eliminado con éxito"
-                );
+                // Eliminar de relatedTest dentro del elemento
+                this.imageTestsElementsService.updateImageTestElement(id, {
+                  relatedTests: firebase.firestore.FieldValue.arrayRemove(this.id)
+                }).then(() => {
+                  this.toastService.show(
+                    "success",
+                    "Elemento de prueba eliminado con éxito"
+                  );
+                }).catch(error => {
+                  this.toastService.show(
+                    "danger",
+                    "Error al eliminar la referencia de la prueba en el elemento de prueba"
+                  );
+                })
               })
               .catch(() => {
                 this.toastService.show(

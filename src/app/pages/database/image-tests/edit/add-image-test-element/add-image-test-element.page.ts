@@ -4,7 +4,6 @@ import { ModalController } from "@ionic/angular";
 import { ToastService } from "src/app/services/toast.service";
 import { ImageTestsElementsService } from "src/app/services/image-tests-elements.service";
 import * as firebase from "firebase/app";
-import * as moment from "moment";
 import { Observable, Subscription } from "rxjs";
 
 @Component({
@@ -85,6 +84,11 @@ export class AddImageTestElementPage implements OnInit, OnDestroy {
     }
 
     this.imageTestsService.updateImageTest(this.id, { elements: this.imageTest.elements }).then(async () => {
+      for await (const element of this.imageTest.elements) {
+        this.imageTestsElementsService.updateImageTestElement(element.id, {
+          relatedTests: firebase.firestore.FieldValue.arrayUnion(this.id)
+        })
+      }
       await this.dismissModal();
       this.toastService.show("success", "Elementos de imagen añadidos con éxito")
     }).catch((error) => {
