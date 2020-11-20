@@ -176,12 +176,9 @@ app.get("/getSubjectsFromDoctorId", (request, response) => {
 app.post("/createSubject", validate(createSubjectDataValidation, {}, {}), (request, response) => {
   console.log(request.body);
 
-  admin.firestore().collection(`subjects`).get().then(async (data) => {
-    const subjects = data.docs.filter(
-      (subject) =>
-        subject.data().mainDoctor === request.body.mainDoctor ||
-        subject.data().doctors.includes(request.body.mainDoctor)
-    );
+  admin.firestore().collection(`subjects`).where('mainDoctor', '==', request.query.mainDoctor).get().then(async (data) => {
+    const subjects = data.docs;
+
     if (subjects.length > 0) {
       let found = false;
 
