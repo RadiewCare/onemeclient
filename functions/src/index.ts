@@ -177,7 +177,11 @@ app.post("/createSubject", validate(createSubjectDataValidation, {}, {}), (reque
   console.log(request.body);
 
   admin.firestore().collection(`subjects`).where('mainDoctor', '==', request.query.mainDoctor).get().then(async (data) => {
-    const subjects = data.docs;
+    const subjects: FirebaseFirestore.DocumentData[] = [];
+
+    data.docs.forEach(element => {
+      subjects.push(element.data());
+    })
 
     if (subjects.length > 0) {
       let found = false;
