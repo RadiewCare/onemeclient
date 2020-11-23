@@ -3,11 +3,13 @@ import { ImageTestsService } from "src/app/services/image-tests.service";
 import { ImageTestsElementsService } from "src/app/services/image-tests-elements.service";
 import { ToastService } from "src/app/services/toast.service";
 import { ActivatedRoute, Router } from "@angular/router";
-import { ModalController, AlertController } from "@ionic/angular";
+import { ModalController, AlertController, LoadingController } from "@ionic/angular";
 import { Observable, Subscription } from "rxjs";
 import { AddImageTestElementPage } from "./add-image-test-element/add-image-test-element.page";
 import * as moment from "moment";
 import * as firebase from 'firebase';
+import { CategoriesService } from 'src/app/services/categories.service';
+import { LabelsService } from 'src/app/services/labels.service';
 
 @Component({
   selector: "app-edit",
@@ -22,6 +24,18 @@ export class EditPage implements OnInit {
   imageTest: any;
   imageTestSub: Subscription;
 
+  queryLabel: string;
+  queryCategory: string;
+
+  categories = [];
+  labels = [];
+
+  suggestedCategories: any;
+  suggestedLabels: any;
+
+  relatedCategories: any;
+  relatedLabels: any;
+
   constructor(
     private imageTestsService: ImageTestsService,
     private imageTestsElementsService: ImageTestsElementsService,
@@ -29,13 +43,18 @@ export class EditPage implements OnInit {
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private modalController: ModalController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private categoriesService: CategoriesService,
+    private labelsService: LabelsService,
+    private loadingController: LoadingController
   ) {
     this.id = this.activatedRoute.snapshot.paramMap.get("id");
   }
 
   ngOnInit() {
     this.getImageTest();
+    this.getCategories();
+    this.getLabels();
   }
 
   getImageTest() {
@@ -43,10 +62,24 @@ export class EditPage implements OnInit {
       .getImageTest(this.id)
       .subscribe((imageTest) => {
         this.imageTest = imageTest;
-        console.log(this.imageTest);
-
         this.name = this.imageTest.name;
+        this.relatedCategories = this.imageTest.relatedCategories || [];
+        this.relatedLabels = this.imageTest.relatedLabels || [];
       });
+  }
+
+  async getCategories() {
+    const categories = await this.categoriesService.getAllData();
+    categories.forEach(element => {
+      this.categories.push(element.data());
+    })
+  }
+
+  async getLabels() {
+    const labels = await this.labelsService.getAllData();
+    labels.forEach(element => {
+      this.labels.push(element.data());
+    })
   }
 
   async addImageTestElement() {
@@ -137,21 +170,107 @@ export class EditPage implements OnInit {
     console.log(this.imageTest.elements);
   }
 
+  onCategoryChange(input: string) {
+    if (input.length > 0) {
+      this.suggestedCategories = this.categories.filter(cat =>
+        cat.name.trim().toLowerCase().includes(input.trim().toLowerCase())
+      );
+    } else {
+      this.suggestedCategories = null;
+    }
+  }
+
+  onLabelChange(input: string) {
+    if (input.length > 0) {
+      this.suggestedLabels = this.labels.filter(lab =>
+        lab.name.trim().toLowerCase().includes(input.trim().toLowerCase())
+      );
+    } else {
+      this.suggestedLabels = null;
+    }
+  }
+
+  async addCategory(category: any) {
+    this.relatedCategories.push(category);
+    this.queryCategory = null;
+
+    this.imageTestsService.updateImageTest(this.id, {
+      relatedCategories: this.relatedCategories
+    }).then(() => {
+      this.toastService.show("success", "Categoría añadida con éxito")
+    })
+
+    // Referencias de categories
+    this.categoriesService.update(category.id, {
+      relatedImageTests: firebase.firestore.FieldValue.arrayUnion(this.id)
+    })
+  }
+
+  async removeCategory(index: number, category: any) {
+    this.relatedCategories.splice(index, 1);
+
+    this.imageTestsService.updateImageTest(this.id, {
+      relatedCategories: this.relatedCategories
+    }).then(() => {
+      this.toastService.show("success", "Categoría eliminada con éxito")
+    })
+
+    // Referencias de categories
+    this.categoriesService.update(category.id, {
+      relatedImageTests: firebase.firestore.FieldValue.arrayRemove(this.id)
+    })
+  }
+
+  async addLabel(label: any) {
+    this.relatedLabels.push(label);
+    this.queryLabel = null;
+
+    this.imageTestsService.updateImageTest(this.id, {
+      relatedLabels: this.relatedLabels
+    }).then(() => {
+      this.toastService.show("success", "Etiqueta añadida con éxito")
+    })
+
+    // Referencias de labels
+    this.labelsService.update(label.id, {
+      relatedImageTests: firebase.firestore.FieldValue.arrayUnion(this.id)
+    })
+  }
+
+  async removeLabel(index: number, label: any) {
+    this.relatedLabels.splice(index, 1);
+
+    this.imageTestsService.updateImageTest(this.id, {
+      relatedLabels: this.relatedLabels
+    }).then(() => {
+      this.toastService.show("success", "Etiqueta eliminada con éxito")
+    })
+
+    // Referencias de labels
+    this.labelsService.update(label.id, {
+      relatedImageTests: firebase.firestore.FieldValue.arrayRemove(this.id)
+    })
+  }
+
   save() {
     if (this.name.length !== 0) {
+      this.presentLoading();
       this.imageTestsService
         .updateImageTest(this.id, {
           name: this.name,
           elements: this.imageTest.elements,
           updatedAt: moment().format()
         })
-        .then(() => {
+        .then(async () => {
+
+          this.loadingController.dismiss();
           this.toastService.show(
             "success",
             "Prueba de imagen editada con éxito"
           );
         })
         .catch(() => {
+          this.loadingController.dismiss();
           this.toastService.show(
             "danger",
             "Error al editar la prueba de imagen"
@@ -160,6 +279,13 @@ export class EditPage implements OnInit {
     } else {
       this.toastService.show("danger", "Error: Rellene todos los campos");
     }
+  }
+
+  async presentLoading() {
+    const loading = await this.loadingController.create({
+      message: 'Actualizando...',
+    });
+    await loading.present();
   }
 
   async delete() {

@@ -75,6 +75,14 @@ const routes: Routes = [
   {
     path: 'image-tests-elements',
     loadChildren: () => import('./image-tests-elements/image-tests-elements.module').then( m => m.ImageTestsElementsPageModule)
+  },
+  {
+    path: 'categories',
+    loadChildren: () => import('./categories/categories.module').then( m => m.CategoriesPageModule)
+  },
+  {
+    path: 'labels',
+    loadChildren: () => import('./labels/labels.module').then( m => m.LabelsPageModule)
   }
 ];
 

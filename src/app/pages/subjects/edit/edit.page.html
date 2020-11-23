@@ -679,6 +679,75 @@
             <ion-label *ngIf="!lang.isSpanish()">Create image test</ion-label>
           </ion-button>
         </ion-col>
+
+        <ion-col size="6">
+
+          <ion-item>
+            <ion-icon slot="start" name="folder" color="dark"></ion-icon>
+            <ion-label>Filtrar por categorías</ion-label>
+            <ion-input [(ngModel)]="queryCategory" (ionChange)="onCategoryChange($event.detail.value)"></ion-input>
+          </ion-item>
+  
+          <!-- AUTOCOMPLETADO -->
+          <ng-container *ngIf="queryCategory; else elseCategory">
+            <ion-item *ngFor="let suggestedCategory of suggestedCategories" (click)="addCategory(suggestedCategory)" style="cursor: pointer;" lines="full">
+              <ion-label>{{suggestedCategory.name}}</ion-label>
+            </ion-item>
+            <ion-item *ngIf="suggestedCategories.length === 0">
+              <ion-label>¿No existe la categoría?</ion-label>
+              <ion-button [routerLink]="['/database/categories/create']" color="primary">
+                Crear
+              </ion-button>
+            </ion-item>
+          </ng-container>
+          <ng-template #elseCategory>
+            
+          </ng-template>
+          <!-- FIN DE AUTOCOMPLETADO -->
+          
+          <ng-container class="ion-padding-top">
+            <ion-chip color="primary" mode="ios" outline="true" *ngFor="let category of selectedCategories; let i = index" (click)="removeCategory(i)">
+              <ion-label>{{category.name}}</ion-label>
+              <ion-icon name="close-circle"></ion-icon>
+            </ion-chip>
+          </ng-container>
+        
+        </ion-col>
+  
+        <ion-col size="6">
+  
+          <ion-item>
+            <ion-icon slot="start" name="pricetags" color="dark"></ion-icon>
+            <ion-label>Filtrar por etiquetas</ion-label>
+            <ion-input [(ngModel)]="queryLabel" (ionChange)="onLabelChange($event.detail.value)"></ion-input>
+          </ion-item>
+  
+          <!-- AUTOCOMPLETADO -->
+          <ng-container *ngIf="queryLabel; else elseLabel">
+            <ion-item *ngFor="let suggestedLabel of suggestedLabels" (click)="addLabel(suggestedLabel)" style="cursor: pointer;" lines="full">
+              <ion-label>{{suggestedLabel.name}}</ion-label>
+            </ion-item>
+            <ion-item *ngIf="suggestedLabels.length === 0">
+              <ion-label>¿No existe la etiqueta?</ion-label>
+              <ion-button [routerLink]="['/database/labels/create']" color="primary">
+                Crear
+              </ion-button>
+            </ion-item>
+          </ng-container>
+          <ng-template #elseLabel>
+            
+          </ng-template>
+          <!-- FIN DE AUTOCOMPLETADO -->
+  
+          <ng-container class="ion-padding-top">
+            <ion-chip color="primary" mode="ios" outline="true" *ngFor="let label of selectedLabels; let i = index" (click)="removeLabel(i)">
+              <ion-label>{{label.name}}</ion-label>
+              <ion-icon name="close-circle"></ion-icon>
+            </ion-chip>
+          </ng-container>
+  
+        </ion-col>
+
         <ion-col size="12" *ngFor="let imageTest of imageTests ; let i = index" class="ion-padding-top">
           <ion-item color="primary" lines="none">
             <ion-label class="ion-text-wrap">

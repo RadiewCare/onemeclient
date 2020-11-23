@@ -18,6 +18,8 @@ import { AddPhenotypicElementPage } from "./add-phenotypic-element/add-phenotypi
 import { ImageTestsService } from "src/app/services/image-tests.service";
 import { ImportPage } from "./import/import.page";
 import { ImageTestsElementsService } from 'src/app/services/image-tests-elements.service';
+import { CategoriesService } from 'src/app/services/categories.service';
+import { LabelsService } from 'src/app/services/labels.service';
 
 @Component({
   selector: "app-edit",
@@ -54,6 +56,19 @@ export class EditPage implements OnInit, OnDestroy {
   imageTestsElementsSub: Subscription;
   imageTestsElements$: Observable<any>;
 
+
+  queryLabel: string;
+  queryCategory: string;
+
+  categories = [];
+  labels = [];
+
+  suggestedCategories: any;
+  suggestedLabels: any;
+
+  relatedCategories: any;
+  relatedLabels: any;
+
   constructor(
     private diseasesService: DiseasesService,
     private clinicAnalysisService: ClinicAnalysisElementsService,
@@ -65,6 +80,8 @@ export class EditPage implements OnInit, OnDestroy {
     private alertController: AlertController,
     private mutationsService: MutationsService,
     private imageTestsElementsService: ImageTestsElementsService,
+    private categoriesService: CategoriesService,
+    private labelsService: LabelsService,
     private imageTestsService: ImageTestsService
   ) {
     this.id = this.activatedRoute.snapshot.paramMap.get("id");
@@ -82,7 +99,12 @@ export class EditPage implements OnInit, OnDestroy {
         this.highRiskExplanation = disease.highRiskExplanation;
         this.mediumRiskExplanation = disease.mediumRiskExplanation;
         this.lowRiskExplanation = disease.lowRiskExplanation;
+
+        this.relatedLabels = disease.relatedLabels || [];
+        this.relatedCategories = disease.relatedCategories || [];
       });
+    this.getCategories();
+    this.getLabels();
   }
 
   ionViewDidEnter() {
@@ -100,6 +122,102 @@ export class EditPage implements OnInit, OnDestroy {
       }
     );
 
+  }
+
+  async getCategories() {
+    const categories = await this.categoriesService.getAllData();
+    categories.forEach(element => {
+      this.categories.push(element.data());
+    })
+  }
+
+  async getLabels() {
+    const labels = await this.labelsService.getAllData();
+    labels.forEach(element => {
+      this.labels.push(element.data());
+    })
+  }
+
+  onCategoryChange(input: string) {
+    if (input.length > 0) {
+      this.suggestedCategories = this.categories.filter(cat =>
+        cat.name.trim().toLowerCase().includes(input.trim().toLowerCase())
+      );
+    } else {
+      this.suggestedCategories = null;
+    }
+  }
+
+  onLabelChange(input: string) {
+    if (input.length > 0) {
+      this.suggestedLabels = this.labels.filter(lab =>
+        lab.name.trim().toLowerCase().includes(input.trim().toLowerCase())
+      );
+    } else {
+      this.suggestedLabels = null;
+    }
+  }
+
+  async addCategory(category: any) {
+    this.relatedCategories.push(category);
+    this.queryCategory = null;
+
+    this.diseasesService.updateDisease(this.id, {
+      relatedCategories: this.relatedCategories
+    }).then(() => {
+      this.toastService.show("success", "Categoría añadida con éxito")
+    })
+
+    // Referencias de categories
+    this.categoriesService.update(category.id, {
+      relatedDiseases: firebase.firestore.FieldValue.arrayUnion(this.id)
+    })
+  }
+
+  async removeCategory(index: number, category: any) {
+    this.relatedCategories.splice(index, 1);
+
+    this.diseasesService.updateDisease(this.id, {
+      relatedCategories: this.relatedCategories
+    }).then(() => {
+      this.toastService.show("success", "Categoría eliminada con éxito")
+    })
+
+    // Referencias de categories
+    this.categoriesService.update(category.id, {
+      relatedDiseases: firebase.firestore.FieldValue.arrayRemove(this.id)
+    })
+  }
+
+  async addLabel(label: any) {
+    this.relatedLabels.push(label);
+    this.queryLabel = null;
+
+    this.diseasesService.updateDisease(this.id, {
+      relatedLabels: this.relatedLabels
+    }).then(() => {
+      this.toastService.show("success", "Etiqueta añadida con éxito")
+    })
+
+    // Referencias de labels
+    this.labelsService.update(label.id, {
+      relatedDiseases: firebase.firestore.FieldValue.arrayUnion(this.id)
+    })
+  }
+
+  async removeLabel(index: number, label: any) {
+    this.relatedLabels.splice(index, 1);
+
+    this.diseasesService.updateDisease(this.id, {
+      relatedLabels: this.relatedLabels
+    }).then(() => {
+      this.toastService.show("success", "Etiqueta eliminada con éxito")
+    })
+
+    // Referencias de labels
+    this.labelsService.update(label.id, {
+      relatedDiseases: firebase.firestore.FieldValue.arrayRemove(this.id)
+    })
   }
 
   /* MODIFICACIONES */

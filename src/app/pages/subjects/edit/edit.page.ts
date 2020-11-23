@@ -23,6 +23,11 @@ import { SubjectsService } from "src/app/services/subjects.service";
 import { DoctorsService } from "src/app/services/doctors.service";
 import { EditQuibimPage } from "./edit-quibim/edit-quibim.page";
 import { CreateReportPage } from './create-report/create-report.page';
+import { CategoriesService } from 'src/app/services/categories.service';
+import { LabelsService } from 'src/app/services/labels.service';
+import { ImageTestsService } from 'src/app/services/image-tests.service';
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
+import { findIndex } from 'rxjs/operators';
 
 @Component({
   selector: "app-edit",
@@ -160,6 +165,28 @@ export class EditPage implements OnInit, OnDestroy {
   // ESTUDIO DE IMAGEN
   imageTests: any;
 
+  // filtros
+  queryLabel: string;
+  queryCategory: string;
+
+  categories = [];
+  labels = [];
+
+  suggestedCategories: any;
+  suggestedLabels: any;
+
+  relatedCategories: any;
+  relatedLabels: any;
+
+  filteredImageTests: any;
+
+  selectedCategories = [];
+  selectedLabels = [];
+  selectedCategoriesIds = [];
+  selectedLabelsIds = [];
+
+  originalImageTests: any;
+
   constructor(
     private activatedRoute: ActivatedRoute,
     private alertController: AlertController,
@@ -173,12 +200,17 @@ export class EditPage implements OnInit, OnDestroy {
     private modalController: ModalController,
     public lang: LanguageService,
     private auth: AuthService,
-    private doctorsService: DoctorsService
+    private doctorsService: DoctorsService,
+    private categoriesService: CategoriesService,
+    private labelsService: LabelsService,
+    private imageTestsService: ImageTestsService
   ) { }
 
   ngOnInit() {
     this.id = this.activatedRoute.snapshot.params.id;
     this.segment.value = "phenotypic-data";
+    this.getCategories();
+    this.getLabels();
   }
 
   ionViewDidEnter() {
@@ -205,7 +237,7 @@ export class EditPage implements OnInit, OnDestroy {
     });
 
     this.subject$ = this.subjectsService.getSubject(this.id);
-    this.subjectSub = this.subject$.subscribe((data) => {
+    this.subjectSub = this.subject$.subscribe(async (data) => {
       this.subject = data;
 
       console.log(this.subject);
@@ -265,6 +297,23 @@ export class EditPage implements OnInit, OnDestroy {
         this.imageTests = data.imageTests.sort((a, b) => {
           return b.date - a.date;
         });
+        this.originalImageTests = data.imageTests.sort((a, b) => {
+          return b.date - a.date;
+        });
+        console.log(this.imageTests);
+
+        let iterator = 0;
+        for await (const element of this.imageTests) {
+          this.imageTestsService.getImageTestData(element.imageTestId).then(data => {
+            console.log(data.data());
+
+            this.imageTests[iterator].relatedCategories = data.data().relatedCategories || [];
+            this.imageTests[iterator].relatedLabels = data.data().relatedLabels || [];
+            iterator = iterator + 1;
+          })
+        }
+        console.log(this.imageTests);
+
       }
     });
   }
@@ -289,6 +338,116 @@ export class EditPage implements OnInit, OnDestroy {
         break;
       default:
         break;
+    }
+  }
+
+  async getCategories() {
+    const categories = await this.categoriesService.getAllData();
+    categories.forEach(element => {
+      this.categories.push(element.data());
+    })
+  }
+
+  async getLabels() {
+    const labels = await this.labelsService.getAllData();
+    labels.forEach(element => {
+      this.labels.push(element.data());
+    })
+  }
+
+  onCategoryChange(input: string) {
+    if (input.length > 0) {
+      this.suggestedCategories = this.categories.filter(cat =>
+        cat.name.trim().toLowerCase().includes(input.trim().toLowerCase())
+      );
+    } else {
+      this.suggestedCategories = null;
+    }
+  }
+
+  onLabelChange(input: string) {
+    if (input.length > 0) {
+      this.suggestedLabels = this.labels.filter(lab =>
+        lab.name.trim().toLowerCase().includes(input.trim().toLowerCase())
+      );
+    } else {
+      this.suggestedLabels = null;
+    }
+  }
+
+  async addCategory(category: any) {
+    this.selectedCategories.push(category);
+    this.selectedCategoriesIds.push(category.id);
+    await this.filterCategories();
+    this.filterLabels()
+    this.queryCategory = null;
+  }
+
+  async removeCategory(index: number) {
+    this.selectedCategories.splice(index, 1);
+    this.selectedCategoriesIds.splice(index, 1);
+    await this.filterCategories();
+    this.filterLabels()
+    this.queryCategory = null;
+  }
+
+  async addLabel(label: any) {
+    this.selectedLabels.push(label);
+    this.selectedLabelsIds.push(label.id);
+    await this.filterCategories();
+    this.filterLabels()
+    this.queryLabel = null;
+  }
+
+  async removeLabel(index: number) {
+    this.selectedLabels.splice(index, 1);
+    this.selectedLabelsIds.splice(index, 1);
+    await this.filterCategories();
+    this.filterLabels()
+    this.queryLabel = null;
+  }
+
+  async filterCategories() {
+    if (this.selectedCategoriesIds.length !== 0) {
+      console.log(this.selectedCategories);
+
+      const newTests = [];
+      // Miro en qué indices están los elementos que coinciden con la categoría
+      this.imageTests.forEach(test => {
+        test.relatedCategories.forEach(category => {
+          if (this.selectedCategoriesIds.includes(category.id)) {
+            newTests.push(test);
+          }
+        });
+      });
+
+      this.imageTests = newTests
+    } else {
+      if (this.selectedLabelsIds.length === 0) {
+        this.imageTests = this.originalImageTests;
+      }
+    }
+  }
+
+  async filterLabels() {
+    if (this.selectedLabelsIds.length !== 0) {
+      console.log(this.selectedCategories);
+
+      const newTests = [];
+      // Miro en qué indices están los elementos que coinciden con la categoría
+      this.imageTests.forEach(test => {
+        test.relatedLabels.forEach(label => {
+          if (this.selectedLabelsIds.includes(label.id)) {
+            newTests.push(test);
+          }
+        });
+      });
+
+      this.imageTests = newTests
+    } else {
+      if (this.selectedCategoriesIds.length === 0) {
+        this.imageTests = this.originalImageTests;
+      }
     }
   }
 
