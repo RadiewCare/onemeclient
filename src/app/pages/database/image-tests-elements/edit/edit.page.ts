@@ -33,6 +33,7 @@ export class EditPage implements OnInit, OnDestroy {
   defaultInput = false;
   unit: string;
   positiveOptions = [];
+  defaultOption: string;
   currentPositiveOption: string;
 
   imageTest: any;
@@ -146,6 +147,7 @@ export class EditPage implements OnInit, OnDestroy {
         this.type = data.type;
 
         this.options = data.options;
+        this.defaultOption = data.defaultOption || null;
 
         if (data.images) {
           this.images = [...data.images];
@@ -165,6 +167,7 @@ export class EditPage implements OnInit, OnDestroy {
         this.trueInput = data.trueInput;
         this.falseInput = data.falseInput;
         this.defaultInput = data.defaultInput;
+        this.defaultOption = data.defaultOption;
         this.unit = data.unit;
         if (data.positiveOptions) {
           this.positiveOptions = data.positiveOptions;
@@ -307,6 +310,7 @@ export class EditPage implements OnInit, OnDestroy {
           trueInput: this.trueInput || null,
           falseInput: this.falseInput || null,
           defaultInput: this.defaultInput || null,
+          defaultOption: this.defaultOption || null,
           unit: this.unit || null,
           positiveOptions: this.positiveOptions || [],
           relatedTests: this.relatedTests,

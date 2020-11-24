@@ -80,7 +80,7 @@
           </ion-textarea>
           <ion-select *ngIf="field.type==='multiple'"
             [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            (ionChange)="editImageField($event.target.value,i)" [value]="field.value" cancelText="Cancelar" multiple>
+            (ionChange)="editImageField($event.target.value,i)" [value]="field.value? field.value : field.defaultOption" cancelText="Cancelar" multiple>
             <ion-select-option *ngFor="let option of field.options" [value]="option">{{option}}
             </ion-select-option>
           </ion-select>

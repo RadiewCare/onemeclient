@@ -193,6 +193,28 @@
           </ion-col>
           <ion-col size="12" size-lg="6">
             <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Grupo sanguíneo</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Blood type</ion-label>
+              <ion-select [placeholder]="lang.isSpanish()?'Seleccionar':'Select'" [(ngModel)]="bloodType">
+                <ion-select-option value="a" *ngIf="lang.isSpanish()">A</ion-select-option>
+                <ion-select-option value="b" *ngIf="lang.isSpanish()">B</ion-select-option>
+                <ion-select-option value="ab" *ngIf="lang.isSpanish()">AB</ion-select-option>
+                <ion-select-option value="cero" *ngIf="lang.isSpanish()">0</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">RH</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">RH</ion-label>
+              <ion-select [placeholder]="lang.isSpanish()?'Seleccionar':'Select'" [(ngModel)]="rh">
+                <ion-select-option value="positivo" *ngIf="lang.isSpanish()">Positivo</ion-select-option>
+                <ion-select-option value="negativo" *ngIf="lang.isSpanish()">Negativo</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
               <ion-label position="floating" *ngIf="lang.isSpanish()">Color de cabello</ion-label>
               <ion-label position="floating" *ngIf="!lang.isSpanish()">Hair color</ion-label>
               <ion-select [placeholder]="lang.isSpanish()?'Seleccionar':'Select'" [(ngModel)]="hair">
@@ -548,6 +570,9 @@
     <div *ngSwitchCase="'genetic-study'">
       <ng-container *ngIf="userData?.id === subject?.mainDoctor || userData?.sharedSubjectsGenetic.includes(id)">
         <ion-row>
+          <ion-col size="12" *ngIf="subject.geneticDataFileName">
+            Nombre de archivo importado: {{subject?.geneticDataFileName}}
+          </ion-col>
           <ion-col size="12" *ngIf="mutations">
             <ion-text color="primary">
               <h5 *ngIf="lang.isSpanish()">Mutaciones encontradas:</h5>

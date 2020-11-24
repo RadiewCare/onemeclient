@@ -31,6 +31,9 @@ export class ImportPage implements OnInit {
   errorMessageAnalytic: string;
   errorMessageImage: string;
 
+  subject: any;
+  filename: string;
+
   constructor(
     private papa: Papa,
     private geneticDataService: GeneticDataService,
@@ -44,7 +47,15 @@ export class ImportPage implements OnInit {
     this.id = this.activatedRoute.snapshot.paramMap.get("id");
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+
+  }
+
+  ionViewDidEnter() {
+    this.subjectsService.getSubjectData(this.id).then((data) => {
+      this.subject = data.data();
+    })
+  }
 
   loadPhenotypicData(event: any) {
     const csvFile = event.target.files[0];
@@ -147,6 +158,7 @@ export class ImportPage implements OnInit {
     };
 
     if (event.target.files[0].name.split(".").pop() === "csv") {
+      this.filename = event.target.files[0].name;
       this.papa.parse(csvFile, csvOptions);
       console.log("es csv");
     } else {
@@ -186,6 +198,9 @@ export class ImportPage implements OnInit {
                     "success",
                     "Datos genéticos importados con éxito"
                   );
+                  this.subjectsService.updateSubject(this.id, {
+                    geneticDataFileName: this.filename
+                  })
                 });
               }
             });

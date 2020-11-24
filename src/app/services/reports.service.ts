@@ -452,9 +452,10 @@ export class ReportsService {
             this.renderDelimiter();
           }
 
-          this.doc.setFont("helvetica", "bold")
+          this.doc.setFont("helvetica", "normal");
+          this.doc.setTextColor(0, 0, 0);
           // Nombre
-          await this.doc.text(text, this.x, this.y);
+          await this.doc.text(text + ":", this.x, this.y);
           this.y = this.y + 10;
         }
       }
@@ -462,18 +463,24 @@ export class ReportsService {
       this.doc.setFont("helvetica", "normal")
       // Valor
       if (value.value) {
+        if (value.status === "positive") {
+          this.doc.setTextColor(255, 0, 0);
+        }
         await this.doc.text("Hallazgo: " + value.value, this.x, this.y);
         this.y = this.y + 10;
       }
 
+
       // Estado
       if (value.status) {
-        await this.doc.text(value.status === 'positive' ? "Estado: POSITIVO" : "Estado: NEGATIVO", this.x, this.y);
+        // await this.doc.text(value.status === 'positive' ? "Estado: POSITIVO" : "Estado: NEGATIVO", this.x, this.y);
       } else {
+        this.doc.setTextColor(0, 0, 0);
         await this.doc.text("Sin determinar", this.x, this.y);
+        this.y = this.y + 10;
       }
 
-      this.y = this.y + 20;
+      this.y = this.y + 10;
     }
 
     this.saveReport(imageTest.name);

@@ -93,6 +93,8 @@ export class EditPage implements OnInit, OnDestroy {
   menopausalAge: number;
   sop: boolean;
   vaginalSpotting: boolean;
+  bloodType: string;
+  rh: string;
 
   /* Hábitos de vida */
   smoker: boolean;
@@ -261,6 +263,8 @@ export class EditPage implements OnInit, OnDestroy {
         this.hair = history.hair;
         this.eyes = history.eyes;
         this.imc = history.imc;
+        this.bloodType = history.bloodType;
+        this.rh = history.rh;
         this.androidFat = history.androidFat;
         this.highBloodPressure = history.highBloodPressure;
         this.lowBloodPressure = history.lowBloodPressure;
@@ -723,7 +727,6 @@ export class EditPage implements OnInit, OnDestroy {
   async savePhenotypic(): Promise<any> {
     const data = {
       actualpacsId: this.actualpacsId || null,
-      accessionNumber: this.accessionNumber || null,
       inicialesDelSujeto: this.inicialesDelSujeto || null,
       centroReferente: this.centroReferente || null,
       genre: this.genre || null,
@@ -735,6 +738,8 @@ export class EditPage implements OnInit, OnDestroy {
       hair: this.hair || null,
       eyes: this.eyes || null,
       imc: this.imc || null,
+      bloodType: this.bloodType || null,
+      rh: this.rh || null,
       androidFat: this.androidFat || null,
       highBloodPressure: this.highBloodPressure || null,
       lowBloodPressure: this.lowBloodPressure || null,

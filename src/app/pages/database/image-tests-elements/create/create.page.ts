@@ -30,6 +30,7 @@ export class CreatePage implements OnInit {
   unit: string;
   positiveOptions = [];
   currentPositiveOption: string;
+  defaultOption: string;
 
   imageTest: any;
 
@@ -132,6 +133,7 @@ export class CreatePage implements OnInit {
         falseInput: this.falseInput || null,
         defaultInput: this.defaultInput || null,
         unit: this.unit || null,
+        defaultOption: this.defaultOption || null,
         relatedTests: [],
         isIllustrated: false,
         positiveOptions: this.positiveOptions || []
