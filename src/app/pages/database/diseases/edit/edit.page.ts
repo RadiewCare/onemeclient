@@ -15,7 +15,6 @@ import { AddAnalysisElementPage } from "./add-analysis-element/add-analysis-elem
 import { AddGeneticElementPage } from "./add-genetic-element/add-genetic-element.page";
 import { MutationsService } from "src/app/services/mutations.service";
 import { AddPhenotypicElementPage } from "./add-phenotypic-element/add-phenotypic-element.page";
-import { ImageTestsService } from "src/app/services/image-tests.service";
 import { ImportPage } from "./import/import.page";
 import { ImageTestsElementsService } from 'src/app/services/image-tests-elements.service';
 import { CategoriesService } from 'src/app/services/categories.service';
@@ -82,7 +81,6 @@ export class EditPage implements OnInit, OnDestroy {
     private imageTestsElementsService: ImageTestsElementsService,
     private categoriesService: CategoriesService,
     private labelsService: LabelsService,
-    private imageTestsService: ImageTestsService
   ) {
     this.id = this.activatedRoute.snapshot.paramMap.get("id");
   }
@@ -102,9 +100,11 @@ export class EditPage implements OnInit, OnDestroy {
 
         this.relatedLabels = disease.relatedLabels || [];
         this.relatedCategories = disease.relatedCategories || [];
+        // this.getBiomarkersValues();
       });
     this.getCategories();
     this.getLabels();
+
   }
 
   ionViewDidEnter() {
@@ -136,6 +136,103 @@ export class EditPage implements OnInit, OnDestroy {
     labels.forEach(element => {
       this.labels.push(element.data());
     })
+  }
+
+  async getBiomarkersValues() {
+    const diseasesArray = [];
+    const testElementsArray = []
+    // Coger los biomarcadores de cada elemento de prueba e insertarlos dentro del array imageBiomarkers
+
+    this.diseasesService.getDiseasesData().then(diseases => {
+      this.imageTestsElementsService.getImageTestElementsData().then(async testElements => {
+        // this.updateBiomarkers(diseases.docs, testElements.docs)
+
+        // Recorrer los biomarkers de la enfermedad y coger los datos concreto de esa id
+
+        for await (const disease of diseases.docs) {
+          diseasesArray.push(disease.data())
+        }
+
+        for await (const element of testElements.docs) {
+          testElementsArray.push(element.data())
+        }
+
+
+        for await (const disease of diseasesArray) {
+          let index = 0;
+          for await (const biomarker of disease.imageBiomarkers) {
+            const result = testElementsArray.filter(element => element.id === biomarker.id);
+            console.log(result);
+
+            biomarker.options = result[0].options;
+            if (disease.imageTests) {
+              biomarker.values = disease.imageTests[index].value;
+            } else {
+              biomarker.values = [];
+            }
+            index = index + 1;
+          }
+        }
+
+        setTimeout(async () => {
+          console.log("updating");
+          for await (const diseaseData of diseasesArray) {
+            await this.diseasesService.updateDisease(diseaseData.id, {
+              imageBiomarkers: diseaseData.imageBiomarkers
+            }).then(() => console.log(diseaseData.id, diseaseData.name)).catch(error => console.error(error));
+          }
+          console.log("updated");
+        }, 3000);
+      })
+    })
+  }
+
+  async updateBiomarkers(diseases, testElements) {
+    const diseasesArray = [];
+    const testElementsArray = []
+
+    for await (const disease of diseases) {
+      diseasesArray.push(disease.data())
+    }
+
+    for await (const element of testElements) {
+      testElementsArray.push(element.data())
+    }
+
+    console.log(diseasesArray, testElementsArray);
+
+
+    for await (const disease of diseasesArray) {
+
+      const diseaseData = disease;
+      console.log(diseaseData);
+
+      if (diseaseData.imageTests && diseaseData.imageBiomarkers) {
+        for await (const newImageTest of diseaseData.imageBiomarkers) {
+          for await (const oldImageTest of diseaseData.imageTests) {
+            if (testElementsArray.some(element => element.name === oldImageTest.test)) {
+              console.log(oldImageTest.test);
+
+              newImageTest.options = oldImageTest.options;
+              newImageTest.values = oldImageTest.value;
+            }
+          }
+        }
+      }
+
+      console.log(diseaseData.imageBiomarkers);
+
+      if (diseaseData.imageBiomarkers) {
+        await this.diseasesService.updateDisease(diseaseData.id, {
+          imageBiomarkers: diseaseData.imageBiomarkers
+        }).then(() => console.log(diseaseData.id, diseaseData.name)).catch(error => console.error(error));
+      } else {
+        await this.diseasesService.updateDisease(diseaseData.id, {
+          imageBiomarkers: []
+        }).then(() => console.log(diseaseData.id, diseaseData.name, "sin biomarcadores")).catch(error => console.error(error));
+      }
+
+    }
   }
 
   onCategoryChange(input: string) {
@@ -353,13 +450,17 @@ export class EditPage implements OnInit, OnDestroy {
     console.log(index);
 
     this.diseasesService.getDiseaseData(diseaseId).then((element) => {
-      const removed = element.data().imageBiomarkers.splice(index, 1);
+      const removed = element.data().imageBiomarkers.splice(index, 1);;
+      console.log(removed);
 
       this.diseasesService
         .updateDisease(diseaseId, {
           imageBiomarkers: firebase.firestore.FieldValue.arrayRemove(removed[0])
         })
-        .then(() => {
+        .then(async () => {
+          await this.imageTestsElementsService.updateImageTestElement(removed[0].id, {
+            relatedDiseases: firebase.firestore.FieldValue.arrayRemove(this.id)
+          });
           this.toastService.show(
             "success",
             "Biomarcador de prueba de imagen eliminado de la enfermedad"
@@ -444,6 +545,7 @@ export class EditPage implements OnInit, OnDestroy {
           mediumRiskExplanation: this.mediumRiskExplanation || null,
           lowRiskExplanation: this.lowRiskExplanation || null,
           phenotypicElements: this.disease.phenotypicElements || null,
+          imageBiomarkers: this.disease.imageBiomarkers || null,
           updatedAt: moment().format()
         })
         .then(() => {

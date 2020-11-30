@@ -17,6 +17,10 @@ export class ImageTestsElementsService {
     return this.db.collection("imageTestElements").valueChanges();
   }
 
+  getImageTestElementsData(): Promise<any> {
+    return this.db.firestore.collection("imageTestElements").get();
+  }
+
   getImageTestElement(id: string): Observable<any> {
     return this.db.doc(`imageTestElements/${id}`).valueChanges();
   }

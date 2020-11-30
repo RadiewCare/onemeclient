@@ -20,6 +20,10 @@ export class ImageTestsPage implements OnInit, OnDestroy {
       .getImageTests()
       .subscribe((tests) => {
         this.imageTests = tests;
+        console.log(this.imageTests);
+        const filtered = this.imageTests.filter(element => !element.elements);
+        console.log(filtered);
+
       });
   }
 

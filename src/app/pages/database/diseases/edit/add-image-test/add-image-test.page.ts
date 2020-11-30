@@ -98,11 +98,17 @@ export class AddImageTestPage implements OnInit {
     if (this.imageTestsData && this.imageTestsData.length > 0) {
 
       for await (const element of this.imageTestsData) {
-        this.disease.imageBiomarkers.push({ id: element.id, name: element.name, order: this.disease.imageBiomarkers.length })
+        this.disease.imageBiomarkers.push({ id: element.id, name: element.name, order: this.disease.imageBiomarkers.length, options: element.options })
       }
 
       this.diseasesService.updateDisease(this.disease.id, { imageBiomarkers: this.disease.imageBiomarkers }).then(() => {
         this.toastService.show("success", "Elementos de prueba añadidos").then(() => {
+          // Añadir las referencias en los image-test-elements
+          this.disease.imageBiomarkers.forEach(biomarker => {
+            this.imageTestsElementsService.updateImageTestElement(biomarker.id, {
+              relatedDiseases: firebase.firestore.FieldValue.arrayUnion(this.disease.id)
+            })
+          });
           this.dismissModal();
         })
       }).catch(() => {

@@ -455,16 +455,16 @@ export class EditPage implements OnInit, OnDestroy {
             }
 
             // Eliminar las referencias de los relatedDiseases
-            /* for await (const relatedDisease of this.relatedDiseases) {
+            for await (const relatedDisease of this.relatedDiseases) {
               this.diseasesService.getDiseaseData(relatedDisease).then(data => {
-                const elements = data.data().elements;
-                const indexForDelete = elements.findIndex(element => element.id === relatedDisease);
-                elements.splice(indexForDelete, 1);
+                const biomarkers = data.data().imageBiomarkers;
+                const indexForDelete = biomarkers.findIndex(biomarker => biomarker.id === this.id);
+                biomarkers.splice(indexForDelete, 1);
                 this.diseasesService.updateDisease(relatedDisease, {
-                  //
+                  imageBiomarkers: biomarkers
                 })
               })
-            } */
+            }
 
             this.imageTestsElementsService.deleteImageTestElement(this.id).then(() => {
               this.router.navigate(["/database/image-tests-elements"]).then(() => {

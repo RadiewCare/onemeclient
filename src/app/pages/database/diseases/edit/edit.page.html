@@ -119,7 +119,8 @@
           <ion-label>Datos fenotípicos:</ion-label>
           <ion-buttons slot="end">
             <ion-button (click)="addPhenotypicElement()">
-              <ion-icon slot="icon-only" name="add"></ion-icon>
+              <ion-label>Añadir</ion-label>
+              <ion-icon slot="start" name="add"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-item>
@@ -150,7 +151,8 @@
           <ion-label>Elementos genéticos:</ion-label>
           <ion-buttons slot="end">
             <ion-button (click)="addGeneticElement()">
-              <ion-icon slot="icon-only" name="add"></ion-icon>
+              <ion-label>Añadir</ion-label>
+              <ion-icon slot="start" name="add"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-item>
@@ -206,7 +208,8 @@
           <ion-label>Mutaciones:</ion-label>
           <ion-buttons slot="end">
             <ion-button (click)="addMutation()">
-              <ion-icon slot="icon-only" name="add"></ion-icon>
+              <ion-label>Añadir</ion-label>
+              <ion-icon slot="start" name="add"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-item>
@@ -231,7 +234,8 @@
           <ion-label>Pruebas de laboratorio:</ion-label>
           <ion-buttons slot="end">
             <ion-button (click)="addAnalysisElement()">
-              <ion-icon slot="icon-only" name="add"></ion-icon>
+              <ion-label>Añadir</ion-label>
+              <ion-icon slot="start" name="add"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-item>
@@ -257,11 +261,13 @@
           <ion-label>Biomarcadores en pruebas de imagen:</ion-label>
           <ion-buttons slot="end">
             <ion-button (click)="addImageTest()">
-              <ion-icon slot="icon-only" name="add"></ion-icon>
+              <ion-label>Añadir</ion-label>
+              <ion-icon slot="start" name="add"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-item>
       </ion-col>
+
       <ion-col size="12" color="secondary" *ngFor="let imageBiomarker of disease?.imageBiomarkers; let i = index">
         <ion-item lines="none">
           <ion-label>
@@ -282,6 +288,12 @@
               <ion-icon slot="icon-only" name="close"></ion-icon>
             </ion-button>
           </ion-buttons>
+        </ion-item>
+        <ion-item>
+          <ion-label>Biomarcadores implicados</ion-label>
+          <ion-select [(ngModel)]="imageBiomarker.values" multiple="true" placeholder="Seleccione los biomarcadores implicados en esta enfermedad" cancelText="Cancelar" okText="Aceptar">
+            <ion-select-option [value]="value" *ngFor="let value of imageBiomarker.options; let i=index">{{value}}</ion-select-option>
+          </ion-select>
         </ion-item>
       </ion-col>
 
