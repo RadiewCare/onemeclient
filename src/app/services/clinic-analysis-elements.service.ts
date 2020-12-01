@@ -6,11 +6,17 @@ import { AngularFirestore } from "@angular/fire/firestore";
   providedIn: "root"
 })
 export class ClinicAnalysisElementsService {
-  constructor(private db: AngularFirestore) {}
+  constructor(private db: AngularFirestore) { }
 
   getClinicAnalysisElements(): Observable<any> {
     return this.db
-      .collection("clinicAnalysisElements", (ref) => ref.orderBy("category"))
+      .collection("clinicAnalysisElements", (ref) => ref.orderBy("category").orderBy("name"))
+      .valueChanges();
+  }
+
+  getClinicAnalysisElementsList(): Observable<any> {
+    return this.db
+      .collection("clinicAnalysisElements", (ref) => ref.orderBy("name"))
       .valueChanges();
   }
 

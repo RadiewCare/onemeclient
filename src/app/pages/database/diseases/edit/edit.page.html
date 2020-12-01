@@ -42,7 +42,7 @@
       <ion-col size="12" class="ion-margin-bottom">
         <ion-item>
           <ion-label position="floating">Notas</ion-label>
-          <ion-textarea placeholder="Introduzca notas" [(ngModel)]="notes" rows="4">
+          <ion-textarea placeholder="Introduzca notas" [(ngModel)]="notes" rows="4" autoGrow="true">
           </ion-textarea>
         </ion-item>
       </ion-col>
@@ -241,7 +241,7 @@
         </ion-item>
       </ion-col>
       <ion-col size="12" size-lg="4" color="secondary"
-        *ngFor="let analysisElement of disease?.analysisElements">
+        *ngFor="let analysisElement of disease?.analysisElements; let j = index">
         <ion-item lines="none">
           <ion-label>{{analysisElement.name}}</ion-label>
           <ion-buttons slot="end">
@@ -253,6 +253,23 @@
             </ion-button>
           </ion-buttons>
         </ion-item>
+        <ng-container *ngIf="analysisElement.ranges">
+          <ion-item *ngFor="let range of analysisElement.ranges; let i = index" lines="full">
+            <ion-text>
+              <p *ngIf="range.sex"><b>Sexo:</b> {{range.sex === "male"?'Hombre':'Mujer'}}</p>
+              <p *ngIf="range.lowerAge || range.upperAge"><b>Edad:</b> {{range.lowerAge}}-{{range.upperAge}}
+                años</p>
+              <p *ngIf="range.lowerLevel || range.upperLevel"><b>Valores:</b>
+                {{range.lowerLevel}}-{{range.upperLevel}} {{metricUnit}}</p>
+            </ion-text>
+            <ion-buttons slot="end">
+              <ion-button (click)="deleteRange(j,i)">
+                <ion-label>Eliminar</ion-label>
+                <ion-icon slot="start" name="trash"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-item>
+        </ng-container>
       </ion-col>
 
       <ion-col size="12" class="ion-padding-top">

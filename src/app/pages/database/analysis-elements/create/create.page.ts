@@ -18,6 +18,7 @@ export class CreatePage implements OnInit {
   lowerAge: number;
   upperAge: number;
   sex: string;
+  information: string;
 
   ranges = [];
 
@@ -25,9 +26,9 @@ export class CreatePage implements OnInit {
     private analysisElementsService: ClinicAnalysisElementsService,
     private router: Router,
     private toastService: ToastService
-  ) {}
+  ) { }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   addRange() {
     if (this.lowerLevel || this.upperLevel) {
@@ -64,6 +65,7 @@ export class CreatePage implements OnInit {
         category: this.category,
         metricUnit: this.metricUnit,
         ranges: this.ranges,
+        information: this.information || null,
         createdAt: moment().format()
       };
       console.log(element);

@@ -130,7 +130,7 @@ export class SubjectsService {
     return this.db.doc(`subjects/${id}`).delete();
   }
 
-  async importAnalyticData(id: string, csvData: any): Promise<any> {
+  async importAnalyticData(id: string, csvData: any, filename: string, date: string): Promise<any> {
     console.log(csvData);
     console.log(Object.keys(csvData[0]));
 
@@ -181,11 +181,12 @@ export class SubjectsService {
 
     // createAnalysis en sujeto con estos datos
     const data = {
-      date: moment().format(),
+      date: date,
       values,
       shortcode:
         "[ANA" + Math.floor(Math.random() * 1000 + 1).toString(10) + "]",
-      createdAt: moment().format()
+      createdAt: moment().format(),
+      filename: filename || null
     };
     console.log(data);
 

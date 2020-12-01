@@ -34,6 +34,10 @@ export class ImportPage implements OnInit {
   subject: any;
   filename: string;
 
+  analyticFilename: string;
+
+  date: string;
+
   constructor(
     private papa: Papa,
     private geneticDataService: GeneticDataService,
@@ -112,6 +116,7 @@ export class ImportPage implements OnInit {
   }
 
   loadAnalyticData(event: any) {
+    this.analyticFilename = event.target.files[0].name;
     const csvFile = event.target.files[0];
 
     const csvOptions = {
@@ -213,7 +218,7 @@ export class ImportPage implements OnInit {
       const loading = await this.loadingController.create(null);
       loading.present().then(() => {
         this.subjectsService
-          .importAnalyticData(this.id, this.csvAnalyticData)
+          .importAnalyticData(this.id, this.csvAnalyticData, this.analyticFilename, this.date)
           .then(async () => {
             await loading.dismiss();
             this.toastService.show("success", "Datos importados con éxito");

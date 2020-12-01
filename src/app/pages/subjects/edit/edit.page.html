@@ -647,6 +647,7 @@
                     ">
                   </ion-icon>
                 </p>
+                <p *ngIf="study.filename">Importado desde: {{study.filename}}</p>
               </ion-label>
               <ion-buttons slot="end">
                 <ion-button (click)="deleteAnalyticStudy(study.id)" color="danger">

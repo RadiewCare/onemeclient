@@ -26,6 +26,7 @@ export class EditPage implements OnInit, OnDestroy {
   lowerAge: number;
   upperAge: number;
   sex: string;
+  information: string;
 
   ranges = [];
 
@@ -40,6 +41,10 @@ export class EditPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+
+  }
+
+  ionViewDidEnter() {
     this.getAnalysisElement();
   }
 
@@ -54,6 +59,7 @@ export class EditPage implements OnInit, OnDestroy {
         this.category = this.analysisElement.category;
         this.metricUnit = this.analysisElement.metricUnit;
         this.ranges = this.analysisElement.ranges || [];
+        this.information = this.analysisElement.information || null;
       }
     );
   }
@@ -62,10 +68,10 @@ export class EditPage implements OnInit, OnDestroy {
     if (this.lowerLevel || this.upperLevel) {
       this.ranges.push({
         sex: this.sex,
-        lowerAge: this.lowerAge,
-        upperAge: this.upperAge,
-        lowerLevel: this.lowerLevel,
-        upperLevel: this.upperLevel
+        lowerAge: this.lowerAge || null,
+        upperAge: this.upperAge || null,
+        lowerLevel: this.lowerLevel || null,
+        upperLevel: this.upperLevel || null
       });
     } else {
       this.toastService.show(
@@ -81,11 +87,11 @@ export class EditPage implements OnInit, OnDestroy {
 
   save() {
     if (
-      this.name !== undefined &&
+      this.name &&
       this.name.length > 0 &&
-      this.category !== undefined &&
+      this.category &&
       this.category.length > 0 &&
-      this.metricUnit !== undefined &&
+      this.metricUnit &&
       this.metricUnit.length > 0
     ) {
       const element = {
@@ -93,6 +99,7 @@ export class EditPage implements OnInit, OnDestroy {
         category: this.category,
         metricUnit: this.metricUnit,
         ranges: this.ranges,
+        information: this.information,
         updatedAt: moment().format()
       };
       console.log(element);
@@ -127,16 +134,17 @@ export class EditPage implements OnInit, OnDestroy {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {}
+          handler: (blah) => { }
         },
         {
           text: "Aceptar",
           handler: () => {
             this.analysisElementsService
               .deleteClinicAnalysisElement(this.id)
-              .then(() => {
+              .then(async () => {
                 this.analysisElementSub.unsubscribe();
                 this.router.navigate(["/database/analysis-elements"]);
+
                 this.toastService.show(
                   "success",
                   "Elemento de análisis eliminado con éxito"

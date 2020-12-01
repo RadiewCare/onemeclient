@@ -19,12 +19,22 @@ export class AddAnalysisElementPage implements OnInit {
   analysisElementsData;
   analysisElementsSub: Subscription;
 
+  isCustom = false;
+
+  ranges = [];
+
+  lowerLevel: number;
+  upperLevel: number;
+  lowerAge: number;
+  upperAge: number;
+  sex: string;
+
   constructor(
     private diseasesService: DiseasesService,
     private analysisElementsService: ClinicAnalysisElementsService,
     private modalController: ModalController,
     private toastService: ToastService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.getDisease();
@@ -41,6 +51,27 @@ export class AddAnalysisElementPage implements OnInit {
     this.analysisElements$ = this.analysisElementsService.getClinicAnalysisElements();
   }
 
+  addRange() {
+    if (this.lowerLevel || this.upperLevel) {
+      this.ranges.push({
+        sex: this.sex,
+        lowerAge: this.lowerAge,
+        upperAge: this.upperAge,
+        lowerLevel: this.lowerLevel,
+        upperLevel: this.upperLevel
+      });
+    } else {
+      this.toastService.show(
+        "danger",
+        "Al menos debes introducir valor mínimo ó máximo"
+      );
+    }
+  }
+
+  deleteRange(index: number) {
+    this.ranges.splice(index, 1);
+  }
+
   dismissModal() {
     this.modalController.dismiss();
   }
@@ -55,9 +86,9 @@ export class AddAnalysisElementPage implements OnInit {
 
   save() {
     if (this.isValid()) {
-      const array = [];
+      const array = this.disease.analysisElements || [];
       this.analysisElementsData.forEach((element) => {
-        array.push({ id: element.id, name: element.name });
+        array.push({ id: element.id, name: element.name, ranges: this.ranges });
       });
       const data = {
         analysisElements: array

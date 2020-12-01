@@ -59,7 +59,25 @@
             <ion-select-option value="µg/L">µg/L</ion-select-option>
             <ion-select-option value="µg/dL">µg/dL</ion-select-option>
             <ion-select-option value="Índice">Índice</ion-select-option>
+            <ion-select-option value="ml">ml</ion-select-option>
+            <ion-select-option value="número de células">número de células</ion-select-option>
+            <ion-select-option value="espermatozoides por ml">espermatozoides por ml</ion-select-option>
+            <ion-select-option value="ph">ph</ion-select-option>
+            <ion-select-option value="cm">cm</ion-select-option>
+            <ion-select-option value="mm">mm</ion-select-option>
+            <ion-select-option value="presente">presente</ion-select-option>
+            <ion-select-option value="ausente">ausente</ion-select-option>
+            <ion-select-option value="ml/min">ml/min</ion-select-option>
+            <ion-select-option value="mEq/L">mEq/L</ion-select-option>
+            <ion-select-option value="x103/μl">x103/μl</ion-select-option>
+            <ion-select-option value="fL.V">fL.V</ion-select-option>
           </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating">Información adicional</ion-label>
+          <ion-textarea [(ngModel)]="information" autoGrow="true" rows="10"></ion-textarea>
         </ion-item>
       </ion-col>
       <ion-col size="12" class="ion-margin-top">

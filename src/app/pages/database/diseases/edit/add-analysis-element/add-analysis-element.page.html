@@ -9,15 +9,91 @@
     <ion-row>
       <ion-col size="12">
         <ion-item>
-          <ion-label position="floating">Elementos de análisis clínicos</ion-label>
+          <ion-label position="floating">Selecciona elementos de análisis clínicos</ion-label>
           <ionic-selectable [(ngModel)]="analysisElementsData" [items]="analysisElements$ | async"
             itemValueField="id" itemTextField="name" [canSearch]="true" confirmButtonText="Seleccionar"
-            closeButtonText="Cancelar" headerColor="primary" isMultiple="true"
+            closeButtonText="Cancelar" headerColor="primary" isMultiple="false"
             searchFailText="No hay items disponibles" searchPlaceholder="Buscar">
             <ng-template ionicSelectableCloseButtonTemplate>
               <ion-icon name="close" style="font-size: 24px;"></ion-icon>
             </ng-template>
           </ionic-selectable>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label>Crear rangos específicos para la enfermedad (usará los estándar si no se marca esta casilla)</ion-label>
+          <ion-checkbox [(ngModel)]="isCustom" slot="start"></ion-checkbox>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <ion-row size="12" *ngIf="isCustom && analysisElementsData">
+      <ion-col size="12" class="ion-margin-top">
+        <ion-item color="primary">
+          <ion-label>Añadir rango</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="4">
+        <ion-item lines="none">
+          <ion-label position="floating">Sexo</ion-label>
+          <ion-select placeholder="Seleccione sexo" [(ngModel)]="sex">
+            <ion-select-option value="male">Hombre</ion-select-option>
+            <ion-select-option value="female">Mujer</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="4">
+        <ion-item lines="none">
+          <ion-label position="floating">Edad mínima</ion-label>
+          <ion-input type="number" placeholder="Introduzca edad" [(ngModel)]="lowerAge"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="4">
+        <ion-item lines="none">
+          <ion-label position="floating">Edad máxima</ion-label>
+          <ion-input type="number" placeholder="Introduzca edad" [(ngModel)]="upperAge"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="4">
+        <ion-item lines="none">
+          <ion-label position="floating">Valor mínimo</ion-label>
+          <ion-input type="number" placeholder="Introduzca valor" [(ngModel)]="lowerLevel"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="4">
+        <ion-item lines="none">
+          <ion-label position="floating">Valor máximo</ion-label>
+          <ion-input type="number" placeholder="Introduzca valor" [(ngModel)]="upperLevel"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="4">
+        <ion-button (click)="addRange()">
+          <ion-icon slot="start" name="add"></ion-icon>
+          <ion-label>Añadir</ion-label>
+        </ion-button>
+      </ion-col>
+
+      <ion-col size="12" class="ion-margin-top">
+        <ion-item color="primary">
+          <ion-label>Rangos actualmente definidos</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item *ngFor="let range of ranges; let i = index" lines="full">
+          <ion-text>
+            <p *ngIf="range.sex"><b>Sexo:</b> {{range.sex === "male"?'Hombre':'Mujer'}}</p>
+            <p *ngIf="range.lowerAge || range.upperAge"><b>Edad:</b> {{range.lowerAge}}-{{range.upperAge}}
+              años</p>
+            <p *ngIf="range.lowerLevel || range.upperLevel"><b>Valores:</b>
+              {{range.lowerLevel}}-{{range.upperLevel}} {{metricUnit}}</p>
+          </ion-text>
+          <ion-buttons slot="end">
+            <ion-button (click)="deleteRange(i)">
+              <ion-label>Eliminar</ion-label>
+              <ion-icon slot="start" name="trash"></ion-icon>
+            </ion-button>
+          </ion-buttons>
         </ion-item>
       </ion-col>
     </ion-row>

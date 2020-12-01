@@ -48,14 +48,19 @@ export class AnalysisElementsPage implements OnInit, OnDestroy {
     minWidth: 100
   };
 
-  constructor(private analisysElementsService: ClinicAnalysisElementsService) {}
+  constructor(private analisysElementsService: ClinicAnalysisElementsService) { }
 
   ngOnInit() {
+
+  }
+
+  ionViewDidEnter() {
+    this.queryElements = null;
     this.getAnalysisElements();
   }
 
   getAnalysisElements() {
-    this.analysisElements$ = this.analisysElementsService.getClinicAnalysisElements();
+    this.analysisElements$ = this.analisysElementsService.getClinicAnalysisElementsList();
     this.analysisElementsSub = this.analysisElements$.subscribe(
       (analysisElements) => {
         this.analysisElements = analysisElements;

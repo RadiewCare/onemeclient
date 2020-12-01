@@ -126,3 +126,11 @@ ion-card {
 .item .sc-ion-label-md-h {
   white-space: normal !important;
 }
+
+.modal-wrapper.sc-ion-modal-md,
+.modal-shadow.sc-ion-modal-md {
+  width: 1024px;
+  min-height: 800px;
+  min-width: 300px;
+  max-width: 1024px;
+}

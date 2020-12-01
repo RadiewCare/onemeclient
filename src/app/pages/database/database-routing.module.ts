@@ -83,6 +83,10 @@ const routes: Routes = [
   {
     path: 'labels',
     loadChildren: () => import('./labels/labels.module').then( m => m.LabelsPageModule)
+  },
+  {
+    path: 'synlab-catalog',
+    loadChildren: () => import('./synlab-catalog/synlab-catalog.module').then( m => m.SynlabCatalogPageModule)
   }
 ];
 

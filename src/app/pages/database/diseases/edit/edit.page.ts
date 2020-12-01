@@ -409,30 +409,28 @@ export class EditPage implements OnInit, OnDestroy {
     return await modal.present();
   }
 
+  deleteRange(indexE: number, indexR: number) {
+    this.disease.analysisElements[indexE].ranges.splice(indexR, 1);
+  }
+
   async deleteAnalysisElement(diseaseId: string, elementId: string) {
-    this.clinicAnalysisService
-      .getClinicAnalysisElementData(elementId)
-      .then((element) => {
-        this.diseasesService
-          .updateDisease(diseaseId, {
-            analysisElements: firebase.firestore.FieldValue.arrayRemove({
-              id: element.data().id,
-              name: element.data().name
-            })
-          })
-          .then(() => {
-            this.toastService.show(
-              "success",
-              "Prueba de laboratorio eliminada de la enfermedad"
-            );
-          })
-          .catch((error) => {
-            this.toastService.show(
-              "danger",
-              "Error al eliminar la prueba de laboratorio en la enfermedad" +
-              error
-            );
-          });
+    const deleted = this.disease.analysisElements.filter(element => element.id !== elementId);
+    this.diseasesService
+      .updateDisease(diseaseId, {
+        analysisElements: deleted
+      })
+      .then(() => {
+        this.toastService.show(
+          "success",
+          "Prueba de laboratorio eliminada de la enfermedad"
+        );
+      })
+      .catch((error) => {
+        this.toastService.show(
+          "danger",
+          "Error al eliminar la prueba de laboratorio en la enfermedad" +
+          error
+        );
       });
   }
 
