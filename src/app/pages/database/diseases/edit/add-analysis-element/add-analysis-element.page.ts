@@ -28,6 +28,7 @@ export class AddAnalysisElementPage implements OnInit {
   lowerAge: number;
   upperAge: number;
   sex: string;
+  metricUnit: any;
 
   constructor(
     private diseasesService: DiseasesService,
