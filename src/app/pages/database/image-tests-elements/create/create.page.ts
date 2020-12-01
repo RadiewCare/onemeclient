@@ -15,7 +15,8 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class CreatePage implements OnInit {
 
-  id: string;
+  @Input() id: string;
+
   action: string;
 
   name: string;
@@ -123,6 +124,7 @@ export class CreatePage implements OnInit {
 
   save() {
     if (this.isValid()) {
+
       const data = {
         name: this.name,
         type: this.type,
@@ -134,7 +136,7 @@ export class CreatePage implements OnInit {
         defaultInput: this.defaultInput || null,
         unit: this.unit || null,
         defaultOption: this.defaultOption || null,
-        relatedTests: [],
+        relatedTests: this.id ? [this.id] : [],
         isIllustrated: false,
         positiveOptions: this.positiveOptions || []
       };
@@ -143,7 +145,6 @@ export class CreatePage implements OnInit {
       this.imageTestsElementsService
         .createImageTestElement(data)
         .then(() => {
-
           this.toastService.show(
             "success",
             "Elemento de prueba de imagen añadido"

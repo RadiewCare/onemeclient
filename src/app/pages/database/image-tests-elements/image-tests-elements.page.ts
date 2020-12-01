@@ -22,6 +22,7 @@ export class ImageTestsElementsPage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
+    this.queryImageTestsElements = null;
     this.presentLoading();
     this.imageTestsElementsSub = this.imageTestsElementsService.getImageTestElements().subscribe((data) => {
       this.imageTestsElements = data;

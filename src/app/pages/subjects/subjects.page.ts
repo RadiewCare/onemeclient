@@ -32,6 +32,15 @@ export class SubjectsPage implements OnInit, OnDestroy {
 
   centrosReferentes = [];
 
+  originalSubjects: any;
+
+  lastSubjects: any;
+
+  currentCentros: any;
+  currentFecha: any;
+  currentOrder: any;
+  currentQuery: any;
+
   order: string = "ninguno";
 
   constructor(
@@ -39,9 +48,9 @@ export class SubjectsPage implements OnInit, OnDestroy {
     private doctorsService: DoctorsService,
     public lang: LanguageService,
     private auth: AuthService
-  ) {}
+  ) { }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   ionViewDidEnter() {
     this.userSub = this.auth.user$.subscribe((data) => {
@@ -75,6 +84,7 @@ export class SubjectsPage implements OnInit, OnDestroy {
     return new Promise((resolve) => {
       this.subjectsSub = this.subjects$.subscribe((subjects) => {
         this.subjects = subjects;
+        this.originalSubjects = subjects;
         resolve();
       });
     });
@@ -152,12 +162,46 @@ export class SubjectsPage implements OnInit, OnDestroy {
   }
 
   onSearchChange(query: string): void {
+    this.currentQuery = query;
     if (query.length > 0) {
       this.querySubjects = this.subjects.filter((report) =>
         report.identifier.toLowerCase().includes(query.toLowerCase())
       );
     } else {
       this.querySubjects = null;
+    }
+  }
+
+  onDateFilterChange(fecha: string) {
+    return new Promise((resolve) => {
+      this.subjects = this.subjects.filter((subject) => {
+        let a = moment(subject.createdAt)
+        let b = moment(fecha);
+        return a < b;
+      })
+      resolve();
+    })
+  }
+
+  onCentroChange(centros: string): Promise<any> {
+    if (centros && centros.length === 0) {
+      return new Promise(resolve => {
+        resolve();
+      })
+    } else {
+      return new Promise(resolve => {
+        if (centros) {
+          this.subjects = this.subjects.filter((subject) => {
+            return (
+              subject.history &&
+              subject.history &&
+              centros.includes(subject.history.centroReferente)
+            );
+          });
+
+        }
+        resolve();
+      })
     }
   }
 
@@ -173,29 +217,18 @@ export class SubjectsPage implements OnInit, OnDestroy {
     }
   }
 
-  onCentroChange(centro: string): void {
-    console.log(centro);
-    if (centro !== "ninguno") {
-      console.log(this.subjects);
+  async filterSubjects() {
+    this.subjects = this.originalSubjects;
+    // Filtro de fecha
+    await this.onDateFilterChange(this.currentFecha)
+    // Filtro de centros
+    await this.onCentroChange(this.currentCentros)
+    // Ordenamiento
+    await this.onDateChange(this.currentOrder)
+  }
 
-      this.subjects = this.subjects.filter((subject) => {
-        return (
-          subject.history &&
-          subject.history &&
-          subject.history.centroReferente === centro
-        );
-      });
-    } else {
-      this.getSubjects().then(() => {
-        if (this.order === "ninguno") {
-          this.sortAlphanumeric();
-        } else if (this.order === "asc") {
-          this.sortDateAsc();
-        } else {
-          this.sortDateDesc();
-        }
-      });
-    }
+  async resetFilters() {
+    this.subjects = this.originalSubjects;
   }
 
   ngOnDestroy(): void {

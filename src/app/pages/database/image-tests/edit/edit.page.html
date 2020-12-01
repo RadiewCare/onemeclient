@@ -98,9 +98,13 @@
           <ion-icon slot="start" name="images"></ion-icon>
           <ion-label>Elementos de la prueba de imagen (hallazgos)</ion-label>
           <ion-buttons slot="end">
+            <ion-button [routerLink]="[ '/database/image-tests-elements/create', id ]">
+              <ion-icon slot="start" name="add"></ion-icon>
+              <ion-label>Añadir nuevo</ion-label>
+            </ion-button>
             <ion-button (click)="addImageTestElement()">
               <ion-icon slot="start" name="add"></ion-icon>
-              <ion-label>Añadir</ion-label>
+              <ion-label>Añadir existentes</ion-label>
             </ion-button>
           </ion-buttons>
         </ion-item>

@@ -218,7 +218,6 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
 
   editImageField(value: any, index: number) {
     this.values[index].value = value;
-
     if (
       value === this.values[index].trueInput ||
       (this.values[index].positiveOptions &&

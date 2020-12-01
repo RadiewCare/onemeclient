@@ -58,8 +58,8 @@ export class DiseasesService {
     return this.db.doc(`diseases/${id}`).valueChanges();
   }
 
-  getDiseaseData(id: string) {
-    return this.db.firestore.doc(`diseases/${id}`).get();
+  async getDiseaseData(id: string): Promise<any> {
+    return await this.db.firestore.doc(`diseases/${id}`).get();
   }
 
   async createDisease(data: any): Promise<any> {

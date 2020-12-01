@@ -41,8 +41,10 @@ export class EditPage implements OnInit, OnDestroy {
   relatedTests: any;
   relatedTestsData = [];
 
+  diseases = [];
+
   relatedDiseases: any;
-  relatedDiseasesData: [];
+  relatedDiseasesData = [];
 
   areIllustrated = false;
 
@@ -180,6 +182,7 @@ export class EditPage implements OnInit, OnDestroy {
         this.relatedTests = data.relatedTests || [];
         this.relatedDiseases = data.relatedDiseases || [];
         this.loadRelatedTests();
+        this.loadRelatedDiseases();
       });
   }
 
@@ -189,15 +192,27 @@ export class EditPage implements OnInit, OnDestroy {
       result = await this.imageTestsService.getImageTestData(element);
       this.relatedTestsData.push(result.data());
     });
-
   }
 
   async loadRelatedDiseases() {
     let result;
     this.relatedDiseases.forEach(async element => {
       result = await this.diseasesService.getDiseaseData(element);
-      this.relatedTestsData.push(result.data());
+      this.relatedDiseasesData.push(result.data());
     });
+
+    const enfermedades = await this.diseasesService.getDiseasesData();
+    this.diseases = enfermedades.docs.map(element => element.data());
+
+    const filtered2 = this.diseases.filter(disease => {
+      if (disease.imageBiomarkers) {
+        return disease.imageBiomarkers.find(biomarker => biomarker.id === this.id)
+      }
+
+    });
+
+    this.relatedDiseasesData = filtered2.map(element => element = { id: element.id, name: element.name })
+    console.log(this.relatedDiseases);
 
   }
 
@@ -314,6 +329,7 @@ export class EditPage implements OnInit, OnDestroy {
           unit: this.unit || null,
           positiveOptions: this.positiveOptions || [],
           relatedTests: this.relatedTests,
+          relatedDiseases: this.relatedDiseases,
           isIllustrated: this.areIllustrated
         };
 
@@ -350,6 +366,31 @@ export class EditPage implements OnInit, OnDestroy {
               }).catch(error => {
                 console.log(error);
 
+              })
+            }
+
+            // ACTUALIZAR EL ELEMENTO EN LAS ENFERMEDADES
+
+            for await (const id of data.relatedDiseases) {
+              this.diseasesService.getDiseaseData(id).then((disease) => {
+                const auxElements = disease.data().imageBiomarkers;
+
+                const indexElement = disease.data().imageBiomarkers.findIndex(element =>
+                  element.id === this.id
+                );
+
+                console.log(indexElement);
+
+                // Meter el elemento actualizado en elements
+                auxElements[indexElement].name = data.name;
+                auxElements[indexElement].options = data.options;
+
+                console.log("resultado", auxElements);
+
+                // Actualizar la prueba
+                this.diseasesService.updateDisease(id, {
+                  imageBiomarkers: auxElements
+                });
               })
             }
 

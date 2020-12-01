@@ -33,13 +33,11 @@
         <ion-item>
           <ion-label>Ordenar por fecha de creación</ion-label>
           <ion-select
-            value="ninguno"
             placeholder="Seleccione orden"
             okText="Aceptar"
             cancelText="Cancelar"
-            (ionChange)="onDateChange($event.detail.value)"
+            (ionChange)="filterSubjects()" [(ngModel)]="currentOrder"
           >
-            <ion-select-option value="ninguno">Ninguno</ion-select-option>
             <ion-select-option value="asc">Ascendente</ion-select-option>
             <ion-select-option value="desc">Descendente</ion-select-option>
           </ion-select>
@@ -48,15 +46,23 @@
 
       <ion-col size="6" class="ion-padding-top">
         <ion-item>
+          <ion-label>Filtrar por fecha</ion-label>
+            <ion-datetime display-format="DD/MM/YYYY" doneText="Aceptar" [(ngModel)]="currentFecha"
+            cancelText="Cancelar" (ionChange)="filterSubjects()"></ion-datetime>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="6" class="ion-padding-top">
+        <ion-item>
           <ion-label>Filtrar por centro referente</ion-label>
           <ion-select
-            value="ninguno"
             placeholder="Seleccione centro referente"
             okText="Aceptar"
             cancelText="Cancelar"
-            (ionChange)="onCentroChange($event.detail.value)"
+            (ionChange)="filterSubjects()"
+            multiple = "true"
+            [(ngModel)]="currentCentros"
           >
-            <ion-select-option value="ninguno">Ninguno</ion-select-option>
             <ion-select-option
               *ngFor="let centro of centrosReferentes"
               [value]="centro"
@@ -64,6 +70,12 @@
             >
           </ion-select>
         </ion-item>
+      </ion-col>
+
+      <ion-col size="6" class="ion-padding-top">
+          <ion-button (click)="resetFilters()" expand="block">
+            Reiniciar filtro
+          </ion-button>
       </ion-col>
 
       <ion-col size="12" class="ion-padding-top">

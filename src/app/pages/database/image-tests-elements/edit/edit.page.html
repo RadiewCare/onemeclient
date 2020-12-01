@@ -172,8 +172,11 @@
         <ion-item color="primary">
           <ion-label>Enfermedades relacionadas</ion-label>
         </ion-item>
-       <ion-item color="primary" *ngFor="let disease of relatedDiseasesData" [routerLink]="['/database/diseases/edit', disease.id]">
-         <ion-label></ion-label>
+       <ion-item *ngFor="let disease of relatedDiseasesData" [routerLink]="['/database/diseases/edit', disease.id]">
+         <ion-label>{{disease.name}}</ion-label>
+       </ion-item>
+       <ion-item *ngIf="relatedDiseasesData.length===0">
+         <ion-label>Ninguna enfermedad relacionada</ion-label>
        </ion-item>
       </ion-col>
     </ion-row>

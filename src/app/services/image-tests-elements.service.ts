@@ -3,6 +3,7 @@ import { ImageTestsService } from "./image-tests.service";
 import { AngularFirestore } from "@angular/fire/firestore";
 import { Observable } from "rxjs";
 import * as firebase from "firebase/app";
+import { DiseasesService } from './diseases.service';
 
 @Injectable({
   providedIn: "root"
@@ -10,7 +11,7 @@ import * as firebase from "firebase/app";
 export class ImageTestsElementsService {
   constructor(
     private db: AngularFirestore,
-    private imageTestsService: ImageTestsService
+    private imageTestsService: ImageTestsService,
   ) { }
 
   getImageTestElements(): Observable<any> {
@@ -52,7 +53,20 @@ export class ImageTestsElementsService {
         .collection("imageTestElements")
         .add(data)
         .then((doc) => {
-          this.db.doc(`imageTestElements/${doc.id}`).update({ id: doc.id });
+          this.db.doc(`imageTestElements/${doc.id}`).update({ id: doc.id }).then(() => {
+            if (data.relatedTests.length === 1) {
+              this.db.firestore.doc(`imageTestElements/${doc.id}`).get().then(testElement => {
+                this.imageTestsService.updateImageTest(data.relatedTests[0], {
+                  elements: firebase.firestore.FieldValue.arrayUnion({
+                    id: doc.id,
+                    name: testElement.data().name,
+                    options: testElement.data().options,
+                    order: 0,
+                  })
+                })
+              })
+            }
+          });
         });
     }
   }
