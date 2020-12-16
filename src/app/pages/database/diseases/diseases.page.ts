@@ -16,24 +16,29 @@ export class DiseasesPage implements OnInit, OnDestroy {
   constructor(
     private diseasesService: DiseasesService,
     public lang: LanguageService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.diseasesSub = this.diseasesService
       .getDiseases()
       .subscribe((diseases) => {
         this.diseases = diseases;
+        this.diseases = this.diseases.sort((a, b) => this.removeAccents(a.name).localeCompare(this.removeAccents(b.name)))
       });
   }
 
   onSearchChange(query: string) {
     if (query.length > 0) {
       this.queryDiseases = this.diseases.filter((disease) =>
-        disease.name.toLowerCase().includes(query.toLowerCase())
+        this.removeAccents(disease.name.toLowerCase()).includes(this.removeAccents(query.toLowerCase()))
       );
     } else {
       this.queryDiseases = null;
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   ngOnDestroy() {

@@ -55,9 +55,9 @@ export class MutationsPage implements OnInit {
     filter: true,
     minWidth: 100
   };
-  constructor(private mutationsService: MutationsService) {}
+  constructor(private mutationsService: MutationsService) { }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   ionViewDidEnter() {
     this.getGeneticVariants();
@@ -77,11 +77,15 @@ export class MutationsPage implements OnInit {
   onSearchChange(query: string) {
     if (query.length > 0) {
       this.queryVariants = this.geneticVariants.filter((variant) =>
-        variant.name.includes(query)
+        this.removeAccents(variant.name).includes(this.removeAccents(query))
       );
     } else {
       this.queryVariants = null;
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   changeView(option: string) {

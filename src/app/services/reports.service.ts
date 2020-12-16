@@ -4,6 +4,8 @@ import { Observable } from "rxjs";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { ToastService } from "./toast.service";
+import * as moment from 'moment';
+
 
 @Injectable({
   providedIn: "root",
@@ -417,7 +419,21 @@ export class ReportsService {
       });
   }
 
-  async exportImageTest(imageTest: any) {
+  toDataURL(url, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+      var reader = new FileReader();
+      reader.onloadend = function () {
+        callback(reader.result);
+      }
+      reader.readAsDataURL(xhr.response);
+    };
+    xhr.open('GET', url);
+    xhr.responseType = 'blob';
+    xhr.send();
+  }
+
+  async exportImageTest(imageTest: any, subjectData: any, mainDoctor: string) {
     console.log(imageTest);
 
     this.x = 40;
@@ -435,11 +451,28 @@ export class ReportsService {
     this.pageWidth =
       this.doc.internal.pageSize.width || this.doc.internal.pageSize.getWidth();
 
-    this.doc.text(imageTest.name, this.x, this.y);
-
-    this.y = this.y + 20;
+    // Logo
+    var img = new Image();
+    img.src = 'assets/images/logo-microsound.jpg';
+    this.doc.addImage(img, 'JPEG', this.x - 20, this.y, 100, 50);
+    this.y = this.y + 80;
 
     this.doc.setFontSize(10);
+    // ID del paciente
+    this.doc.text("Paciente: " + subjectData.identifier, this.x, this.y);
+    this.y = this.y + 10;
+    // Accession number
+    this.doc.text("Accession number: " + imageTest.accessionNumber, this.x, this.y);
+    this.y = this.y + 10;
+    // Nombre de la prueba
+    this.doc.text("Nombre de la prueba: " + imageTest.name, this.x, this.y);
+    this.y = this.y + 10;
+    // Fecha de la prueba
+    this.doc.text("Fecha de la prueba: " + moment(imageTest.date).format("DD/MM/YYYY"), this.x, this.y);
+    this.y = this.y + 10;
+    // Doctor
+    this.doc.text("Doctor: " + mainDoctor, this.x, this.y);
+    this.y = this.y + 20;
 
     for await (const value of imageTest.values) {
       const splitTitle = this.doc.splitTextToSize(
@@ -466,7 +499,13 @@ export class ReportsService {
         if (value.status === "positive") {
           this.doc.setTextColor(255, 0, 0);
         }
-        await this.doc.text("Hallazgo: " + value.value, this.x, this.y);
+        if (value.status === "negative") {
+          this.doc.setTextColor(0, 255, 0);
+        }
+        if (value.status === "default") {
+          this.doc.setTextColor(0, 0, 0);
+        }
+        await this.doc.text("Hallazgos: " + value.value, this.x, this.y);
         this.y = this.y + 10;
       }
 

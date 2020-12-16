@@ -26,8 +26,8 @@ import { CreateReportPage } from './create-report/create-report.page';
 import { CategoriesService } from 'src/app/services/categories.service';
 import { LabelsService } from 'src/app/services/labels.service';
 import { ImageTestsService } from 'src/app/services/image-tests.service';
-import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
-import { findIndex } from 'rxjs/operators';
+import { DiseasesService } from 'src/app/services/diseases.service';
+import { SymptomsService } from 'src/app/services/symptoms.service';
 
 @Component({
   selector: "app-edit",
@@ -105,11 +105,17 @@ export class EditPage implements OnInit, OnDestroy {
   workExposition: string;
   physicalActivity: string;
 
+  /* Enfermedades confirmadas */
+  diseases = [];
+  currentDiseases = [];
+  queryDisease: string;
+  queryDiseaseList = [];
+
   /* Signos y síntomas */
-  signs = [];
-  symptoms = [];
-  currentSign: string;
-  currentSymptom: string;
+  signsAndSymptoms = [];
+  currentSignsAndSymptoms = [];
+  querySignsAndSymptoms: string;
+  querySignsAndSymptomsList = [];
 
   /* Antecedentes */
   cancer: boolean;
@@ -205,7 +211,9 @@ export class EditPage implements OnInit, OnDestroy {
     private doctorsService: DoctorsService,
     private categoriesService: CategoriesService,
     private labelsService: LabelsService,
-    private imageTestsService: ImageTestsService
+    private imageTestsService: ImageTestsService,
+    private diseasesService: DiseasesService,
+    private symptomsService: SymptomsService
   ) { }
 
   ngOnInit() {
@@ -213,6 +221,8 @@ export class EditPage implements OnInit, OnDestroy {
     this.segment.value = "phenotypic-data";
     this.getCategories();
     this.getLabels();
+    this.getDiseases();
+    this.getSignsAndSypmtoms();
   }
 
   ionViewDidEnter() {
@@ -290,11 +300,13 @@ export class EditPage implements OnInit, OnDestroy {
         this.infertility = history.infertility;
         this.otherBackground = history.otherBackground;
         this.currentTreatment = history.currentTreatment;
-        if (history.signs) {
-          this.signs = history.signs;
+        if (history.diseases) {
+          this.currentDiseases = history.diseases;
         }
-        if (history.symptoms) {
-          this.symptoms = history.symptoms;
+        if (history.signsAndSymptoms) {
+          console.log(history.signsAndSymptoms);
+
+          this.currentSignsAndSymptoms = history.signsAndSymptoms;
         }
       }
       if (data.imageTests) {
@@ -356,6 +368,20 @@ export class EditPage implements OnInit, OnDestroy {
     const labels = await this.labelsService.getAllData();
     labels.forEach(element => {
       this.labels.push(element.data());
+    })
+  }
+
+  async getDiseases() {
+    const diseases = await this.diseasesService.getDiseasesData();
+    diseases.forEach(element => {
+      this.diseases.push(element.data());
+    })
+  }
+
+  async getSignsAndSypmtoms() {
+    const symptoms = await this.symptomsService.getSymptomsData();
+    symptoms.forEach(element => {
+      this.signsAndSymptoms.push(element.data());
     })
   }
 
@@ -453,6 +479,10 @@ export class EditPage implements OnInit, OnDestroy {
         this.imageTests = this.originalImageTests;
       }
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   async loadGeneticData(event?: any): Promise<any> {
@@ -674,7 +704,7 @@ export class EditPage implements OnInit, OnDestroy {
   /*editImageDate(value: any, formIndex: number) {
     this.imageTestsArray[formIndex].date = value;
   }
-
+  
   editImageField(value: any, formIndex: number, fieldIndex?: number) {
     this.imageTestsArray[formIndex].fields[fieldIndex].value = value;
   }*/
@@ -689,20 +719,36 @@ export class EditPage implements OnInit, OnDestroy {
     }
   }*/
 
-  addSign(sign: string) {
-    if (sign.length > 0) {
-      this.signs.push(sign.toLowerCase());
-      this.currentSign = "";
-    }
+  addSignAndSymptom(signAndSypmtom: any) {
+    this.currentSignsAndSymptoms.push({ id: signAndSypmtom.id, name: signAndSypmtom.name });
+    this.querySignsAndSymptomsList = [];
+    this.querySignsAndSymptoms = null;
   }
 
-  addSymptom(symptom: string) {
-    console.log(symptom);
+  deleteSignAndSymptoms(index: any) {
+    this.currentSignsAndSymptoms = this.currentSignsAndSymptoms.splice(1, index);
+  }
 
-    if (symptom.length > 0) {
-      this.symptoms.push(symptom.toLowerCase());
-      this.currentSymptom = "";
-    }
+  onQuerySignsAndSymptoms(query: string) {
+    console.log(query);
+    this.querySignsAndSymptomsList = this.signsAndSymptoms.filter(element => this.removeAccents(element.name.trim().toLowerCase()).includes(this.removeAccents(query.trim().toLowerCase())));
+    console.log(this.querySignsAndSymptomsList);
+  }
+
+  addDisease(disease: any) {
+    this.currentDiseases.push({ id: disease.id, name: disease.name });
+    console.log(this.currentDiseases);
+
+    this.queryDiseaseList = [];
+    this.queryDisease = null;
+  }
+
+  deleteDisease(index: any) {
+    this.currentDiseases = this.currentDiseases.splice(1, index);
+  }
+
+  onDiseaseQueryChange(query: string) {
+    this.queryDiseaseList = this.diseases.filter(element => this.removeAccents(element.name.trim().toLowerCase()).includes(this.removeAccents(query.trim().toLowerCase())));
   }
 
   save() {
@@ -765,8 +811,8 @@ export class EditPage implements OnInit, OnDestroy {
       infertility: this.infertility || null,
       otherBackground: this.otherBackground || null,
       currentTreatment: this.currentTreatment || null,
-      symptoms: this.symptoms || null,
-      signs: this.signs || null,
+      signsAndSymptoms: this.currentSignsAndSymptoms || [],
+      diseases: this.currentDiseases || []
     };
     if (this.identifier.length > 0) {
       await this.subjectsService
@@ -829,6 +875,8 @@ export class EditPage implements OnInit, OnDestroy {
       componentProps: {
         id: this.id,
         imageTest,
+        subject: this.subject,
+        doctor: this.userData.name
       },
       cssClass: "my-custom-modal-css",
     });

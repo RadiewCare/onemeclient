@@ -31,6 +31,7 @@ export class ImageTestsElementsPage implements OnInit, OnDestroy {
         var textB = b.name.toUpperCase();
         return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
       });
+      this.imageTestsElements = this.imageTestsElements.sort((a, b) => this.removeAccents(a.name).localeCompare(this.removeAccents(b.name)))
       console.log(this.imageTestsElements);
       this.loadingController.dismiss();
     });
@@ -41,12 +42,16 @@ export class ImageTestsElementsPage implements OnInit, OnDestroy {
 
     if (query.length > 0) {
       this.queryImageTestsElements = this.imageTestsElements.filter((test) =>
-        test.name.toLowerCase().includes(query.toLowerCase())
+        this.removeAccents(test.name.toLowerCase()).includes(this.removeAccents(query.toLowerCase()))
       );
       console.log(this.queryImageTestsElements);
     } else {
       this.queryImageTestsElements = null;
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   async presentLoading() {

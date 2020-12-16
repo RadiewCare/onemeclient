@@ -74,11 +74,15 @@ export class SynlabCatalogPage implements OnInit, OnDestroy {
   onSearchChange(query: string) {
     if (query.length > 0) {
       this.queryElements = this.analysisElements.filter((analysisElement) =>
-        analysisElement.DESCRIPCION.toLowerCase().includes(query.toLowerCase()) || analysisElement.CODIGO.toString().includes(query.toLowerCase())
+        this.removeAccents(analysisElement.DESCRIPCION.toLowerCase()).includes(this.removeAccents(query.toLowerCase())) || analysisElement.CODIGO.toString().includes(query.toLowerCase())
       );
     } else {
       this.queryElements = null;
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   toggleInfo(index: string) {

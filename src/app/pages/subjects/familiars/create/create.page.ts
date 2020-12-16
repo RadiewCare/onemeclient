@@ -3,6 +3,8 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { ToastService } from "src/app/services/toast.service";
 import { UsersService } from "src/app/services/users.service";
 import { HistoriesService } from "src/app/services/histories.service";
+import { DiseasesService } from 'src/app/services/diseases.service';
+import { LanguageService } from 'src/app/services/language.service';
 
 @Component({
   selector: "app-create",
@@ -38,6 +40,8 @@ export class CreatePage implements OnInit {
   menopausalAge: number;
   sop: boolean;
   vaginalSpotting: boolean;
+  bloodType: string;
+  rh: string;
 
   /* Hábitos de vida */
   smoker: boolean;
@@ -47,6 +51,12 @@ export class CreatePage implements OnInit {
   solarExposition: string;
   workExposition: string;
   physicalActivity: string;
+
+  /* Enfermedades confirmadas */
+  diseases = [];
+  currentDiseases = [];
+  queryDisease: string;
+  queryDiseaseList = [];
 
   /* Antecedentes */
   cancer: boolean;
@@ -65,12 +75,15 @@ export class CreatePage implements OnInit {
     private usersService: UsersService,
     private historiesService: HistoriesService,
     private activatedRoute: ActivatedRoute,
+    public lang: LanguageService,
     private toastService: ToastService,
+    private diseasesService: DiseasesService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.id = this.activatedRoute.snapshot.params.id;
+    this.getDiseases();
   }
 
   resetForm() {
@@ -80,6 +93,31 @@ export class CreatePage implements OnInit {
 
   resetRelation() {
     this.familyBranch = undefined;
+  }
+
+  async getDiseases() {
+    const diseases = await this.diseasesService.getDiseasesData();
+    diseases.forEach(element => {
+      this.diseases.push(element.data());
+    })
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
+  addDisease(disease: any) {
+    this.currentDiseases.push({ id: disease.id, name: disease.name });
+    this.queryDiseaseList = [];
+    this.queryDisease = null;
+  }
+
+  deleteDisease(index: any) {
+    this.currentDiseases = this.currentDiseases.splice(1, index);
+  }
+
+  onDiseaseQueryChange(query: string) {
+    this.queryDiseaseList = this.diseases.filter(element => this.removeAccents(element.name.trim().toLowerCase()).includes(this.removeAccents(query.trim().toLowerCase())));
   }
 
   async save(): Promise<any> {
@@ -94,6 +132,8 @@ export class CreatePage implements OnInit {
         weight: this.weight || null,
         populationGroup: this.populationGroup || null,
         skin: this.skin || null,
+        bloodType: this.bloodType || null,
+        rh: this.rh || null,
         hair: this.hair || null,
         eyes: this.eyes || null,
         imc: this.imc || null,
@@ -121,7 +161,8 @@ export class CreatePage implements OnInit {
         cardioDisease: this.cardioDisease || null,
         infertility: this.infertility || null,
         otherBackground: this.otherBackground || null,
-        currentTreatment: this.currentTreatment || null
+        currentTreatment: this.currentTreatment || null,
+        diseases: this.currentDiseases || []
       };
       this.historiesService
         .createHistory(this.id, data)

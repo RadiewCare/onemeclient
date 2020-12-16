@@ -41,6 +41,9 @@ export class SubjectsPage implements OnInit, OnDestroy {
   currentOrder: any;
   currentQuery: any;
 
+  initialDate: any;
+  finalDate: any;
+
   order: string = "ninguno";
 
   constructor(
@@ -67,13 +70,9 @@ export class SubjectsPage implements OnInit, OnDestroy {
     this.doctorsService.getDoctorData(this.userData.id).then((data) => {
       this.sharedSubjectsPhenotypic =
         data.data().sharedSubjectsPhenotypic || [];
-
       this.sharedSubjectsGenetic = data.data().sharedSubjectsGenetic || [];
-
       this.sharedSubjectsAnalytic = data.data().sharedSubjectsAnalytic || [];
-
       this.sharedSubjectsImage = data.data().sharedSubjectsImage || [];
-
       this.getSharedSubjects();
     });
   }
@@ -96,8 +95,8 @@ export class SubjectsPage implements OnInit, OnDestroy {
 
     if (this.querySubjects) {
       this.querySubjects = this.subjects.sort((a, b) => {
-        var aA = a.identifier.replace(reA, "");
-        var bA = b.identifier.replace(reA, "");
+        var aA = a.identifier.toLowerCase().replace(reA, "");
+        var bA = b.identifier.toLowerCase().replace(reA, "");
         if (aA === bA) {
           var aN = parseInt(a.identifier.replace(reN, ""), 10);
           var bN = parseInt(b.identifier.replace(reN, ""), 10);
@@ -108,8 +107,8 @@ export class SubjectsPage implements OnInit, OnDestroy {
       });
     } else {
       this.subjects = this.subjects.sort((a, b) => {
-        var aA = a.identifier.replace(reA, "");
-        var bA = b.identifier.replace(reA, "");
+        var aA = a.identifier.toLowerCase().replace(reA, "");
+        var bA = b.identifier.toLowerCase().replace(reA, "");
         if (aA === bA) {
           var aN = parseInt(a.identifier.replace(reN, ""), 10);
           var bN = parseInt(b.identifier.replace(reN, ""), 10);
@@ -165,22 +164,35 @@ export class SubjectsPage implements OnInit, OnDestroy {
     this.currentQuery = query;
     if (query.length > 0) {
       this.querySubjects = this.subjects.filter((report) =>
-        report.identifier.toLowerCase().includes(query.toLowerCase())
+        this.removeAccents(report.identifier.toLowerCase()).includes(this.removeAccents(query.toLowerCase()))
       );
     } else {
       this.querySubjects = null;
     }
   }
 
-  onDateFilterChange(fecha: string) {
-    return new Promise((resolve) => {
-      this.subjects = this.subjects.filter((subject) => {
-        let a = moment(subject.createdAt)
-        let b = moment(fecha);
-        return a < b;
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
+  onDateFilterChange(fechaInicial: string, fechaFinal: string): Promise<any> {
+    if (fechaInicial && fechaFinal) {
+      return new Promise((resolve) => {
+        this.subjects = this.subjects.filter((subject) => {
+          let a = moment(subject.createdAt);
+          let b = moment(fechaInicial)
+          let c = moment(fechaFinal);
+          return b < a && a < c;
+        })
+        console.log(this.subjects);
+
+        resolve();
       })
-      resolve();
-    })
+    } else {
+      return new Promise((resolve, reject) => {
+        reject();
+      })
+    }
   }
 
   onCentroChange(centros: string): Promise<any> {
@@ -220,7 +232,7 @@ export class SubjectsPage implements OnInit, OnDestroy {
   async filterSubjects() {
     this.subjects = this.originalSubjects;
     // Filtro de fecha
-    await this.onDateFilterChange(this.currentFecha)
+    await this.onDateFilterChange(this.initialDate, this.finalDate)
     // Filtro de centros
     await this.onCentroChange(this.currentCentros)
     // Ordenamiento

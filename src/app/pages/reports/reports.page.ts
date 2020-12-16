@@ -25,7 +25,7 @@ export class ReportsPage implements OnInit, OnDestroy {
     private reportsService: ReportsService,
     private templateService: TemplatesService,
     public lang: LanguageService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.getUser().then(() => {
@@ -64,11 +64,15 @@ export class ReportsPage implements OnInit, OnDestroy {
   onSearchChange(query: string): void {
     if (query.length > 0) {
       this.queryReports = this.reports.filter((report) =>
-        report.subject.identifier.toLowerCase().includes(query.toLowerCase())
+        this.removeAccents(report.subject.identifier.toLowerCase()).includes(this.removeAccents(query.toLowerCase()))
       );
     } else {
       this.queryReports = null;
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   onDateChange(date: string): void {

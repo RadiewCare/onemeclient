@@ -16,9 +16,9 @@ export class SymptomsPage implements OnInit {
 
   symptomsSub: Subscription;
 
-  constructor(private symptomsService: SymptomsService) {}
+  constructor(private symptomsService: SymptomsService) { }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   ionViewDidEnter() {
     this.getGeneticVariants();
@@ -34,17 +34,22 @@ export class SymptomsPage implements OnInit {
         console.log(symptoms);
 
         this.symptoms = symptoms;
+        this.symptoms = this.symptoms.sort((a, b) => this.removeAccents(a.name).localeCompare(this.removeAccents(b.name)))
       });
   }
 
   onSearchChange(query: string) {
     if (query.length > 0) {
       this.querySymptoms = this.symptoms.filter((symptom) =>
-        symptom.name.toLowerCase().includes(query.toLowerCase())
+        this.removeAccents(symptom.name.toLowerCase()).includes(this.removeAccents(query.toLowerCase()))
       );
     } else {
       this.querySymptoms = null;
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   ionViewWillLeave() {

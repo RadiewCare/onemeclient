@@ -19,12 +19,22 @@
         <ion-item lines="full">
           <ion-label *ngIf="lang.isSpanish()">Pruebas de imagen prediseñadas</ion-label>
           <ion-label *ngIf="!lang.isSpanish()">Predesigned image tests</ion-label>
+          <!--  
           <ion-select [placeholder]="lang.isSpanish()?'Seleccione prueba de imagen':'Select image test'"
             [(ngModel)]="currentImageTest" cancelText="Cancelar" (ionChange)="getCurrentImageTest($event.target.value)">
             <ion-select-option *ngFor="let test of imageTests" [value]="test.id">
               {{ test.name }}
             </ion-select-option>
           </ion-select>
+          -->
+          <ionic-selectable [(ngModel)]="currentImageTest" [items]="imageTests"
+          itemValueField="id" itemTextField="name" [canSearch]="true" confirmButtonText="Seleccionar"
+          closeButtonText="Cancelar" (onChange)="getCurrentImageTest($event.target.value)" headerColor="primary"
+          searchFailText="No hay items disponibles" searchPlaceholder="Buscar" [isMultiple]="false">
+          <ng-template ionicSelectableCloseButtonTemplate>
+            <ion-icon name="close" style="font-size: 24px;"></ion-icon>
+          </ng-template>
+        </ionic-selectable>
         </ion-item>
       </ion-col>
 

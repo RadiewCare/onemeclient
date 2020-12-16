@@ -62,16 +62,6 @@ export class AddPhenotypicElementPage implements OnInit {
         "amerindio",
         "latinohispano"
       ]
-    },
-    {
-      id: "signs",
-      name: "Signos",
-      type: "sign"
-    },
-    {
-      id: "symptoms",
-      name: "Síntomas",
-      type: "symptom"
     }
   ];
 
@@ -80,7 +70,7 @@ export class AddPhenotypicElementPage implements OnInit {
     private diseasesService: DiseasesService,
     private modalController: ModalController,
     private toastService: ToastService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.getDisease();

@@ -55,9 +55,9 @@ export class PolymorphismsPage implements OnInit {
     filter: true,
     minWidth: 100
   };
-  constructor(private polymporphismsService: PolymorphismsService) {}
+  constructor(private polymporphismsService: PolymorphismsService) { }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   ionViewDidEnter() {
     this.getGeneticVariants();
@@ -77,11 +77,15 @@ export class PolymorphismsPage implements OnInit {
   onSearchChange(query: string) {
     if (query.length > 0) {
       this.queryVariants = this.geneticVariants.filter((variant) =>
-        variant.name.toLowerCase().includes(query.toLowerCase())
+        this.removeAccents(variant.name.toLowerCase()).includes(this.removeAccents(query.toLowerCase()))
       );
     } else {
       this.queryVariants = null;
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   changeView(option: string) {

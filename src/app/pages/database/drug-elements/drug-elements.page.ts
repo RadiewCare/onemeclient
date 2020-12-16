@@ -59,9 +59,9 @@ export class DrugElementsPage implements OnInit {
   constructor(
     private drugElementsService: DrugElementsService,
     private modalController: ModalController
-  ) {}
+  ) { }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   ionViewDidEnter() {
     this.drugElementsService.getDrugElements().subscribe((data) => {
@@ -73,17 +73,21 @@ export class DrugElementsPage implements OnInit {
     if (query.length > 0) {
       this.queryElements = this.geneticElements.filter(
         (geneticElement) =>
-          geneticElement.drugElement
-            .toLowerCase()
-            .includes(query.toLowerCase()) ||
+          this.removeAccents(geneticElement.drugElement
+            .toLowerCase())
+            .includes(this.removeAccents(query.toLowerCase())) ||
           (geneticElement.geneticVariant &&
-            geneticElement.geneticVariant
-              .toLowerCase()
-              .includes(query.toLowerCase()))
+            this.removeAccents(geneticElement.geneticVariant
+              .toLowerCase())
+              .includes(this.removeAccents(query.toLowerCase())))
       );
     } else {
       this.queryElements = null;
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   changeView(option: string) {

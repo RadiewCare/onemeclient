@@ -46,14 +46,6 @@
 
       <ion-col size="6" class="ion-padding-top">
         <ion-item>
-          <ion-label>Filtrar por fecha</ion-label>
-            <ion-datetime display-format="DD/MM/YYYY" doneText="Aceptar" [(ngModel)]="currentFecha"
-            cancelText="Cancelar" (ionChange)="filterSubjects()"></ion-datetime>
-        </ion-item>
-      </ion-col>
-
-      <ion-col size="6" class="ion-padding-top">
-        <ion-item>
           <ion-label>Filtrar por centro referente</ion-label>
           <ion-select
             placeholder="Seleccione centro referente"
@@ -73,6 +65,22 @@
       </ion-col>
 
       <ion-col size="6" class="ion-padding-top">
+        <ion-item>
+          <ion-label>Fecha inicial</ion-label>
+            <ion-datetime display-format="DD/MM/YYYY" doneText="Aceptar" [(ngModel)]="initialDate"
+            cancelText="Cancelar" (ionChange)="filterSubjects()"></ion-datetime>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="6" class="ion-padding-top">
+        <ion-item>
+          <ion-label>Fecha final</ion-label>
+            <ion-datetime display-format="DD/MM/YYYY" doneText="Aceptar" [(ngModel)]="finalDate"
+            cancelText="Cancelar" (ionChange)="filterSubjects()"></ion-datetime>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" class="ion-padding-top">
           <ion-button (click)="resetFilters()" expand="block">
             Reiniciar filtro
           </ion-button>

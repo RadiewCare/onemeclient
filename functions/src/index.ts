@@ -164,7 +164,9 @@ app.get("/getSubjectsFromDoctorId", (request, response) => {
           "identifier": element.identifier,
           "imageTests": element.imageTests || null,
           "history": element.history || null,
-          "quibimData": element.quibimData || null
+          "hasImageAnalysis": element.hasImageAnalysis || null,
+          "createdAt": element.createdAt || null,
+          "updatedAt": element.updatedAt || null
         }
       })
       response.send({ "subjects": result });
@@ -172,6 +174,29 @@ app.get("/getSubjectsFromDoctorId", (request, response) => {
       response.status(500).send(error);
     })
 });
+
+app.get("/getSubject", (request, response) => {
+  console.log(request.query);
+
+  admin.firestore().doc(`subjects/${request.query.subjectId}`).get()
+    .then((data: any) => {
+      let subject = data.data();
+
+      const result = {
+        "id": subject.id,
+        "identifier": subject.identifier,
+        "imageTests": subject.imageTests || null,
+        "history": subject.history || null,
+        "hasImageAnalysis": subject.hasImageAnalysis || null,
+        "createdAt": subject.createdAt || null,
+        "updatedAt": subject.updatedAt || null
+      }
+      response.send({ "subject": result });
+    }).catch(error => {
+      response.status(500).send(error);
+    })
+});
+
 
 app.post("/createSubject", validate(createSubjectDataValidation, {}, {}), (request, response) => {
   console.log(request.body);

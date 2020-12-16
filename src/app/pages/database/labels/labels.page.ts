@@ -27,17 +27,22 @@ export class LabelsPage implements OnInit {
   getCategories() {
     this.labelsSub = this.labelsService.getAll().subscribe(data => {
       this.labels = data;
+      this.labels = this.labels.sort((a, b) => this.removeAccents(a.name).localeCompare(this.removeAccents(b.name)))
     });
   }
 
   onSearchChange(query: string) {
     if (query.length > 0) {
       this.queryLabels = this.labels.filter((analysisElement) =>
-        analysisElement.name.toLowerCase().includes(query.toLowerCase())
+        this.removeAccents(analysisElement.name.toLowerCase()).includes(this.removeAccents(query.toLowerCase()))
       );
     } else {
       this.queryLabels = null;
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   ngOnDestroy(): void {

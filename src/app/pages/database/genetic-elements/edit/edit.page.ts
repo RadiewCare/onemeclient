@@ -42,6 +42,8 @@ export class EditPage implements OnInit {
 
   impliedGenes: string[];
 
+  url: string;
+
   constructor(
     private router: Router,
     private geneticElementsService: GeneticElementsService,
@@ -50,7 +52,7 @@ export class EditPage implements OnInit {
     private activatedRoute: ActivatedRoute,
     private alertController: AlertController,
     private diseasesService: DiseasesService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.id = this.activatedRoute.snapshot.paramMap.get("id");
@@ -67,6 +69,7 @@ export class EditPage implements OnInit {
         this.geneticElement = geneticElement.data();
         this.polymorphismsData = this.geneticElement.geneticVariant;
         this.diseaseName = this.geneticElement.disease.name;
+        this.url = `/database/diseases/edit/${this.geneticElement.disease.id}`;
         this.polymorphismsService
           .getPolymorphismData(this.geneticElement.geneticVariant.id)
           .then((gv) => {
@@ -179,7 +182,7 @@ export class EditPage implements OnInit {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {}
+          handler: (blah) => { }
         },
         {
           text: "Aceptar",

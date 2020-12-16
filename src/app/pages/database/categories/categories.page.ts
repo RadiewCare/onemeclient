@@ -27,17 +27,22 @@ export class CategoriesPage implements OnInit, OnDestroy {
   getCategories() {
     this.categoriesSub = this.categoriesService.getAll().subscribe(data => {
       this.categories = data;
+      this.categories = this.categories.sort((a, b) => this.removeAccents(a.name).localeCompare(this.removeAccents(b.name)))
     });
   }
 
   onSearchChange(query: string) {
     if (query.length > 0) {
       this.queryCategories = this.categories.filter((analysisElement) =>
-        analysisElement.name.toLowerCase().includes(query.toLowerCase())
+        this.removeAccents(analysisElement.name.toLowerCase()).includes(this.removeAccents(query.toLowerCase()))
       );
     } else {
       this.queryCategories = null;
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   ngOnDestroy(): void {

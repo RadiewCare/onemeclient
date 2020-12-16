@@ -11,6 +11,8 @@ import { ReportsService } from 'src/app/services/reports.service';
 export class CreateReportPage implements OnInit {
   @Input() id: string;
   @Input() imageTest: any;
+  @Input() subject: any;
+  @Input() doctor: any;
 
   constructor(public lang: LanguageService, private modalController: ModalController, private reportsService: ReportsService) { }
 
@@ -18,12 +20,12 @@ export class CreateReportPage implements OnInit {
   }
 
   createFullReport() {
-    this.reportsService.exportImageTest(this.imageTest);
+    this.reportsService.exportImageTest(this.imageTest, this.subject, this.doctor);
   }
 
   createPositivesReport() {
     this.imageTest.values = this.imageTest.values.filter(element => element.status === "positive");
-    this.reportsService.exportImageTest(this.imageTest);
+    this.reportsService.exportImageTest(this.imageTest, this.subject, this.doctor);
   }
 
   async dismissModal(): Promise<any> {

@@ -20,6 +20,7 @@ export class ImageTestsPage implements OnInit, OnDestroy {
       .getImageTests()
       .subscribe((tests) => {
         this.imageTests = tests;
+        this.imageTests = this.imageTests.sort((a, b) => this.removeAccents(a.name).localeCompare(this.removeAccents(b.name)))
         console.log(this.imageTests);
         const filtered = this.imageTests.filter(element => !element.elements);
         console.log(filtered);
@@ -32,12 +33,16 @@ export class ImageTestsPage implements OnInit, OnDestroy {
 
     if (query.length > 0) {
       this.queryImageTests = this.imageTests.filter((test) =>
-        test.name.toLowerCase().includes(query.toLowerCase())
+        this.removeAccents(test.name.toLowerCase()).includes(this.removeAccents(query.toLowerCase()))
       );
       console.log(this.queryImageTests);
     } else {
       this.queryImageTests = null;
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   ngOnDestroy() {

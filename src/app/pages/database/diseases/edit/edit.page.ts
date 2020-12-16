@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from "@angular/core";
 import { ToastService } from "src/app/services/toast.service";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Subscription, Observable } from "rxjs";
-import * as moment from "moment";
 import * as firebase from "firebase/app";
 import { DiseasesService } from "src/app/services/diseases.service";
 import { ClinicAnalysisElementsService } from "src/app/services/clinic-analysis-elements.service";
@@ -19,6 +18,10 @@ import { ImportPage } from "./import/import.page";
 import { ImageTestsElementsService } from 'src/app/services/image-tests-elements.service';
 import { CategoriesService } from 'src/app/services/categories.service';
 import { LabelsService } from 'src/app/services/labels.service';
+import { SymptomsService } from 'src/app/services/symptoms.service';
+import { LanguageService } from 'src/app/services/language.service';
+import { SubjectsService } from 'src/app/services/subjects.service';
+import * as moment from 'moment';
 
 @Component({
   selector: "app-edit",
@@ -28,7 +31,7 @@ import { LabelsService } from 'src/app/services/labels.service';
 export class EditPage implements OnInit, OnDestroy {
   id: string;
   name: any;
-
+  initialName: any;
   notes: string;
 
   highRiskExplanation: string;
@@ -68,6 +71,12 @@ export class EditPage implements OnInit, OnDestroy {
   relatedCategories: any;
   relatedLabels: any;
 
+  /* Signos y síntomas */
+  signsAndSymptoms = [];
+  currentSignsAndSymptoms = [];
+  querySignsAndSymptoms: string;
+  querySignsAndSymptomsList = [];
+
   constructor(
     private diseasesService: DiseasesService,
     private clinicAnalysisService: ClinicAnalysisElementsService,
@@ -81,6 +90,9 @@ export class EditPage implements OnInit, OnDestroy {
     private imageTestsElementsService: ImageTestsElementsService,
     private categoriesService: CategoriesService,
     private labelsService: LabelsService,
+    private symptomsService: SymptomsService,
+    private subjectsService: SubjectsService,
+    public lang: LanguageService
   ) {
     this.id = this.activatedRoute.snapshot.paramMap.get("id");
   }
@@ -93,6 +105,7 @@ export class EditPage implements OnInit, OnDestroy {
         console.log(this.disease);
 
         this.name = disease.name;
+        this.initialName = disease.name;
         this.notes = disease.notes;
         this.highRiskExplanation = disease.highRiskExplanation;
         this.mediumRiskExplanation = disease.mediumRiskExplanation;
@@ -100,10 +113,12 @@ export class EditPage implements OnInit, OnDestroy {
 
         this.relatedLabels = disease.relatedLabels || [];
         this.relatedCategories = disease.relatedCategories || [];
+        this.currentSignsAndSymptoms = disease.signsAndSymptoms || [];
         // this.getBiomarkersValues();
       });
     this.getCategories();
     this.getLabels();
+    this.getSignsAndSypmtoms();
 
   }
 
@@ -136,6 +151,31 @@ export class EditPage implements OnInit, OnDestroy {
     labels.forEach(element => {
       this.labels.push(element.data());
     })
+  }
+
+  async getSignsAndSypmtoms() {
+    const symptoms = await this.symptomsService.getSymptomsData();
+    symptoms.forEach(element => {
+      this.signsAndSymptoms.push(element.data());
+    })
+  }
+
+  addSignAndSymptom(signAndSypmtom: any) {
+    this.currentSignsAndSymptoms.push({ id: signAndSypmtom.id, name: signAndSypmtom.name });
+    this.querySignsAndSymptomsList = [];
+    this.querySignsAndSymptoms = null;
+  }
+
+  deleteSignAndSymptoms(index: any) {
+    this.currentSignsAndSymptoms = this.currentSignsAndSymptoms.splice(index, 1);
+  }
+
+  onQuerySignsAndSymptoms(query: string) {
+    this.querySignsAndSymptomsList = this.signsAndSymptoms.filter(element => this.removeAccents(element.name.trim().toLowerCase()).includes(this.removeAccents(query.trim().toLowerCase())));
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   async getBiomarkersValues() {
@@ -319,6 +359,13 @@ export class EditPage implements OnInit, OnDestroy {
 
   /* MODIFICACIONES */
 
+  algoritmo() {
+    // Necesito saber de alguna manera que los options de los elements actuales son los correctos y si no actualizarlos
+    // Una vez garantizada la integridad de los datos de los biomarcadores realizar la criba de información repetida y fusiones de elementos
+    // Nota: estaría bien probar con un subconjunto primero por adelantar y luego con la totalidad.
+
+  }
+
   migrateImageBiomarkers() {
 
     const diseasesResult = [];
@@ -342,6 +389,9 @@ export class EditPage implements OnInit, OnDestroy {
           if (disease.imageTests) {
             const filteredImageTests = disease.imageTests.map(element => element.test);
 
+            console.log(disease.imageTests);
+            console.log(filteredImageTests);
+
             filteredImageTests.forEach(imageTest => {
               if (filteredBiomarkers.includes(imageTest)) {
                 const index = imageTestsElements.findIndex(element => element.name === imageTest);
@@ -360,12 +410,12 @@ export class EditPage implements OnInit, OnDestroy {
             // update del disease
 
             if (disease.id && disease.imageBiomarkers) {
-              this.diseasesService.updateDisease(disease.id, { imageBiomarkers: disease.imageBiomarkers });
+              // this.diseasesService.updateDisease(disease.id, { imageBiomarkers: disease.imageBiomarkers }); ESTE ES EL BUENO?
             }
           }
 
         }
-        console.log("terminado");
+        console.log("terminado", diseasesResult);
 
       })
 
@@ -533,6 +583,24 @@ export class EditPage implements OnInit, OnDestroy {
     return await modal.present();
   }
 
+  onClinicConditionChange(index: any, condition: string) {
+    this.disease.analysisElements[index].condition = condition;
+    console.log(index, condition);
+    console.log(this.disease.analysisElements[index]);
+  }
+
+  onImageConditionChange(indexBiomarker: any, indexValue: any, condition: string) {
+    if (!this.disease.imageBiomarkers[indexBiomarker].conditions) {
+      this.disease.imageBiomarkers[indexBiomarker].conditions = []
+    }
+    this.disease.imageBiomarkers[indexBiomarker].conditions[indexValue] = condition;
+    console.log(this.disease.imageBiomarkers);
+  }
+
+  onImageBiomarkerValuesChange(index: any, values: any) {
+    this.disease.imageBiomarkers[index].conditions = [];
+  }
+
   save() {
     if (this.name.length !== 0) {
       this.diseasesService
@@ -544,9 +612,15 @@ export class EditPage implements OnInit, OnDestroy {
           lowRiskExplanation: this.lowRiskExplanation || null,
           phenotypicElements: this.disease.phenotypicElements || null,
           imageBiomarkers: this.disease.imageBiomarkers || null,
+          analysisElements: this.disease.analysisElements || null,
+          signsAndSymptoms: this.currentSignsAndSymptoms || [],
           updatedAt: moment().format()
         })
         .then(() => {
+          // Actualizar el nombre de la enfermedad en las enfermedades del sujeto
+          if (this.name !== this.initialName) {
+            this.updateSubjectIfDiseaseNameChange();
+          }
           this.toastService.show("success", "Enfermedad editada con éxito");
         })
         .catch((error) => {
@@ -558,6 +632,78 @@ export class EditPage implements OnInit, OnDestroy {
     } else {
       this.toastService.show("danger", "Error: Rellene todos los campos");
     }
+  }
+
+  updateSubjectIfDiseaseNameChange() {
+    this.subjectsService.getSubjectsData().then(async data => {
+      let subjects = data.docs.map(element => element = element.data())
+        .filter(subject => subject.history && subject.history.diseases && subject.history.diseases.some(element => element.id === this.id));
+      console.log(subjects);
+
+      for await (const subject of subjects) {
+        const index = subject.history.diseases.findIndex(element => element.id = this.id);
+        console.log(index);
+
+        subject.history.diseases[index].name = this.name;
+        console.log(subject.history.diseases);
+
+        this.subjectsService.updateSubject(subject.id, { history: subject.history })
+      }
+    })
+  }
+
+  updateSubjectIfDiseaseIsDeleted() {
+    this.subjectsService.getSubjectsData().then(async data => {
+      let subjects = data.docs.map(element => element = element.data())
+        .filter(subject => subject.history && subject.history.diseases && subject.history.diseases.some(element => element.id === this.id));
+      console.log(subjects);
+
+      for await (const subject of subjects) {
+        const index = subject.history.diseases.findIndex(element => element.id = this.id);
+        console.log(index);
+
+        subject.history.diseases = subject.history.diseases.splice(index, 1);
+        console.log(subject.history.diseases);
+
+        this.subjectsService.updateSubject(subject.id, { history: subject.history })
+      }
+    })
+  }
+
+  updateFamiliarSubjectIfDiseaseNameChange() {
+    this.subjectsService.getSubjectsData().then(async data => {
+      let subjects = data.docs.map(element => element = element.data())
+        .filter(subject => subject.history && subject.history.diseases && subject.history.diseases.some(element => element.id === this.id));
+      console.log(subjects);
+
+      for await (const subject of subjects) {
+        const index = subject.history.diseases.findIndex(element => element.id = this.id);
+        console.log(index);
+
+        subject.history.diseases[index].name = this.name;
+        console.log(subject.history.diseases);
+
+        this.subjectsService.updateSubject(subject.id, { history: subject.history })
+      }
+    })
+  }
+
+  udpateFamiliarSubjectIfDiseaseIsDeleted() {
+    this.subjectsService.getSubjectsData().then(async data => {
+      let subjects = data.docs.map(element => element = element.data())
+        .filter(subject => subject.history && subject.history.diseases && subject.history.diseases.some(element => element.id === this.id));
+      console.log(subjects);
+
+      for await (const subject of subjects) {
+        const index = subject.history.diseases.findIndex(element => element.id = this.id);
+        console.log(index);
+
+        subject.history.diseases = subject.history.diseases.splice(index, 1);
+        console.log(subject.history.diseases);
+
+        this.subjectsService.updateSubject(subject.id, { history: subject.history })
+      }
+    })
   }
 
   async delete() {
@@ -577,6 +723,7 @@ export class EditPage implements OnInit, OnDestroy {
           handler: () => {
             this.diseaseSub.unsubscribe();
             this.router.navigate(["/database/diseases"]);
+            this.updateSubjectIfDiseaseIsDeleted();
             this.diseasesService
               .deleteDisease(this.id)
               .then(() => {

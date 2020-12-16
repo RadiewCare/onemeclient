@@ -64,6 +64,7 @@ export class AnalysisElementsPage implements OnInit, OnDestroy {
     this.analysisElementsSub = this.analysisElements$.subscribe(
       (analysisElements) => {
         this.analysisElements = analysisElements;
+        this.analysisElements = this.analysisElements.sort((a, b) => this.removeAccents(a.name).localeCompare(this.removeAccents(b.name)))
       }
     );
   }
@@ -71,11 +72,15 @@ export class AnalysisElementsPage implements OnInit, OnDestroy {
   onSearchChange(query: string) {
     if (query.length > 0) {
       this.queryElements = this.analysisElements.filter((analysisElement) =>
-        analysisElement.name.toLowerCase().includes(query.toLowerCase())
+        this.removeAccents(analysisElement.name.toLowerCase()).includes(this.removeAccents(query.toLowerCase()))
       );
     } else {
       this.queryElements = null;
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   changeView(option: string) {
