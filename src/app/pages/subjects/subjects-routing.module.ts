@@ -29,7 +29,7 @@ const routes: Routes = [
       import("./familiars/create/create.module").then((m) => m.CreatePageModule)
   },
   {
-    path: "familiars/edit/:id",
+    path: "familiars/edit/:id/:subjectId",
     loadChildren: () =>
       import("./familiars/edit/edit.module").then((m) => m.EditPageModule)
   },
@@ -42,6 +42,14 @@ const routes: Routes = [
     path: "share/:id",
     loadChildren: () =>
       import("./share/share.module").then((m) => m.SharePageModule)
+  },
+  {
+    path: 'diseases/:id',
+    loadChildren: () => import('./diseases/diseases.module').then(m => m.DiseasesPageModule)
+  },
+  {
+    path: 'documents/:id',
+    loadChildren: () => import('./documents/documents.module').then(m => m.DocumentsPageModule)
   }
 ];
 
@@ -49,4 +57,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class SubjectsPageRoutingModule {}
+export class SubjectsPageRoutingModule { }

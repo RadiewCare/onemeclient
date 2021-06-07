@@ -58,13 +58,13 @@
     <ion-buttons slot="end">
       <ion-button (click)="dismissModal()">
         <ion-icon slot="start" name="close"></ion-icon>
-        <ion-label *ngIf="lang.isSpanish()">Cancelar</ion-label>
-        <ion-label *ngIf="!lang.isSpanish()">Cancel</ion-label>
+        <ion-label *ngIf="lang.isSpanish()">Cerrar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Close</ion-label>
       </ion-button>
-      <ion-button (click)="save()" color="primary">
+      <ion-button (click)="save()" color="primary" *ngIf="result">
         <ion-icon slot="start" name="save"></ion-icon>
-        <ion-label *ngIf="lang.isSpanish()">Aceptar</ion-label>
-        <ion-label *ngIf="!lang.isSpanish()">Accept</ion-label>
+        <ion-label *ngIf="lang.isSpanish()">Guardar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Save</ion-label>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

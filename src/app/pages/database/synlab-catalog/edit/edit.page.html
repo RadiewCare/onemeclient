@@ -1,0 +1,160 @@
+<ion-header>
+  <!--  
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/database/analysis-elements"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Elemento de análisis: Editar</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="delete()">
+        <ion-icon slot="start" name="trash"></ion-icon>
+        <ion-label>Eliminar</ion-label>
+      </ion-button>
+      <ion-button (click)="save()">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label>Guardar</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  -->
+</ion-header>
+
+<ion-content>
+  <!-- 
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item lines="none">
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input type="text" placeholder="Introduzca nombre" [(ngModel)]="name"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label position="floating">Categoría</ion-label>
+          <ion-select placeholder="Seleccione categoría" cancelText="Cancelar" [(ngModel)]="category">
+            <ion-select-option value="hematology">Hematología y Hemostasia</ion-select-option>
+            <ion-select-option value="biochemistry">Bioquímica</ion-select-option>
+            <ion-select-option value="endocrinology">Endocrinología</ion-select-option>
+            <ion-select-option value="immunology">Inmunología</ion-select-option>
+            <ion-select-option value="tumorMarkers">Marcadores tumorales (suero)</ion-select-option>
+            <ion-select-option value="pharmaToxicology">Monitorización de Fármacos y Toxocología
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label position="floating">Unidad métrica</ion-label>
+          <ion-select placeholder="Seleccione unidad" cancelText="Cancelar" [(ngModel)]="metricUnit">
+            <ion-select-option value="%">%</ion-select-option>
+            <ion-select-option value="g/dL">g/dL</ion-select-option>
+            <ion-select-option value="mg/L">mg/L</ion-select-option>
+            <ion-select-option value="mg/dL">mg/dL</ion-select-option>
+            <ion-select-option value="ng/dL">ng/dL</ion-select-option>
+            <ion-select-option value="ng/mL">ng/mL</ion-select-option>
+            <ion-select-option value="pg">pg</ion-select-option>
+            <ion-select-option value="pg/mL">pg/mL</ion-select-option>
+            <ion-select-option value="fL">fL</ion-select-option>
+            <ion-select-option value="x103/mm3">x10<sup>3</sup>/mm<sup>3</sup></ion-select-option>
+            <ion-select-option value="x106/mm3">x10<sup>6</sup>/mm<sup>3</sup></ion-select-option>
+            <ion-select-option value="mmol/mol">mmol/mol</ion-select-option>
+            <ion-select-option value="µmol/L">µmol/L</ion-select-option>
+            <ion-select-option value="U/L">U/L</ion-select-option>
+            <ion-select-option value="mU/L">mU/L</ion-select-option>
+            <ion-select-option value="µUI/mL">µUI/mL</ion-select-option>
+            <ion-select-option value="µg/L">µg/L</ion-select-option>
+            <ion-select-option value="µg/dL">µg/dL</ion-select-option>
+            <ion-select-option value="Índice">Índice</ion-select-option>
+            <ion-select-option value="ml">ml</ion-select-option>
+            <ion-select-option value="número de células">número de células</ion-select-option>
+            <ion-select-option value="espermatozoides por ml">espermatozoides por ml</ion-select-option>
+            <ion-select-option value="ph">ph</ion-select-option>
+            <ion-select-option value="cm">cm</ion-select-option>
+            <ion-select-option value="mm">mm</ion-select-option>
+            <ion-select-option value="presente">presente</ion-select-option>
+            <ion-select-option value="ausente">ausente</ion-select-option>
+            <ion-select-option value="ml/min">ml/min</ion-select-option>
+            <ion-select-option value="mEq/L">mEq/L</ion-select-option>
+            <ion-select-option value="x103/μl">x103/μl</ion-select-option>
+            <ion-select-option value="fL.V">fL.V</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating">Información adicional</ion-label>
+          <ion-textarea [(ngModel)]="information" autoGrow="true" rows="10"></ion-textarea>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" class="ion-margin-top">
+        <ion-item color="primary">
+          <ion-label>Añadir rango</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="2">
+        <ion-item lines="none">
+          <ion-label position="floating">Sexo</ion-label>
+          <ion-select placeholder="Seleccione sexo" [(ngModel)]="sex">
+            <ion-select-option value="male">Hombre</ion-select-option>
+            <ion-select-option value="female">Mujer</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="2">
+        <ion-item lines="none">
+          <ion-label position="floating">Edad mínima</ion-label>
+          <ion-input type="number" placeholder="Introduzca edad" [(ngModel)]="lowerAge"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="2">
+        <ion-item lines="none">
+          <ion-label position="floating">Edad máxima</ion-label>
+          <ion-input type="number" placeholder="Introduzca edad" [(ngModel)]="upperAge"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="2">
+        <ion-item lines="none">
+          <ion-label position="floating">Valor mínimo</ion-label>
+          <ion-input type="number" placeholder="Introduzca valor" [(ngModel)]="lowerLevel"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="2">
+        <ion-item lines="none">
+          <ion-label position="floating">Valor máximo</ion-label>
+          <ion-input type="number" placeholder="Introduzca valor" [(ngModel)]="upperLevel"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="2">
+        <ion-button (click)="addRange()">
+          <ion-icon slot="start" name="add"></ion-icon>
+          <ion-label>Añadir</ion-label>
+        </ion-button>
+      </ion-col>
+
+      <ion-col size="12" class="ion-margin-top">
+        <ion-item color="primary">
+          <ion-label>Rangos actualmente definidos</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item *ngFor="let range of ranges; let i = index" lines="full">
+          <ion-text>
+            <p *ngIf="range.sex"><b>Sexo:</b> {{range.sex === "male"?'Hombre':'Mujer'}}</p>
+            <p *ngIf="range.lowerAge || range.upperAge"><b>Edad:</b> {{range.lowerAge}}-{{range.upperAge}}
+              años</p>
+            <p *ngIf="range.lowerLevel || range.upperLevel"><b>Valores:</b>
+              {{range.lowerLevel}}-{{range.upperLevel}} {{metricUnit}}</p>
+          </ion-text>
+          <ion-buttons slot="end">
+            <ion-button (click)="deleteRange(i)">
+              <ion-label>Eliminar</ion-label>
+              <ion-icon slot="start" name="trash"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+   -->
+</ion-content>

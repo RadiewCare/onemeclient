@@ -7,7 +7,7 @@ import * as moment from "moment";
   providedIn: "root"
 })
 export class HistoriesService {
-  constructor(private db: AngularFirestore) {}
+  constructor(private db: AngularFirestore) { }
 
   /**
    * Devuelve un historial propio de un sujeto
@@ -21,10 +21,13 @@ export class HistoriesService {
       .valueChanges();
   }
 
-  getFamiliar(subjectId: string, familiarId: string) {
-    return this.db
-      .collection(`subjects/${subjectId}/histories/${familiarId}}`)
-      .valueChanges();
+  async getFamiliar(subjectId: string, familiarId: string): Promise<any> {
+    console.log(subjectId, "desde servicio sid");
+    console.log(familiarId, "desde servicio fid");
+
+    return await this.db.firestore
+      .doc(`subjects/${subjectId}/histories/${familiarId}`)
+      .get();
   }
 
   /**
@@ -80,7 +83,8 @@ export class HistoriesService {
     data: object
   ): Promise<any> {
     // TO DO: Actualizar referencias
-
+    console.log(subjectId, "desde servicio sid");
+    console.log(historyId, "desde servicio fid");
     return this.db
       .doc(`subjects/${subjectId}/histories/${historyId}`)
       .update(data);

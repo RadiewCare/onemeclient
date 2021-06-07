@@ -4,6 +4,7 @@ import { ShowPage } from "./show/show.page";
 import { LanguageService } from "src/app/services/language.service";
 import { SubjectsService } from "src/app/services/subjects.service";
 import { ToastService } from "src/app/services/toast.service";
+import { ImageTestsElementsService } from "src/app/services/image-tests-elements.service";
 
 @Component({
   selector: "app-gallery",
@@ -12,39 +13,39 @@ import { ToastService } from "src/app/services/toast.service";
 })
 export class GalleryPage implements OnInit {
   @Input() id: string;
-  @Input() field: number;
-  @Input() index: number;
 
   images = [];
-  tests: any;
-  subject: any;
 
   constructor(
-    private subjectsService: SubjectsService,
     private modalController: ModalController,
+    private imageTestsElementsService: ImageTestsElementsService,
     public lang: LanguageService,
-    private toastService: ToastService
   ) { }
 
   ngOnInit() {
-    this.subjectsService.getSubjectData(this.id).then(data => {
-      this.subject = data.data();
+    console.log(this.id);
 
-      const loadedOptions = this.subject.imageTests[this.index].values[this.field].options;
-      const loadedImages = this.subject.imageTests[this.index].values[this.field].images;
+    this.imageTestsElementsService.getImageTestElementData(this.id).then(data => {
 
-      loadedImages.forEach(element => {
-        let index = loadedImages.indexOf(element);
-        if (element) {
-          this.images.push({ image: element, index: loadedOptions[index] });
-        }
-      });
+      const imageElement = data.data();
+
+      console.log(imageElement);
+
+      const loadedOptions = imageElement.options;
+      const loadedImages = imageElement.images;
+
+      if (loadedImages) {
+        loadedImages.forEach(element => {
+          let index = loadedImages.indexOf(element);
+          if (element) {
+            this.images.push({ image: element, index: loadedOptions[index] });
+          }
+        });
+      }
+
 
       console.log(this.images);
-
-
-
-    });
+    })
   }
 
   async openImage(image: any) {
@@ -56,23 +57,6 @@ export class GalleryPage implements OnInit {
       cssClass: "my-custom-modal-css-full"
     });
     return await modal.present();
-  }
-
-  deleteImage(index: number) {
-    this.images = this.subject.imageTests[
-      this.field
-    ].images = this.subject.imageTests[this.field].images.splice(index, 0);
-
-    this.subjectsService
-      .updateSubject(this.id, {
-        imageTests: this.subject.imageTests
-      })
-      .then(() => {
-        this.toastService.show("success", "Imagen eliminada con éxito");
-      })
-      .catch(error => {
-        this.toastService.show("danger", "Error: " + error);
-      });
   }
 
   dismissModal() {

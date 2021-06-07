@@ -40,38 +40,62 @@
         <ng-container *ngIf="!queryElements; else elseTemplate">
           <ion-item *ngFor="let analysisElement of analysisElements; let i = index"
           (click)="toggleInfo(i)" lines="full" button>
-            <ion-label>
-              {{ analysisElement.CODIGO }} - {{ analysisElement.DESCRIPCION }}
-              <div *ngIf="analysisElement.visible">
-                <ul>
-                  <li>GENES: {{analysisElement.GENES? analysisElement.GENES : 'Sin información'}}</li>
-                  <li>MAGNITUDES: {{analysisElement.MAGNITUDES}}</li>
-                  <li>METODO: {{analysisElement.METODO}}</li>
-                  <li>MUESTRA_EXTEND: {{analysisElement.MUESTRA_EXTEND}}</li>
-                  <li>PERFIL: {{analysisElement.PERFIL}}</li>
-                  <li>PLAZO: {{analysisElement.PLAZO}}</li>
-                  <li>V_REFERENCIA: {{analysisElement.V_REFERENCIA}}</li>
-                </ul>
+          <ion-label>
+            {{ analysisElement.codigo }} - {{ analysisElement.datos[0].DESCRIPCION_TEST }}
+            <div *ngIf="analysisElement.visible">
+              <div *ngFor="let valor of analysisElement.datos" style="margin-top: 1rem; margin-bottom: 1 rem;">
+                <li *ngIf="valor.CODIGO">CODIGO: {{valor.CODIGO}}</li>
+                <li *ngIf="valor.CODIGO_T">CODIGO_T: {{valor.CODIGO_T}}</li>
+                <li *ngIf="valor.CUALITATIVO">CUALITATIVO: {{valor.CUALITATIVO}}</li>
+                <li *ngIf="valor.DESCRIPCION">DESCRIPCION: {{valor.DESCRIPCION}}</li>
+                <li *ngIf="valor.DESCRIPCION_TEST">DESCRIPCION_TEST: {{valor.DESCRIPCION_TEST}}</li>
+                <li *ngIf="valor.GRUPO_VR">GRUPO_VR: {{valor.GRUPO_VR}}</li>
+                <li *ngIf="valor.INTERPRETACION">INTERPRETACION: {{valor.INTERPRETACION}}</li>
+                <li *ngIf="valor.INTERVALO_INF_EDAD">INTERVALO_INF_EDAD: {{valor.INTERVALO_INF_EDAD}}</li>
+                <li *ngIf="valor.INTERVALO_SUP_EDAD">INTERVALO_SUP_EDAD: {{valor.INTERVALO_SUP_EDAD}}</li>
+                <li *ngIf="valor.LIM_INF">LIM_INF: {{valor.LIM_INF}}</li>
+                <li *ngIf="valor.LIM_SUP">LIM_SUP: {{valor.LIM_SUP}}</li>
+                <li *ngIf="valor.OBSERVACIONES">OBSERVACIONES: {{valor.OBSERVACIONES}}</li>
+                <li *ngIf="valor.SEXO">SEXO: {{valor.SEXO}}</li>
+                <li *ngIf="valor.SIMBOLO_LIM_INF">SIMBOLO_LIM_INF: {{valor.SIMBOLO_LIM_INF}}</li>
+                <li *ngIf="valor.SIMBOLO_LIM_SUP">SIMBOLO_LIM_SUP: {{valor.SIMBOLO_LIM_SUP}}</li>
+                <li *ngIf="valor.SUBGRUPO_VR">SUBGRUPO_VR: {{valor.SUBGRUPO_VR}}</li>
+                <li *ngIf="valor.TITULACION">TITULACION: {{valor.TITULACION}}</li>
+                <li *ngIf="valor.UNIDAD">UNIDAD: {{valor.UNIDAD}}</li>
+                <li *ngIf="valor.UNIDAD_INTERVALO_EDAD">UNIDAD_INTERVALO_EDAD: {{valor.UNIDAD_INTERVALO_EDAD}}</li>
               </div>
-            </ion-label>
+            </div>
+          </ion-label>
             <!-- <ion-badge slot="end" color="primary" mode="ios">{{ geneticElement.disease.name }}</ion-badge> -->
           </ion-item>
         </ng-container>
         <ng-template #elseTemplate>
           <ion-item *ngFor="let analysisElement of queryElements; let i = index"
              (click)="toggleInfo(i)" lines="full" button>
-            <ion-label>
-              {{ analysisElement.CODIGO }} - {{ analysisElement.DESCRIPCION }}
+             <ion-label>
+              {{ analysisElement.codigo }} - {{ analysisElement.datos[0].DESCRIPCION_TEST }}
               <div *ngIf="analysisElement.visible">
-                <ul>
-                  <li>GENES: {{analysisElement.GENES? analysisElement.GENES : 'Sin información'}}</li>
-                  <li>MAGNITUDES: {{analysisElement.MAGNITUDES}}</li>
-                  <li>METODO: {{analysisElement.METODO}}</li>
-                  <li>MUESTRA_EXTEND: {{analysisElement.MUESTRA_EXTEND}}</li>
-                  <li>PERFIL: {{analysisElement.PERFIL}}</li>
-                  <li>PLAZO: {{analysisElement.PLAZO}}</li>
-                  <li>V_REFERENCIA: {{analysisElement.V_REFERENCIA}}</li>
-                </ul>
+                <div *ngFor="let valor of analysisElement.datos" style="margin-top: 1rem; margin-bottom: 1 rem;">
+                  <li *ngIf="valor.CODIGO">CODIGO: {{valor.CODIGO}}</li>
+                  <li *ngIf="valor.CODIGO_T">CODIGO_T: {{valor.CODIGO_T}}</li>
+                  <li *ngIf="valor.CUALITATIVO">CUALITATIVO: {{valor.CUALITATIVO}}</li>
+                  <li *ngIf="valor.DESCRIPCION">DESCRIPCION: {{valor.DESCRIPCION}}</li>
+                  <li *ngIf="valor.DESCRIPCION_TEST">DESCRIPCION_TEST: {{valor.DESCRIPCION_TEST}}</li>
+                  <li *ngIf="valor.GRUPO_VR">GRUPO_VR: {{valor.GRUPO_VR}}</li>
+                  <li *ngIf="valor.INTERPRETACION">INTERPRETACION: {{valor.INTERPRETACION}}</li>
+                  <li *ngIf="valor.INTERVALO_INF_EDAD">INTERVALO_INF_EDAD: {{valor.INTERVALO_INF_EDAD}}</li>
+                  <li *ngIf="valor.INTERVALO_SUP_EDAD">INTERVALO_SUP_EDAD: {{valor.INTERVALO_SUP_EDAD}}</li>
+                  <li *ngIf="valor.LIM_INF">LIM_INF: {{valor.LIM_INF}}</li>
+                  <li *ngIf="valor.LIM_SUP">LIM_SUP: {{valor.LIM_SUP}}</li>
+                  <li *ngIf="valor.OBSERVACIONES">OBSERVACIONES: {{valor.OBSERVACIONES}}</li>
+                  <li *ngIf="valor.SEXO">SEXO: {{valor.SEXO}}</li>
+                  <li *ngIf="valor.SIMBOLO_LIM_INF">SIMBOLO_LIM_INF: {{valor.SIMBOLO_LIM_INF}}</li>
+                  <li *ngIf="valor.SIMBOLO_LIM_SUP">SIMBOLO_LIM_SUP: {{valor.SIMBOLO_LIM_SUP}}</li>
+                  <li *ngIf="valor.SUBGRUPO_VR">SUBGRUPO_VR: {{valor.SUBGRUPO_VR}}</li>
+                  <li *ngIf="valor.TITULACION">TITULACION: {{valor.TITULACION}}</li>
+                  <li *ngIf="valor.UNIDAD">UNIDAD: {{valor.UNIDAD}}</li>
+                  <li *ngIf="valor.UNIDAD_INTERVALO_EDAD">UNIDAD_INTERVALO_EDAD: {{valor.UNIDAD_INTERVALO_EDAD}}</li>
+                </div>
               </div>
             </ion-label>
             <!-- <ion-badge slot="end" color="primary" mode="ios">{{ geneticElement.disease.name }}</ion-badge> -->

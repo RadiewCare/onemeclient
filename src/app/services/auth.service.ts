@@ -101,10 +101,10 @@ export class AuthService {
         name: userData.name,
         isAdmin: false,
         isCollaborator: true,
-        sharedSubjectAnalytic: [],
-        sharedSubjectGenetic: [],
-        sharedSubjectImage: [],
-        sharedSubjectPhenotypic: []
+        sharedSubjectsAnalytic: [],
+        sharedSubjectsGenetic: [],
+        sharedSubjectsImage: [],
+        sharedSubjectsPhenotypic: []
       };
       return this.db
         .doc(`users/${user.uid}`)
@@ -125,7 +125,7 @@ export class AuthService {
             .doc(`users/${doc.id}`)
             .update({ id: doc.id, createdAt: moment().format() });
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }
 

@@ -1,5 +1,4 @@
 import { Component, OnInit, Input, OnDestroy } from "@angular/core";
-import { UsersService } from "src/app/services/users.service";
 import { ModalController } from "@ionic/angular";
 import { LanguageService } from "src/app/services/language.service";
 import { ToastService } from "src/app/services/toast.service";
@@ -25,17 +24,21 @@ export class EditAnalyticStudyPage implements OnInit, OnDestroy {
   elementsSub: Subscription;
   subject: any;
   age: number;
+  accessionNumber: number;
+
+  genre: any;
+
+  canBeAnalyzed = true;
 
   constructor(
-    private usersService: UsersService,
     private subjectService: SubjectsService,
     private analyticStudiesService: AnalyticStudiesService,
     private modalController: ModalController,
     public lang: LanguageService,
     private toastsService: ToastService
-  ) {}
+  ) { }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   ionViewDidEnter() {
     this.getAnalyticStudy();
@@ -45,9 +48,30 @@ export class EditAnalyticStudyPage implements OnInit, OnDestroy {
   getSubject() {
     this.subjectService.getSubjectData(this.id).then(data => {
       this.subject = data.data();
-      this.age = moment().diff(this.subject.history.birthdate, "years", false);
+      if (this.subject.history) {
+        // Normalizamos al formato Synlab
+        this.age = this.subject.history.age;
+        switch (this.subject.history.genre) {
+          case "varon":
+            this.genre = "Hombres"
+            break;
+          case "hembra":
+            this.genre = "Mujeres"
+            break;
+          default:
+            break;
+        }
+      }
       console.log(this.age);
+      console.log(this.genre);
+      this.canAnalysis();
     });
+  }
+
+  canAnalysis() {
+    if (!this.age || !this.genre) {
+      this.canBeAnalyzed = false;
+    }
   }
 
   getAnalyticStudy() {
@@ -55,15 +79,15 @@ export class EditAnalyticStudyPage implements OnInit, OnDestroy {
       this.id,
       this.testId
     );
+
     this.elementsSub = this.analyticElements$.subscribe(data => {
       console.log(data);
       this.date = data.date;
-      this.elements = data.values;
+      this.accessionNumber = data.accessionNumber || null,
+        this.elements = data.values;
       this.elements.forEach(element => {
         this.analyticValues.push({
-          category: element.category,
           id: element.id,
-          metricUnit: element.metricUnit,
           name: element.name,
           ranges: element.ranges || null,
           value: element.value || null,
@@ -78,44 +102,104 @@ export class EditAnalyticStudyPage implements OnInit, OnDestroy {
     );
   }
 
-  editElement(value: string, indexArray: number) {
-    this.analyticValues[indexArray].value = parseFloat(value);
-    this.analyticValues[indexArray].ranges.forEach(element => {
-      // Comprobación de sexo y edad
-      if (element.sex && element.lowerAge && element.upperAge && this.age) {
+  editElement(value: any, indexArray: number) {
+    value = parseFloat(value.replace(/,/, '.'));
+    this.analyticValues[indexArray].value = value;
+
+    if (this.analyticValues[indexArray].ranges) {
+      this.analyticValues[indexArray].ranges.forEach((element) => {
+        if (typeof element.LIM_SUP === 'string') {
+          element.LIM_SUP = parseFloat(element.LIM_SUP.replace(/,/, '.'));
+        }
+
+        if (typeof element.LIM_INF === 'string') {
+          element.LIM_INF = parseFloat(element.LIM_INF.replace(/,/, '.'));
+        }
+        // Comprobación de sexo y edad
         if (
-          element.sex === this.subject.history.genre &&
-          element.lowerAge <= this.age &&
-          element.upperAge >= this.age
+          element.UNIDAD_INTERVALO_EDAD == "Años" &&
+          (element.SEXO == this.genre || element.SEXO == "Ambos") &&
+          element.INTERVALO_INF_EDAD <= this.age &&
+          element.INTERVALO_SUP_EDAD >= this.age
         ) {
-          // Comprobación de valores (por defecto)
-          if (element.lowerLevel > value) {
-            this.analyticValues[indexArray].status = "low";
-          } else if (element.upperLevel < value) {
-            this.analyticValues[indexArray].status = "high";
+
+          if (element.INTERPRETACION && element.INTERPRETACION === "Positivo") {
+            console.log("Entro en: ", element);
+            if (element.LIM_INF > value) {
+              console.log("soy low");
+              console.log(element.LIM_INF, value);
+              this.analyticValues[indexArray].status = "low";
+              this.analyticValues[indexArray].meaning = "negative";
+
+            } else if (element.LIM_SUP < value) {
+              console.log(element.LIM_SUP, value);
+              console.log("soy high");
+              this.analyticValues[indexArray].status = "high";
+              this.analyticValues[indexArray].meaning = "negative";
+
+            } else if (element.LIM_SUP >= value && element.LIM_INF <= value) {
+              console.log("soy normal");
+              console.log(value);
+              this.analyticValues[indexArray].status = "normal";
+              this.analyticValues[indexArray].meaning = "positive";
+            }
+          } else if (element.INTERPRETACION && element.INTERPRETACION === "Negativo") {
+            console.log("Entro en: ", element);
+            if (element.LIM_INF > value) {
+              console.log("soy low");
+              console.log(element.LIM_INF, value);
+              this.analyticValues[indexArray].status = "low";
+              this.analyticValues[indexArray].meaning = "positive";
+
+            } else if (element.LIM_SUP < value) {
+              console.log(element.LIM_SUP, value);
+              console.log("soy high");
+              this.analyticValues[indexArray].status = "high";
+              this.analyticValues[indexArray].meaning = "positive";
+
+            } else if (element.LIM_SUP >= value && element.LIM_INF <= value) {
+              console.log("soy normal");
+              console.log(value);
+              this.analyticValues[indexArray].status = "normal";
+              this.analyticValues[indexArray].meaning = "negative";
+            }
           } else {
-            this.analyticValues[indexArray].status = "normal";
+            console.log("Entro en: ", element);
+            if (element.LIM_INF > value) {
+              console.log("soy low");
+              console.log(element.LIM_INF, value);
+              this.analyticValues[indexArray].status = "low";
+              this.analyticValues[indexArray].meaning = "positive";
+
+            } else if (element.LIM_SUP < value) {
+              console.log(element.LIM_SUP, value);
+              console.log("soy high");
+              this.analyticValues[indexArray].status = "high";
+              this.analyticValues[indexArray].meaning = "positive";
+
+            } else if (element.LIM_SUP >= value && element.LIM_INF <= value) {
+              console.log("soy normal");
+              console.log(value);
+              this.analyticValues[indexArray].status = "normal";
+              this.analyticValues[indexArray].meaning = "positive";
+            }
           }
-          return;
         }
-      } else {
-        // Comprobación de valores (por defecto)
-        if (element.lowerLevel > value) {
-          this.analyticValues[indexArray].status = "low";
-        } else if (element.upperLevel < value) {
-          this.analyticValues[indexArray].status = "high";
-        } else {
-          this.analyticValues[indexArray].status = "normal";
-        }
-      }
-    });
+      });
+    } else {
+      this.toastsService.show(
+        "danger",
+        `El elemento de análisis "${this.analyticValues[indexArray].DESCRIPCION_TEST}" no tiene aún rangos de valores`
+      );
+    }
   }
 
   save() {
     const data = {
       date: this.date,
       values: this.analyticValues,
-      updatedAt: moment().format()
+      updatedAt: moment().format(),
+      accessionNumber: this.accessionNumber
     };
 
     this.analyticStudiesService

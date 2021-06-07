@@ -11,6 +11,7 @@
         <ion-item>
           <ion-label position="floating">Elementos de pruebas de imagen</ion-label>
           <ionic-selectable [(ngModel)]="currentImageTestData" [items]="imageTestsElements"
+          [hasVirtualScroll]="true" (onSearch)="onSearch($event)"
             itemValueField="id" itemTextField="name" [canSearch]="true" confirmButtonText="Seleccionar"
             closeButtonText="Cancelar" headerColor="primary"
             searchFailText="No hay items disponibles" searchPlaceholder="Buscar" [isMultiple]="true">

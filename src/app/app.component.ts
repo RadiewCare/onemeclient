@@ -31,14 +31,52 @@ export class AppComponent implements OnInit, OnDestroy {
       admin: false
     },
     {
-      title: "Sujetos",
+      title: "Pacientes",
       url: "/subjects",
       icon: "person",
       disabled: false,
       admin: false
     },
     {
-      title: "Doctores",
+      title: "Clínicas",
+      url: "/doctors",
+      icon: "people",
+      disabled: false,
+      admin: true
+    },
+    {
+      title: "Base de datos",
+      url: "/database",
+      icon: "folder",
+      disabled: false,
+      admin: true
+    },
+    {
+      title: "Estadísticas",
+      url: "/statistics",
+      icon: "pie-chart",
+      disabled: false,
+      admin: true
+    }
+  ];
+
+  public appPagesOriginal = [
+    {
+      title: "Panel de control",
+      url: "/dashboard",
+      icon: "analytics",
+      disabled: false,
+      admin: false
+    },
+    {
+      title: "Pacientes",
+      url: "/subjects",
+      icon: "person",
+      disabled: false,
+      admin: false
+    },
+    {
+      title: "Clínicas",
       url: "/doctors",
       icon: "people",
       disabled: false,
@@ -104,27 +142,6 @@ export class AppComponent implements OnInit, OnDestroy {
       admin: true
     },
     {
-      title: "Reports",
-      url: "/reports",
-      icon: "document",
-      disabled: false,
-      admin: false
-    },
-    {
-      title: "Tables",
-      url: "/tables",
-      icon: "grid",
-      disabled: false,
-      admin: false
-    },
-    {
-      title: "Templates",
-      url: "/templates",
-      icon: "create",
-      disabled: false,
-      admin: false
-    },
-    {
       title: "Database",
       url: "/database",
       icon: "folder",
@@ -146,7 +163,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private popoverController: PopoverController,
     private alertController: AlertController,
     private menuController: MenuController
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.user$ = this.auth.user$;

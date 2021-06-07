@@ -46,10 +46,6 @@ export class EditPage implements OnInit, OnDestroy {
   geneticElements: any;
   geneticElementsSub: Subscription;
 
-  clinicAnalysisElements$: Observable<any>;
-  clinicAnalysisElements: any;
-  clinicAnalysisElementsSub: Subscription;
-
   imageTests$: Observable<any>;
   imageTests: any;
   imageTestsSub: Subscription;
@@ -58,6 +54,9 @@ export class EditPage implements OnInit, OnDestroy {
   imageTestsElements: any;
   imageTestsElementsSub: Subscription;
   imageTestsElements$: Observable<any>;
+
+  isHereditary = false;
+  hereditaryPonderation;
 
 
   queryLabel: string;
@@ -80,7 +79,7 @@ export class EditPage implements OnInit, OnDestroy {
 
   constructor(
     private diseasesService: DiseasesService,
-    private clinicAnalysisService: ClinicAnalysisElementsService,
+    private clinicAnalysisElementsService: ClinicAnalysisElementsService,
     private geneticElementsService: GeneticElementsService,
     private toastService: ToastService,
     private activatedRoute: ActivatedRoute,
@@ -108,6 +107,8 @@ export class EditPage implements OnInit, OnDestroy {
         this.name = disease.name;
         this.initialName = disease.name;
         this.notes = disease.notes;
+        this.isHereditary = disease.isHereditary || false;
+        this.hereditaryPonderation = disease.hereditaryPonderation || null;
         this.highRiskExplanation = disease.highRiskExplanation;
         this.mediumRiskExplanation = disease.mediumRiskExplanation;
         this.lowRiskExplanation = disease.lowRiskExplanation;
@@ -129,14 +130,6 @@ export class EditPage implements OnInit, OnDestroy {
         this.geneticElements = geneticElements;
       }
     );
-
-    this.clinicAnalysisElements$ = this.clinicAnalysisService.getClinicAnalysisElements();
-    this.clinicAnalysisElementsSub = this.clinicAnalysisElements$.subscribe(
-      (analysisElements) => {
-        this.clinicAnalysisElements = analysisElements;
-      }
-    );
-
   }
 
   async getBiomarkers() {
@@ -144,12 +137,14 @@ export class EditPage implements OnInit, OnDestroy {
     console.log(imageTestsElements);
 
     const resultBiomarkers = [];
-    for await (const diseaseBiomarker of this.disease.imageBiomarkers) {
-      const result = imageTestsElements.filter(element => element.id === diseaseBiomarker.id);
-      if (result.length > 0) {
-        resultBiomarkers.push(result[0]);
-        diseaseBiomarker.name = result[0].name;
-        diseaseBiomarker.optiosn = result[0].options;
+    if (this.disease.imageBiomarkers) {
+      for await (const diseaseBiomarker of this.disease.imageBiomarkers) {
+        const result = imageTestsElements.filter(element => element.id === diseaseBiomarker.id);
+        if (result.length > 0) {
+          resultBiomarkers.push(result[0]);
+          diseaseBiomarker.name = result[0].name;
+          diseaseBiomarker.options = result[0].options;
+        }
       }
     }
   }
@@ -176,13 +171,38 @@ export class EditPage implements OnInit, OnDestroy {
   }
 
   addSignAndSymptom(signAndSypmtom: any) {
+    this.symptomsService.updateSymptom(signAndSypmtom.id, {
+      relatedDiseases: firebase.firestore.FieldValue.arrayUnion(this.id)
+    })
     this.currentSignsAndSymptoms.push({ id: signAndSypmtom.id, name: signAndSypmtom.name });
     this.querySignsAndSymptomsList = [];
     this.querySignsAndSymptoms = null;
+    this.diseasesService.updateDisease(this.id, {
+      signsAndSymptoms: this.currentSignsAndSymptoms
+    })
   }
 
   deleteSignAndSymptoms(index: any) {
-    this.currentSignsAndSymptoms = this.currentSignsAndSymptoms.splice(index, 1);
+    console.log(index, "indice del sintoma la borrar");
+
+    this.symptomsService.updateSymptom(this.currentSignsAndSymptoms[index].id, {
+      relatedDiseases: firebase.firestore.FieldValue.arrayRemove(this.id)
+    })
+
+    this.diseasesService.updateDisease(this.id, {
+      signsAndSymptoms: this.currentSignsAndSymptoms
+    })
+
+    this.currentSignsAndSymptoms.splice(index, 1);
+
+  }
+
+  onChangeSignPonderation(index: any, value: any) {
+    console.log(index, value);
+
+    this.currentSignsAndSymptoms[index].ponderation = value;
+
+    console.log(this.currentSignsAndSymptoms);
   }
 
   onQuerySignsAndSymptoms(query: string) {
@@ -293,7 +313,7 @@ export class EditPage implements OnInit, OnDestroy {
   onCategoryChange(input: string) {
     if (input.length > 0) {
       this.suggestedCategories = this.categories.filter(cat =>
-        cat.name.trim().toLowerCase().includes(input.trim().toLowerCase())
+        this.removeAccents(cat.name.trim().toLowerCase()).includes(this.removeAccents(input.trim().toLowerCase()))
       );
     } else {
       this.suggestedCategories = null;
@@ -303,12 +323,13 @@ export class EditPage implements OnInit, OnDestroy {
   onLabelChange(input: string) {
     if (input.length > 0) {
       this.suggestedLabels = this.labels.filter(lab =>
-        lab.name.trim().toLowerCase().includes(input.trim().toLowerCase())
+        this.removeAccents(lab.name.trim().toLowerCase()).includes(this.removeAccents(input.trim().toLowerCase()))
       );
     } else {
       this.suggestedLabels = null;
     }
   }
+
 
   async addCategory(category: any) {
     this.relatedCategories.push(category);
@@ -503,10 +524,21 @@ export class EditPage implements OnInit, OnDestroy {
 
   deleteRange(indexE: number, indexR: number) {
     this.disease.analysisElements[indexE].ranges.splice(indexR, 1);
+    if (this.disease.analysisElements[indexE].ranges.length === 0) {
+      this.disease.analysisElements[indexE].isCustom = false;
+    }
   }
 
   async deleteAnalysisElement(diseaseId: string, elementId: string) {
+
+    const selected = this.disease.analysisElements.find(element => element.id === elementId);
+
+    this.clinicAnalysisElementsService.updateClinicAnalysisElement(selected.id, {
+      relatedDiseases: firebase.firestore.FieldValue.arrayRemove(this.id)
+    })
+
     const deleted = this.disease.analysisElements.filter(element => element.id !== elementId);
+
     this.diseasesService
       .updateDisease(diseaseId, {
         analysisElements: deleted
@@ -631,6 +663,17 @@ export class EditPage implements OnInit, OnDestroy {
     console.log(this.disease.analysisElements[index]);
   }
 
+  onSymptomConditionChange(index: any, ponderation: string) {
+    console.log(ponderation);
+    console.log(index);
+
+    console.log(this.currentSignsAndSymptoms);
+
+    this.currentSignsAndSymptoms[index].ponderation = ponderation;
+    console.log(index, ponderation);
+    console.log(this.currentSignsAndSymptoms[index]);
+  }
+
   onImageConditionChange(indexBiomarker: any, indexValue: any, condition: string) {
     if (!this.disease.imageBiomarkers[indexBiomarker].conditions) {
       this.disease.imageBiomarkers[indexBiomarker].conditions = []
@@ -645,20 +688,23 @@ export class EditPage implements OnInit, OnDestroy {
 
   save() {
     if (this.name.length !== 0) {
+      const data = {
+        name: this.name,
+        notes: this.notes || null,
+        phenotypicElements: this.disease.phenotypicElements || null,
+        imageBiomarkers: this.disease.imageBiomarkers || null,
+        analysisElements: this.disease.analysisElements || null,
+        isHereditary: this.isHereditary,
+        hereditaryPonderation: this.hereditaryPonderation,
+        signsAndSymptoms: this.currentSignsAndSymptoms,
+        updatedAt: moment().format()
+      }
+
+      console.log(data);
+
       this.diseasesService
-        .updateDisease(this.id, {
-          name: this.name,
-          notes: this.notes || null,
-          highRiskExplanation: this.highRiskExplanation || null,
-          mediumRiskExplanation: this.mediumRiskExplanation || null,
-          lowRiskExplanation: this.lowRiskExplanation || null,
-          phenotypicElements: this.disease.phenotypicElements || null,
-          imageBiomarkers: this.disease.imageBiomarkers || null,
-          analysisElements: this.disease.analysisElements || null,
-          signsAndSymptoms: this.currentSignsAndSymptoms || [],
-          updatedAt: moment().format()
-        })
-        .then(() => {
+        .updateDisease(this.id, data)
+        .then(async () => {
           // Actualizar el nombre de la enfermedad en las enfermedades del sujeto
           if (this.name !== this.initialName) {
             this.updateSubjectIfDiseaseNameChange();
@@ -704,7 +750,7 @@ export class EditPage implements OnInit, OnDestroy {
         const index = subject.history.diseases.findIndex(element => element.id = this.id);
         console.log(index);
 
-        subject.history.diseases = subject.history.diseases.splice(index, 1);
+        subject.history.diseases.splice(index, 1);
         console.log(subject.history.diseases);
 
         this.subjectsService.updateSubject(subject.id, { history: subject.history })
@@ -740,7 +786,7 @@ export class EditPage implements OnInit, OnDestroy {
         const index = subject.history.diseases.findIndex(element => element.id = this.id);
         console.log(index);
 
-        subject.history.diseases = subject.history.diseases.splice(index, 1);
+        subject.history.diseases.splice(index, 1);
         console.log(subject.history.diseases);
 
         this.subjectsService.updateSubject(subject.id, { history: subject.history })
@@ -791,9 +837,6 @@ export class EditPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.imageTestsSub) {
       this.imageTestsSub.unsubscribe();
-    }
-    if (this.clinicAnalysisElementsSub) {
-      this.clinicAnalysisElementsSub.unsubscribe();
     }
     if (this.geneticElementsSub) {
       this.geneticElementsSub.unsubscribe();

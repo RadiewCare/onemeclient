@@ -5,11 +5,11 @@
     </ion-buttons>
     <ion-title>Elemento de análisis: Editar</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="delete()">
+      <ion-button (click)="delete()" color="danger">
         <ion-icon slot="start" name="trash"></ion-icon>
         <ion-label>Eliminar</ion-label>
       </ion-button>
-      <ion-button (click)="save()">
+      <ion-button (click)="save()" color="success">
         <ion-icon slot="start" name="save"></ion-icon>
         <ion-label>Guardar</ion-label>
       </ion-button>
@@ -22,79 +22,120 @@
     <ion-row>
       <ion-col size="12" class="ion-padding-top">
         <ion-item lines="none">
+          <ion-label position="floating">Código</ion-label>
+          <ion-input type="text" placeholder="Introduzca código" [(ngModel)]="elementCode"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item lines="none">
           <ion-label position="floating">Nombre</ion-label>
-          <ion-input type="text" placeholder="Introduzca nombre" [(ngModel)]="name"></ion-input>
+          <ion-input type="text" placeholder="Introduzca descripción Test" [(ngModel)]="name"></ion-input>
         </ion-item>
       </ion-col>
       <ion-col size="12">
         <ion-item lines="none">
-          <ion-label position="floating">Categoría</ion-label>
-          <ion-select placeholder="Seleccione categoría" cancelText="Cancelar" [(ngModel)]="category">
-            <ion-select-option value="hematology">Hematología y Hemostasia</ion-select-option>
-            <ion-select-option value="biochemistry">Bioquímica</ion-select-option>
-            <ion-select-option value="endocrinology">Endocrinología</ion-select-option>
-            <ion-select-option value="immunology">Inmunología</ion-select-option>
-            <ion-select-option value="tumorMarkers">Marcadores tumorales (suero)</ion-select-option>
-            <ion-select-option value="pharmaToxicology">Monitorización de Fármacos y Toxocología
-            </ion-select-option>
-          </ion-select>
+          <ion-label position="floating">LOINC</ion-label>
+          <ion-input type="text" placeholder="Introduzca LOINC" [(ngModel)]="loinc"></ion-input>
         </ion-item>
       </ion-col>
       <ion-col size="12">
         <ion-item lines="none">
-          <ion-label position="floating">Unidad métrica</ion-label>
-          <ion-select placeholder="Seleccione unidad" cancelText="Cancelar" [(ngModel)]="metricUnit">
-            <ion-select-option value="%">%</ion-select-option>
-            <ion-select-option value="g/dL">g/dL</ion-select-option>
-            <ion-select-option value="mg/L">mg/L</ion-select-option>
-            <ion-select-option value="mg/dL">mg/dL</ion-select-option>
-            <ion-select-option value="ng/dL">ng/dL</ion-select-option>
-            <ion-select-option value="ng/mL">ng/mL</ion-select-option>
-            <ion-select-option value="pg">pg</ion-select-option>
-            <ion-select-option value="pg/mL">pg/mL</ion-select-option>
-            <ion-select-option value="fL">fL</ion-select-option>
-            <ion-select-option value="x103/mm3">x10<sup>3</sup>/mm<sup>3</sup></ion-select-option>
-            <ion-select-option value="x106/mm3">x10<sup>6</sup>/mm<sup>3</sup></ion-select-option>
-            <ion-select-option value="mmol/mol">mmol/mol</ion-select-option>
-            <ion-select-option value="µmol/L">µmol/L</ion-select-option>
-            <ion-select-option value="U/L">U/L</ion-select-option>
-            <ion-select-option value="mU/L">mU/L</ion-select-option>
-            <ion-select-option value="µUI/mL">µUI/mL</ion-select-option>
-            <ion-select-option value="µg/L">µg/L</ion-select-option>
-            <ion-select-option value="µg/dL">µg/dL</ion-select-option>
-            <ion-select-option value="Índice">Índice</ion-select-option>
-            <ion-select-option value="ml">ml</ion-select-option>
-            <ion-select-option value="número de células">número de células</ion-select-option>
-            <ion-select-option value="espermatozoides por ml">espermatozoides por ml</ion-select-option>
-            <ion-select-option value="ph">ph</ion-select-option>
-            <ion-select-option value="cm">cm</ion-select-option>
-            <ion-select-option value="mm">mm</ion-select-option>
-            <ion-select-option value="presente">presente</ion-select-option>
-            <ion-select-option value="ausente">ausente</ion-select-option>
-            <ion-select-option value="ml/min">ml/min</ion-select-option>
-            <ion-select-option value="mEq/L">mEq/L</ion-select-option>
-            <ion-select-option value="x103/μl">x103/μl</ion-select-option>
-            <ion-select-option value="fL.V">fL.V</ion-select-option>
-          </ion-select>
-        </ion-item>
-      </ion-col>
-      <ion-col size="12">
-        <ion-item>
           <ion-label position="floating">Información adicional</ion-label>
-          <ion-textarea [(ngModel)]="information" autoGrow="true" rows="10"></ion-textarea>
+          <ion-textarea placeholder="Introduzca notas" [(ngModel)]="information" rows="4" autoGrow="true"></ion-textarea>
         </ion-item>
       </ion-col>
+
+      <ion-col size="6">
+
+        <ion-item>
+          <ion-label>Añadir categorías</ion-label>
+          <ion-input [(ngModel)]="queryCategory" (ionChange)="onCategoryChange($event.detail.value)"></ion-input>
+        </ion-item>
+
+        <!-- AUTOCOMPLETADO -->
+        <ng-container *ngIf="queryCategory; else elseCategory">
+          <ion-item *ngFor="let suggestedCategory of suggestedCategories" (click)="addCategory(suggestedCategory)" style="cursor: pointer;" lines="full">
+            <ion-label>{{suggestedCategory.name}}</ion-label>
+          </ion-item>
+          <ion-item *ngIf="suggestedCategories.length === 0">
+            <ion-label>¿No existe la categoría?</ion-label>
+            <ion-button [routerLink]="['/database/categories/create']" color="primary">
+              Crear
+            </ion-button>
+          </ion-item>
+        </ng-container>
+        <ng-template #elseCategory>
+          
+        </ng-template>
+        <!-- FIN DE AUTOCOMPLETADO -->
+        
+        <ng-container class="ion-padding-top">
+          <ion-chip color="primary" mode="ios" outline="true" *ngFor="let category of relatedCategories; let i = index" (click)="removeCategory(i, category)">
+            <ion-label>{{category.name}}</ion-label>
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-chip>
+        </ng-container>
+      
+      </ion-col>
+
+      <ion-col size="6">
+
+        <ion-item>
+          <ion-label>Añadir etiquetas</ion-label>
+          <ion-input [(ngModel)]="queryLabel" (ionChange)="onLabelChange($event.detail.value)"></ion-input>
+        </ion-item>
+
+        <!-- AUTOCOMPLETADO -->
+        <ng-container *ngIf="queryLabel; else elseLabel">
+          <ion-item *ngFor="let suggestedLabel of suggestedLabels" (click)="addLabel(suggestedLabel)" style="cursor: pointer;" lines="full">
+            <ion-label>{{suggestedLabel.name}}</ion-label>
+          </ion-item>
+          <ion-item *ngIf="suggestedLabels.length === 0">
+            <ion-label>¿No existe la etiqueta?</ion-label>
+            <ion-button [routerLink]="['/database/labels/create']" color="primary">
+              Crear
+            </ion-button>
+          </ion-item>
+        </ng-container>
+        <ng-template #elseLabel>
+          
+        </ng-template>
+        <!-- FIN DE AUTOCOMPLETADO -->
+
+        <ng-container class="ion-padding-top">
+          <ion-chip color="primary" mode="ios" outline="true" *ngFor="let label of relatedLabels; let i = index" (click)="removeLabel(i, label)">
+            <ion-label>{{label.name}}</ion-label>
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-chip>
+        </ng-container>
+
+      </ion-col>
+
       <ion-col size="12" class="ion-margin-top">
         <ion-item color="primary">
           <ion-label>Añadir rango</ion-label>
         </ion-item>
       </ion-col>
-      <ion-col size="2">
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating">Seleccione prueba a la que incluirla</ion-label>
+          <ionic-selectable [(ngModel)]="currentAnalysisData" [items]="clinicAnalysis"
+            itemValueField="id" itemTextField="name" [canSearch]="true" confirmButtonText="Seleccionar"
+            closeButtonText="Cancelar" headerColor="primary" [hasVirtualScroll]="true" (onSearch)="onSearch($event)"
+            searchFailText="No hay items disponibles" searchPlaceholder="Buscar" [isMultiple]="false">
+            <ng-template ionicSelectableCloseButtonTemplate>
+              <ion-icon name="close" style="font-size: 24px;"></ion-icon>
+            </ng-template>
+          </ionic-selectable>
+        </ion-item>
+      </ion-col>
+      <ion-col size="4">
         <ion-item lines="none">
           <ion-label position="floating">Sexo</ion-label>
-          <ion-select placeholder="Seleccione sexo" [(ngModel)]="sex">
-            <ion-select-option value="male">Hombre</ion-select-option>
-            <ion-select-option value="female">Mujer</ion-select-option>
+          <ion-select placeholder="Seleccione sexo" [(ngModel)]="sex" cancelText="Cancelar" okText="Aceptar">
+            <ion-select-option value="Hombres">Hombres</ion-select-option>
+            <ion-select-option value="Mujeres">Mujeres</ion-select-option>
+            <ion-select-option value="Ambos">Ambos</ion-select-option>
           </ion-select>
         </ion-item>
       </ion-col>
@@ -122,8 +163,24 @@
           <ion-input type="number" placeholder="Introduzca valor" [(ngModel)]="upperLevel"></ion-input>
         </ion-item>
       </ion-col>
-      <ion-col size="2">
-        <ion-button (click)="addRange()">
+      <ion-col size="6">
+        <ion-item>
+          <ion-label position="floating">Unidad métrica</ion-label>
+          <ion-select placeholder="Seleccione unidad métrica" [(ngModel)]="metricUnit">
+            <ion-select-option *ngFor="let item of metrics" [value]="item">{{item}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="6">
+        <ion-item>
+          <ion-label position="floating">Intervalo de edad</ion-label>
+          <ion-select placeholder="Seleccione unidad métrica" [(ngModel)]="intervaloEdad">
+            <ion-select-option *ngFor="let item of intervaloEdades" [value]="item">{{item}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-button (click)="addRange()" expand="block" color="secondary">
           <ion-icon slot="start" name="add"></ion-icon>
           <ion-label>Añadir</ion-label>
         </ion-button>
@@ -137,14 +194,13 @@
       <ion-col size="12">
         <ion-item *ngFor="let range of ranges; let i = index" lines="full">
           <ion-text>
-            <p *ngIf="range.sex"><b>Sexo:</b> {{range.sex === "male"?'Hombre':'Mujer'}}</p>
-            <p *ngIf="range.lowerAge || range.upperAge"><b>Edad:</b> {{range.lowerAge}}-{{range.upperAge}}
-              años</p>
-            <p *ngIf="range.lowerLevel || range.upperLevel"><b>Valores:</b>
-              {{range.lowerLevel}}-{{range.upperLevel}} {{metricUnit}}</p>
+            <p *ngIf="range.CODIGO"><b>Incluido en prueba:</b> {{range.CODIGO}} - {{range.DESCRIPCION}}</p>
+            <p *ngIf="range.SEXO"><b>Sexo:</b> {{range.SEXO}}</p>
+            <p *ngIf="(range.INTERVALO_INF_EDAD >=0 || range.INTERVALO_SUP_EDAD >=0) && range.UNIDAD_INTERVALO_EDAD"><b>Edad:</b> {{range.INTERVALO_INF_EDAD}}-{{range.INTERVALO_SUP_EDAD}} {{range.UNIDAD_INTERVALO_EDAD}}</p>
+            <p *ngIf="(range.LIM_INF || range.LIM_SUP) && range.UNIDAD"><b>Valores:</b> {{range.LIM_INF}}-{{range.LIM_SUP}} {{range.UNIDAD}}</p>
           </ion-text>
           <ion-buttons slot="end">
-            <ion-button (click)="deleteRange(i)">
+            <ion-button (click)="deleteRange(i)" color="danger">
               <ion-label>Eliminar</ion-label>
               <ion-icon slot="start" name="trash"></ion-icon>
             </ion-button>

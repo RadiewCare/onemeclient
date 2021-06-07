@@ -11,7 +11,7 @@ export class AnalyticStudiesService {
   constructor(
     private db: AngularFirestore,
     private subjectsService: SubjectsService
-  ) {}
+  ) { }
 
   /**
    * Devuelve todos los estudios analíticos de un sujeto ordenados por fecha descendente
@@ -23,6 +23,16 @@ export class AnalyticStudiesService {
         ref.orderBy("date", "desc")
       )
       .valueChanges();
+  }
+
+  /**
+ * Devuelve todos los estudios analíticos de un sujeto ordenados por fecha descendente
+ * @param subjectId Identificador del sujeto
+ */
+  async getAnalyticStudiesData(subjectId: string): Promise<any> {
+    return await this.db.firestore
+      .collection(`subjects/${subjectId}/analysisStudies`).orderBy("date", "desc")
+      .get();
   }
 
   /**

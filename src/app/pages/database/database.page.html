@@ -8,11 +8,11 @@
 </ion-header>
 
 <ion-content>
-  <ion-grid fixed>
+  <ion-grid fixed *ngIf="userData?.isAdmin">
     <ion-row>
       <ion-col size="12">
         <ion-text>
-          <h4>Enfermedades, rasgos y síntomas</h4>
+          <h4>Enfermedades, condiciones y síntomas</h4>
         </ion-text>
       </ion-col>
     </ion-row>
@@ -20,7 +20,7 @@
       <ion-col size="12" size-md="6">
         <ion-item [routerLink]="['./diseases']" lines="full">
           <ion-icon slot="start" name="folder"></ion-icon>
-          <ion-label>Enfermedades y rasgos</ion-label>
+          <ion-label>Enfermedades y condiciones</ion-label>
         </ion-item>
       </ion-col>
       <ion-col size="12" size-md="6">
@@ -33,28 +33,7 @@
     <ion-row>
       <ion-col size="12">
         <ion-text>
-          <h4>Análisis clínicos</h4>
-        </ion-text>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col size="12" size-md="6">
-        <ion-item [routerLink]="['./analysis-elements']" lines="full">
-          <ion-icon slot="start" name="folder"></ion-icon>
-          <ion-label>Elementos de análisis clínicos</ion-label>
-        </ion-item>
-      </ion-col>
-      <ion-col size="12" size-md="6">
-        <ion-item [routerLink]="['./synlab-catalog']" lines="full">
-          <ion-icon slot="start" name="folder"></ion-icon>
-          <ion-label>Catálogo Synlab</ion-label>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col size="12">
-        <ion-text>
-          <h4>Análisis genéticos</h4>
+          <h4>Genética</h4>
         </ion-text>
       </ion-col>
     </ion-row>
@@ -87,7 +66,28 @@
     <ion-row>
       <ion-col size="12">
         <ion-text>
-          <h4>Análisis de imagen</h4>
+          <h4>Analítica</h4>
+        </ion-text>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12" size-md="6">
+        <ion-item [routerLink]="['./clinic-analysis']" lines="full">
+          <ion-icon slot="start" name="folder"></ion-icon>
+          <ion-label>Pruebas de análisis clínicos</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-md="6">
+        <ion-item [routerLink]="['./analysis-elements']" lines="full">
+          <ion-icon slot="start" name="folder"></ion-icon>
+          <ion-label>Elementos de pruebas de análisis clínicos</ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12">
+        <ion-text>
+          <h4>Imagen</h4>
         </ion-text>
       </ion-col>
     </ion-row>

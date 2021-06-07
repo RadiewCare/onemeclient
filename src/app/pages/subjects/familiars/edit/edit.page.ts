@@ -96,9 +96,14 @@ export class EditPage implements OnInit {
   }
 
   ionViewDidEnter() {
-    this.familiar$ = this.historiesService.getFamiliar(this.subjectId, this.id);
-    this.familiarSub = this.familiar$.subscribe((data) => {
-      this.familiar = data;
+    console.log(this.subjectId);
+    console.log(this.id);
+
+
+    this.historiesService.getFamiliar(this.subjectId, this.id).then((data) => {
+      console.log(data.data());
+
+      this.familiar = data = data.data();
       this.grade = data.grade;
       this.relationship = data.relationship;
       this.familyBranch = data.familyBranch;
@@ -136,10 +141,11 @@ export class EditPage implements OnInit {
       this.autoinmunes = data.autoinmunes;
       this.cardioDisease = data.cardioDisease;
       this.infertility = data.infertility;
-      this.diseases = data.diseaes || [];
+      this.currentDiseases = data.diseases || [];
       this.otherBackground = data.otherBackground;
       this.currentTreatment = data.currentTreatment;
     });
+
   }
 
   resetForm() {
@@ -223,12 +229,11 @@ export class EditPage implements OnInit {
       this.historiesService
         .updateHistory(this.subjectId, this.id, data)
         .then(() => {
-          this.familiarSub.unsubscribe();
           this.router.navigate(["/subjects/familiars", this.subjectId]);
           this.toastService.show("success", "Familiar editado con éxito");
         })
-        .catch(() => {
-          this.toastService.show("danger", "Error al editar el familiar");
+        .catch((error) => {
+          this.toastService.show("danger", "Error al editar el familiar: " + error);
         });
     } else {
       this.toastService.show(
@@ -255,7 +260,6 @@ export class EditPage implements OnInit {
         {
           text: "Aceptar",
           handler: () => {
-            this.familiarSub.unsubscribe();
             this.historiesService
               .deleteHistory(this.subjectId, this.id)
               .then(() => {

@@ -2,12 +2,14 @@ import { Injectable } from "@angular/core";
 import { AngularFirestore } from "@angular/fire/firestore";
 import { Observable } from "rxjs";
 import * as moment from "moment";
+import * as firebase from "firebase/app";
+import { ToastService } from "./toast.service";
 
 @Injectable({
   providedIn: "root"
 })
 export class SubjectsService {
-  constructor(private db: AngularFirestore) { }
+  constructor(private db: AngularFirestore, private toastService: ToastService) { }
 
   /**
    * Devuelve todos los sujetos como observable
@@ -103,6 +105,14 @@ export class SubjectsService {
               this.db.doc(`subjects/${doc.id}`).update({ id: doc.id });
             });
         }
+      } else {
+        data.createdAt = moment().format();
+        return this.db
+          .collection("subjects")
+          .add(data)
+          .then((doc) => {
+            this.db.doc(`subjects/${doc.id}`).update({ id: doc.id });
+          });
       }
     });
 
@@ -132,71 +142,178 @@ export class SubjectsService {
 
   async importAnalyticData(id: string, csvData: any, filename: string, date: string): Promise<any> {
     console.log(csvData);
-    console.log(Object.keys(csvData[0]));
 
     const values = [];
-    const analysisElements = [];
+    let analysisElements = [];
 
     // Consigo los elementos de análisis configurados en la base de datos y los meto en un array
     await this.db.firestore
       .collection(`clinicAnalysisElements`)
       .get()
       .then(async (aes) => {
-        for await (const ae of aes.docs) {
-          analysisElements.push(ae.data());
-        }
+        analysisElements = aes.docs.map((element: any) => (element = element.data()));
         console.log(analysisElements);
       });
 
-    // Mapeo un array con los nombres de los elementos de análisis
-    const analysisNames = analysisElements.map(
-      (element) => (element = element.name)
-    );
+    let subject: any;
+    let age: any;
+    let genre: any;
 
-    console.log(analysisNames);
+    this.getSubjectData(id).then(async data => {
+      subject = data.data();
 
-    for await (const element of Object.keys(csvData[0])) {
-      console.log(element);
-      if (analysisNames.includes(element) && csvData[0][element]) {
-        console.log(element);
-
-        const analysisElement = analysisElements.filter(
-          (anael) => anael.name === element
-        );
-        console.log(analysisElement);
-
-        values.push({
-          category: analysisElement[0].category,
-          id: analysisElement[0].id,
-          metricUnit: analysisElement[0].metricUnit,
-          name: analysisElement[0].name,
-          ranges: analysisElement[0].ranges || null,
-          relatedDiseases: null,
-          status: null,
-          value: csvData[0][element]
-        });
+      if (subject.history) {
+        // Normalizamos al formato Synlab
+        age = subject.history.age;
+        switch (subject.history.genre) {
+          case "varon":
+            genre = "Hombres"
+            break;
+          case "hembra":
+            genre = "Mujeres"
+            break;
+          default:
+            break;
+        }
       }
-    }
-    console.log(values);
 
-    // createAnalysis en sujeto con estos datos
-    const data = {
-      date: date,
-      values,
-      shortcode:
-        "[ANA" + Math.floor(Math.random() * 1000 + 1).toString(10) + "]",
-      createdAt: moment().format(),
-      filename: filename || null
-    };
-    console.log(data);
+      if (age && genre) {
+        for await (const element of csvData) {
 
-    return await this.db
-      .collection(`subjects/${id}/analysisStudies`)
-      .add(data)
-      .then((doc) => {
-        this.db
-          .doc(`subjects/${id}/analysisStudies/${doc.id}`)
-          .update({ id: doc.id });
-      });
+          if (typeof element.RESULTADO === 'string') {
+            element.RESULTADO = parseFloat(element.RESULTADO.replace(/,/, '.').replace(">", "").replace("<", ""));
+          }
+
+          console.log("RESULTADO DEL EXCEL UNA VEZ LIMPIADO", element.RESULTADO);
+
+          let status = "normal";
+
+          let meaning = "negative"
+
+          const analysisElement = analysisElements.find(
+            (anael) => anael.elementCode === element.ID_ANALISIS
+          );
+
+          console.log("ELEMENTO ENCONTRADO", analysisElement);
+
+          // CALCULAR STATUS
+
+          if (analysisElement && analysisElement.ranges) {
+            for await (const rango of analysisElement.ranges) {
+              // Comprobación de sexo y edad
+              if (age && genre) {
+                if (
+                  rango.UNIDAD_INTERVALO_EDAD === "Años" &&
+                  (rango.SEXO == genre || rango.SEXO == "Ambos") &&
+                  rango.INTERVALO_INF_EDAD <= age &&
+                  rango.INTERVALO_SUP_EDAD >= age
+                ) {
+
+                  if (typeof rango.LIM_SUP === 'string') {
+                    rango.LIM_SUP = parseFloat(rango.LIM_SUP.replace(/,/, '.'));
+                  }
+
+                  if (typeof rango.LIM_INF === 'string') {
+                    rango.LIM_INF = parseFloat(rango.LIM_INF.replace(/,/, '.'));
+                  }
+
+                  if (rango.INTERPRETACION && rango.INTERPRETACION === "Positivo") {
+                    if (rango.LIM_INF > element.RESULTADO) {
+                      status = "low";
+                      meaning = "negative";
+                    } else if (rango.LIM_SUP < element.RESULTADO) {
+                      status = "high";
+                      meaning = "negative";
+                    } else if (rango.LIM_SUP >= element.RESULTADO && rango.LIM_INF <= element.RESULTADO) {
+                      status = "normal";
+                      meaning = "positive";
+                    }
+                  } else if (element.INTERPRETACION && element.INTERPRETACION === "Negativo") {
+                    if (rango.LIM_INF > element.RESULTADO) {
+                      status = "low";
+                      meaning = "positive";
+                    } else if (rango.LIM_SUP < element.RESULTADO) {
+                      status = "high";
+                      meaning = "positive";
+                    } else if (rango.LIM_SUP >= element.RESULTADO && rango.LIM_INF <= element.RESULTADO) {
+                      status = "normal";
+                      meaning = "negative";
+                    }
+                  } else {
+                    if (rango.LIM_INF > element.RESULTADO) {
+                      status = "low";
+                      meaning = "positive";
+                    } else if (rango.LIM_SUP < element.RESULTADO) {
+                      status = "high";
+                      meaning = "positive";
+                    } else if (rango.LIM_SUP >= element.RESULTADO && rango.LIM_INF <= element.RESULTADO) {
+                      status = "normal";
+                      meaning = "negative";
+                    }
+                  }
+
+                }
+              }
+            }
+
+          } else if (analysisElement === undefined) {
+            this.toastService.show("danger", "No se encuentra elemento con el código: " + element.ID_ANALISIS);
+            console.log("no se encuentra código", element.ID_ANALISIS);
+
+          } else if (analysisElement && (analysisElement.ranges === undefined || analysisElement.ranges === null || analysisElement.ranges.length === 0)) {
+            this.toastService.show("danger", "No se encuentran rangos en el elemento con el código: " + element.ID_ANALISIS);
+            console.log("no se encuentra rango", element.ID_ANALISIS);
+          }
+
+
+          // FIN DE CALCULO DE STATUS
+
+          if (analysisElement) {
+            values.push({
+              id: analysisElement.id,
+              name: analysisElement.name.trim() || null,
+              ranges: analysisElement.ranges || null,
+              status: status,
+              meaning: meaning,
+              value: element.RESULTADO
+            });
+          }
+
+        }
+
+        console.log(values);
+        // createAnalysis en sujeto con estos datos
+        const result = {
+          date: date,
+          values,
+          shortcode:
+            "[ANA" + Math.floor(Math.random() * 1000 + 1).toString(10) + "]",
+          createdAt: moment().format(),
+          filename: filename || null,
+        };
+        console.log(result);
+
+        return await this.db
+          .collection(`subjects/${id}/analysisStudies`)
+          .add(result)
+          .then(async (doc) => {
+            await this.db
+              .doc(`subjects/${id}/analysisStudies/${doc.id}`)
+              .update({ id: doc.id });
+          });
+      }
+
+    })
+
+  }
+
+  async importEmbryologyData(subjectId: string, csvData: any, filename: string, date: string): Promise<any> {
+    this.updateSubject(subjectId, {
+      embriology: firebase.firestore.FieldValue.arrayUnion({
+        fileName: filename,
+        samples: csvData,
+        date: date
+      })
+    })
   }
 }

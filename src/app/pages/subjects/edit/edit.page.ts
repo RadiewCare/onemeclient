@@ -30,6 +30,15 @@ import { DiseasesService } from 'src/app/services/diseases.service';
 import { SymptomsService } from 'src/app/services/symptoms.service';
 import { SubjectImageTestsService } from "src/app/services/subject-image-tests.service";
 import * as moment from "moment";
+import { ImageTestsElementsService } from "src/app/services/image-tests-elements.service";
+import { AddReproductionTechniquePage } from "./add-reproduction-technique/add-reproduction-technique.page";
+import { ShowEmbryoDetailsPage } from "./show-embryo-details/show-embryo-details.page";
+import { element } from "protractor";
+import { EditReproductionTestPage } from "./edit-reproduction-test/edit-reproduction-test.page";
+import { ShowAnalysisDescriptionPage } from "./show-analysis-description/show-analysis-description.page";
+import { ClinicAnalysisElementsService } from "src/app/services/clinic-analysis-elements.service";
+import { EditAnalyticStudyLimitsPage } from "./edit-analytic-study-limits/edit-analytic-study-limits.page";
+import { ReproductionTestsService } from "src/app/services/reproduction-tests.service";
 
 @Component({
   selector: "app-edit",
@@ -62,6 +71,7 @@ export class EditPage implements OnInit, OnDestroy {
   numberOfVariants$: Observable<any>;
   imageStudy$: any;
 
+
   /* Otras variables */
   skeletonData = new Array(20);
   currentUserId: string;
@@ -77,6 +87,7 @@ export class EditPage implements OnInit, OnDestroy {
   /* Datos biométricos */
   genre: string;
   birthDate: string;
+  age: number;
   height: number;
   weight: number;
   populationGroup: string;
@@ -171,9 +182,20 @@ export class EditPage implements OnInit, OnDestroy {
   analysisSub: Subscription;
   analyticValuesSub: Subscription;
   analyticStudyValues$: Observable<any>;
+  analyticStudiesSub: Subscription;
+  analyticStudies: any;
+  originalAnalyticStudies: any;
+  analysisElements: any;
+
+  // FERTILIDAD
+
+  embryos: any;
+  subjectTestsSub: Subscription;
+  reproductionTestsSub: Subscription;
 
   // ESTUDIO DE IMAGEN
   imageTests: any;
+  imageTestsElements: any;
 
   // filtros
   queryLabel: string;
@@ -196,14 +218,18 @@ export class EditPage implements OnInit, OnDestroy {
   selectedLabelsIds = [];
 
   originalImageTests: any;
+  originalReproductionTests: any;
 
   imageTestsList = [];
+
+  reproductionTests = [];
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private alertController: AlertController,
     private toastService: ToastService,
     private analyticStudiesService: AnalyticStudiesService,
+    private analysisElementsService: ClinicAnalysisElementsService,
     private subjectsService: SubjectsService,
     private imageStudiesService: ImageStudiesService,
     private router: Router,
@@ -218,7 +244,9 @@ export class EditPage implements OnInit, OnDestroy {
     private imageTestsService: ImageTestsService,
     private diseasesService: DiseasesService,
     private symptomsService: SymptomsService,
-    private subjectImageTestsService: SubjectImageTestsService
+    private subjectImageTestsService: SubjectImageTestsService,
+    private imageTestsElementsService: ImageTestsElementsService,
+    private reproductionTestsService: ReproductionTestsService
   ) { }
 
   ngOnInit() {
@@ -228,7 +256,7 @@ export class EditPage implements OnInit, OnDestroy {
     this.getLabels();
     this.getDiseases();
     this.getSignsAndSypmtoms();
-
+    this.getImageTestElements();
   }
 
   ionViewDidEnter() {
@@ -264,6 +292,10 @@ export class EditPage implements OnInit, OnDestroy {
       this.numberOfVariants = this.subject.numberOfVariants;
       this.mutations = this.subject.mutations;
       this.hasClinicAnalysis = this.subject.hasClinicAnalysis;
+      if (this.subject.embriology) {
+        this.embryos = this.subject.embriology;
+        console.log(this.embryos);
+      }
       if (data.history) {
         const history = data.history;
         this.actualpacsId = history.actualpacsId;
@@ -272,6 +304,7 @@ export class EditPage implements OnInit, OnDestroy {
         this.centroReferente = history.centroReferente;
         this.genre = history.genre;
         this.birthDate = history.birthDate;
+        this.age = history.age;
         this.height = history.height;
         this.weight = history.weight;
         this.populationGroup = history.populationGroup;
@@ -318,27 +351,190 @@ export class EditPage implements OnInit, OnDestroy {
       this.getSubjectImageTests();
 
     });
+
+
   }
 
   async getSubjectImageTests() {
     this.imageTestsList = await this.imageTestsService.getImageTestsData();
     this.imageTestsList = this.imageTestsList.map(element => element = element.data());
 
-    this.imageTests = await this.subjectImageTestsService.getAllDataBySubject(this.subject.id);
-    this.imageTests = this.imageTests.map(element => element = element.data());
+    this.getReproductionTests();
 
-    for await (const it of this.imageTests) {
-      const prueba = this.imageTestsList.filter(element => element.id === it.imageTestId);
-      it.name = prueba[0].name;
+    this.subjectTestsSub = this.subjectImageTestsService.getAllDataBySubjectObservable(this.subject.id).subscribe(async data => {
+      this.imageTests = data;
 
-      it.relatedCategories = prueba[0].relatedCategories;
-      it.relatedLabels = prueba[0].relatedLabels;
+      for await (const it of this.imageTests) {
+        const prueba = this.imageTestsList.filter(element => element.id === it.imageTestId);
+        it.name = prueba[0].name;
+
+        it.relatedCategories = prueba[0].relatedCategories || [];
+        it.relatedLabels = prueba[0].relatedLabels || [];
+      }
+
+      console.log(this.imageTests, "Pruebas de imagen del sujeto");
+
+      this.imageTests = this.imageTests.sort((a, b) => {
+        if (a.date == b.date) {
+          if (a.createdAt < b.createdAt) {
+            return 1;
+          }
+          if (a.createdAt > b.createdAt) {
+            return -1;
+          }
+        }
+        if (a.date < b.date) {
+          return 1;
+        }
+        if (a.date > b.date) {
+          return -1;
+        }
+        return 0;
+      });
+      this.originalImageTests = this.imageTests.sort((a, b) => {
+        if (a.date == b.date) {
+          if (a.createdAt < b.createdAt) {
+            return 1;
+          }
+          if (a.createdAt > b.createdAt) {
+            return -1;
+          }
+        }
+        if (a.date < b.date) {
+          return 1;
+        }
+        if (a.date > b.date) {
+          return -1;
+        }
+        return 0;
+      });
+
+      await this.getSubjectImageTestElementDetails();
+    });
+
+  }
+
+  async getReproductionTests() {
+    this.reproductionTestsSub = this.reproductionTestsService.getAllDataBySubjectObservable(this.subject.id).subscribe(async data => {
+      this.reproductionTests = data;
+
+      for await (const it of this.reproductionTests) {
+        const prueba = this.imageTestsList.filter(element => element.id === it.imageTestId);
+        it.name = prueba[0].name;
+
+        it.relatedCategories = prueba[0].relatedCategories || [];
+        it.relatedLabels = prueba[0].relatedLabels || [];
+      }
+
+      console.log(this.reproductionTests, "Fertilidad");
+
+      this.reproductionTests = this.reproductionTests.sort((a, b) => a.order - b.order);
+      this.originalReproductionTests = this.reproductionTests.sort((a, b) => a.order - b.order);
+
+      await this.getReproductionTestElementDetails();
+    });
+  }
+
+  async loadReproductionTestsRelatedDiseases() {
+    for await (const test of this.reproductionTests) {
+      // Recorremos los values
+      for await (const value of test.values) {
+        // Cargamos los related diseases de ese biomarker
+        if (value.status === "positive") {
+          // Creamos un array si no está hecho
+          if (!value.relatedDiseases) {
+            console.log("se crea array de relatedDiseases");
+            value.relatedDiseases = [];
+          }
+          let relatedElement = await this.imageTestsElements.filter(element => element.id === value.id);
+          relatedElement = relatedElement[0] || [];
+          console.log(relatedElement, "Datos del elemento positivo relacionado");
+          console.log(relatedElement.relatedDiseases, "RelatedDiseases del elemento positivo relacionado");
+
+
+          if (relatedElement.relatedDiseases !== undefined && relatedElement.relatedDiseases.length > 0) {
+            console.log("Hay enfermedades relacionadas para " + relatedElement.name);
+
+            // Buscamos en cada disease si el biomarker positivo de este test está dentro de los factores positivos de la enfermedad
+
+            for await (const disease of relatedElement.relatedDiseases) {
+              console.log(disease, "Enfermedad relacionada con: " + relatedElement.name);
+              const relatedDisease = this.diseases.filter(element => element.id === disease);
+              if (relatedDisease.length > 0) {
+                console.log(relatedDisease[0].imageBiomarkers, "Biomarcadores de la enfermedad relacionada");
+                console.log("Valor que andamos buscando", value.value);
+
+
+                const result = relatedDisease[0].imageBiomarkers.filter(element => (element.name === relatedElement.name) && this.compareArrays(element.values, value.value));
+                if (result.length > 0) {
+                  // En caso positivo metemos dentro de ese value dentro del campo relatedDiseases el nombre de la enfermedad relacionada
+                  value.relatedDiseases.push(relatedDisease[0].name)
+                }
+              }
+            }
+
+            // Si está vacío poner la info sin diagnótico
+            if (value.relatedDiseases.length === 0) {
+              value.relatedDiseases.push("Sin diagnóstico relacionado");
+            }
+
+          } else {
+            value.relatedDiseases.push("Sin diagnóstico relacionado");
+          }
+
+        }
+
+      }
     }
+  }
 
-    console.log(this.imageTests);
+  async compareArrays(a, b) {
+    let found = false;
+    for await (const elementA of a) {
+      for await (const elementB of b) {
+        if (elementA === elementB) {
+          found = true;
+        }
+      }
+    }
+    return found;
+  }
 
-    this.imageTests = this.imageTests.sort((a, b) => +new Date(b.date) - +new Date(a.date));
-    this.originalImageTests = this.imageTests.sort((a, b) => +new Date(b.date) - +new Date(a.date));
+  async getSubjectImageTestElementDetails() {
+
+    // Necesitamos el nombre
+    for await (const imageTest of this.imageTests) {
+      for await (const biomarker of imageTest.values) {
+        const result = this.imageTestsElements.filter(element => element.id === biomarker.id);
+        if (result.length > 0) {
+          biomarker.name = result[0].name;
+        }
+
+      }
+    }
+    console.log(this.imageTests, "con nombre");
+
+    this.getReproductionTestElementDetails();
+  }
+
+  async getReproductionTestElementDetails() {
+    // Necesitamos el nombre
+    for await (const imageTest of this.reproductionTests) {
+      for await (const biomarker of imageTest.values) {
+        const result = this.imageTestsElements.filter(element => element.id === biomarker.id);
+        if (result.length > 0) {
+          biomarker.name = result[0].name;
+        }
+      }
+    }
+    console.log(this.reproductionTests, "con nombre");
+
+    await this.loadReproductionTestsRelatedDiseases();
+  }
+
+  async getImageTestElements() {
+    this.imageTestsElements = (await this.imageTestsElementsService.getImageTestElementsData()).docs.map(element => element = element.data());
+    console.log(this.imageTestsElements, "Elementos de pruebas de imagen");
   }
 
   segmentChanged(event: any) {
@@ -383,6 +579,8 @@ export class EditPage implements OnInit, OnDestroy {
     diseases.forEach(element => {
       this.diseases.push(element.data());
     })
+    console.log(this.diseases, "Totalidad de las enfermedades");
+
   }
 
   async getSignsAndSypmtoms() {
@@ -395,7 +593,7 @@ export class EditPage implements OnInit, OnDestroy {
   onCategoryChange(input: string) {
     if (input.length > 0) {
       this.suggestedCategories = this.categories.filter(cat =>
-        cat.name.trim().toLowerCase().includes(input.trim().toLowerCase())
+        this.removeAccents(cat.name.trim().toLowerCase()).includes(this.removeAccents(input.trim().toLowerCase()))
       );
     } else {
       this.suggestedCategories = null;
@@ -405,12 +603,13 @@ export class EditPage implements OnInit, OnDestroy {
   onLabelChange(input: string) {
     if (input.length > 0) {
       this.suggestedLabels = this.labels.filter(lab =>
-        lab.name.trim().toLowerCase().includes(input.trim().toLowerCase())
+        this.removeAccents(lab.name.trim().toLowerCase()).includes(this.removeAccents(input.trim().toLowerCase()))
       );
     } else {
       this.suggestedLabels = null;
     }
   }
+
 
   async addCategory(category: any) {
     this.selectedCategories.push(category);
@@ -425,6 +624,22 @@ export class EditPage implements OnInit, OnDestroy {
     this.selectedCategoriesIds.splice(index, 1);
     await this.filterCategories();
     this.filterLabels()
+    this.queryCategory = null;
+  }
+
+  async addCategoryAnalysis(category: any) {
+    this.selectedCategories.push(category);
+    this.selectedCategoriesIds.push(category.id);
+    await this.filterCategoriesAnalysis();
+    this.filterLabelsAnalysis()
+    this.queryCategory = null;
+  }
+
+  async removeCategoryAnalysis(index: number) {
+    this.selectedCategories.splice(index, 1);
+    this.selectedCategoriesIds.splice(index, 1);
+    await this.filterCategoriesAnalysis();
+    this.filterLabelsAnalysis()
     this.queryCategory = null;
   }
 
@@ -444,47 +659,229 @@ export class EditPage implements OnInit, OnDestroy {
     this.queryLabel = null;
   }
 
+  async addLabelAnalysis(label: any) {
+    this.selectedLabels.push(label);
+    this.selectedLabelsIds.push(label.id);
+    await this.filterCategoriesAnalysis();
+    this.filterLabelsAnalysis()
+    this.queryLabel = null;
+  }
+
+  async removeLabelAnalysis(index: number) {
+    this.selectedLabels.splice(index, 1);
+    this.selectedLabelsIds.splice(index, 1);
+    await this.filterCategoriesAnalysis();
+    this.filterLabelsAnalysis()
+    this.queryLabel = null;
+  }
+
   async filterCategories() {
+    if (this.segment.value === "epigenetic-study") {
+      if (this.selectedCategoriesIds.length !== 0) {
+        // console.log(this.selectedCategories);
+
+        const newTests = [];
+        // Miro en qué indices están los elementos que coinciden con la categoría
+        this.reproductionTests.forEach(test => {
+          test.relatedCategories.forEach(category => {
+            if (this.selectedCategoriesIds.includes(category.id)) {
+              newTests.push(test);
+            }
+          });
+        });
+
+        this.reproductionTests = newTests
+      } else {
+        if (this.selectedLabelsIds.length === 0) {
+          this.reproductionTests = this.originalReproductionTests;
+        }
+      }
+    } else {
+      if (this.selectedCategoriesIds.length !== 0) {
+        // console.log(this.selectedCategories);
+
+        const newTests = [];
+        // Miro en qué indices están los elementos que coinciden con la categoría
+        this.imageTests.forEach(test => {
+          test.relatedCategories.forEach(category => {
+            if (this.selectedCategoriesIds.includes(category.id)) {
+              newTests.push(test);
+            }
+          });
+        });
+
+        this.imageTests = newTests
+      } else {
+        if (this.selectedLabelsIds.length === 0) {
+          this.imageTests = this.originalImageTests;
+        }
+      }
+    }
+
+  }
+
+  async filterCategoriesAnalysis() {
     if (this.selectedCategoriesIds.length !== 0) {
       // console.log(this.selectedCategories);
 
-      const newTests = [];
+      let newTests = [];
       // Miro en qué indices están los elementos que coinciden con la categoría
-      this.imageTests.forEach(test => {
-        test.relatedCategories.forEach(category => {
-          if (this.selectedCategoriesIds.includes(category.id)) {
-            newTests.push(test);
+      this.analyticStudies.forEach(test => {
+
+        test.values.forEach(value => {
+          const filteredElement = this.analysisElements.find(element => element.id === value.id);
+          if (filteredElement && filteredElement.relatedCategories) {
+            filteredElement.relatedCategories.forEach(category => {
+              if (this.selectedCategoriesIds.includes(category.id)) {
+                value.relevant = true;
+                newTests.push(test);
+              } else {
+                value.relevant = false;
+              }
+            });
           }
         });
       });
 
-      this.imageTests = newTests
+      newTests = [...new Set(newTests)];
+      this.analyticStudies = [...newTests];
+
     } else {
       if (this.selectedLabelsIds.length === 0) {
-        this.imageTests = this.originalImageTests;
+        console.log("reseteo desde categories");
+        this.analyticStudies = [...this.originalAnalyticStudies];
       }
     }
   }
 
   async filterLabels() {
-    if (this.selectedLabelsIds.length !== 0) {
-      //console.log(this.selectedCategories);
+    if (this.segment.value === "epigenetic-study") {
+      if (this.selectedLabelsIds.length !== 0) {
+        //console.log(this.selectedCategories);
 
-      const newTests = [];
-      // Miro en qué indices están los elementos que coinciden con la categoría
-      this.imageTests.forEach(test => {
-        test.relatedLabels.forEach(label => {
-          if (this.selectedLabelsIds.includes(label.id)) {
-            newTests.push(test);
+        const newTests = [];
+        // Miro en qué indices están los elementos que coinciden con la categoría
+        this.reproductionTests.forEach(test => {
+          test.relatedLabels.forEach(label => {
+            if (this.selectedLabelsIds.includes(label.id)) {
+              newTests.push(test);
+            }
+          });
+        });
+
+        this.reproductionTests = newTests
+      } else {
+        if (this.selectedCategoriesIds.length === 0) {
+          this.reproductionTests = this.originalReproductionTests;
+        }
+      }
+    } else {
+      if (this.selectedLabelsIds.length !== 0) {
+        //console.log(this.selectedCategories);
+
+        const newTests = [];
+        // Miro en qué indices están los elementos que coinciden con la categoría
+        this.imageTests.forEach(test => {
+          test.relatedLabels.forEach(label => {
+            if (this.selectedLabelsIds.includes(label.id)) {
+              newTests.push(test);
+            }
+          });
+        });
+
+        this.imageTests = newTests
+      } else {
+        if (this.selectedCategoriesIds.length === 0) {
+          this.imageTests = this.originalImageTests;
+        }
+      }
+    }
+
+  }
+
+  async filterLabelsAnalysis() {
+
+
+    console.log(this.selectedLabelsIds);
+
+    if (this.selectedLabelsIds.length !== 0) {
+      let newTests = [];
+
+      this.analyticStudies.forEach(test => {
+        test.values.forEach(value => {
+          const filteredElement = this.analysisElements.find(element => element.id === value.id);
+
+          // console.log(filteredElement);
+
+          if (filteredElement && filteredElement.relatedLabels) {
+            filteredElement.relatedLabels.forEach(label => {
+              if (this.selectedLabelsIds.includes(label.id)) {
+                console.log("relevante");
+                console.log(value);
+
+                value.relevant = true;
+                newTests.push(test);
+              } else {
+                if (!value.relevant) {
+                  value.relevant = false;
+                }
+              }
+            });
           }
         });
       });
 
-      this.imageTests = newTests
+      newTests = [...new Set(newTests)];
+      this.analyticStudies = [...newTests];
+
     } else {
-      if (this.selectedCategoriesIds.length === 0) {
-        this.imageTests = this.originalImageTests;
+      if (this.selectedLabelsIds.length === 0) {
+        console.log("reseteo desde label");
+        this.analyticStudies = [...this.originalAnalyticStudies];
       }
+    }
+
+    /*
+    if (this.selectedCategoriesIds.length !== 0) {
+      // console.log(this.selectedCategories);
+
+      let newTests = [];
+      // Miro en qué indices están los elementos que coinciden con la categoría
+      this.analyticStudies.forEach(test => {
+
+        test.values.forEach(value => {
+          const filteredElement = this.analysisElements.find(element => element.id === value.id);
+          if (filteredElement && filteredElement.relatedCategories) {
+            filteredElement.relatedCategories.forEach(category => {
+              if (this.selectedCategoriesIds.includes(category.id)) {
+                value.relevant = true;
+                newTests.push(test);
+              } else {
+                value.relevant = false;
+              }
+            });
+          }
+        });
+      });
+
+      newTests = [...new Set(newTests)];
+      this.analyticStudies = [...newTests];
+
+    } else {
+      if (this.selectedLabelsIds.length === 0) {
+        console.log("reseteo desde categories");
+        this.analyticStudies = [...this.originalAnalyticStudies];
+      }
+    }
+     */
+
+  }
+
+  isFiltered() {
+    if (this.selectedCategories.length > 0 || this.selectedLabels.length > 0) {
+      return true
+    } else {
+      return false;
     }
   }
 
@@ -515,10 +912,21 @@ export class EditPage implements OnInit, OnDestroy {
     });
   }
 
-  getAnalyticStudy() {
+  async getAnalyticStudy() {
     this.analyticStudy$ = this.analyticStudiesService.getAnalyticStudies(
       this.id
     );
+
+    this.analyticStudiesSub = this.analyticStudy$.subscribe(data => {
+      this.analyticStudies = data;
+      console.log(this.analyticStudies, "Análisis clínicos");
+
+      this.originalAnalyticStudies = [...data];
+      console.log(this.originalAnalyticStudies, "Análisis clínicos originales");
+    })
+
+    this.analysisElements = (await this.analysisElementsService.getClinicAnalysisElementsData()).docs.map(element => element = element.data());
+    console.log(this.analysisElements, "Elementos de análisis");
   }
 
   changeCurrentAnalysis(analysis: string) {
@@ -530,6 +938,8 @@ export class EditPage implements OnInit, OnDestroy {
       );
       this.analyticValuesSub = this.analyticStudyValues$.subscribe((data) => {
         this.currentAnalysisValues = data;
+        console.log(this.currentAnalysisValues);
+
       });
       this.analysisSub = this.currentAnalysisData$.subscribe((data) => {
         this.currentAnalysisData = data;
@@ -588,6 +998,7 @@ export class EditPage implements OnInit, OnDestroy {
 
     await alert.present();
   }
+
 
   async deleteAnalyticStudy(studyId: string) {
     const alert = await this.alertController.create({
@@ -667,7 +1078,7 @@ export class EditPage implements OnInit, OnDestroy {
   async deleteImageTest(index: number) {
     const alert = await this.alertController.create({
       header: "¿Estás seguro?",
-      message: "Pulse aceptar para eliminar la prueba de imagen",
+      message: "Pulse aceptar para eliminar",
       buttons: [
         {
           text: "Cancelar",
@@ -678,9 +1089,8 @@ export class EditPage implements OnInit, OnDestroy {
         {
           text: "Aceptar",
           handler: () => {
-            this.imageTests.splice(index, 1);
-
             this.subjectImageTestsService.delete(this.imageTests[index].id).then(() => {
+              this.imageTests.splice(index, 1);
               if (this.imageTests.length === 0) {
                 this.subjectsService.updateSubject(this.id, {
                   hasImageAnalysis: false,
@@ -688,38 +1098,16 @@ export class EditPage implements OnInit, OnDestroy {
               }
               this.toastService.show(
                 "success",
-                "Prueba de imagen eliminada con éxito"
+                "Prueba eliminada con éxito"
               );
               console.log(this.imageTests);
             })
               .catch(() => {
                 this.toastService.show(
                   "danger",
-                  "Error al eliminar la prueba de imagen"
+                  "Error al eliminar la prueba"
                 );
               });
-
-            /*this.subjectsService
-              .updateSubject(this.id, {
-                imageTests: this.imageTests,
-              })
-              .then(() => {
-                if (this.imageTests.length === 0) {
-                  this.subjectsService.updateSubject(this.id, {
-                    hasImageAnalysis: false,
-                  });
-                }
-                this.toastService.show(
-                  "success",
-                  "Prueba de imagen eliminada con éxito"
-                );
-              })
-              .catch(() => {
-                this.toastService.show(
-                  "danger",
-                  "Error al eliminar la prueba de imagen"
-                );
-              });*/
           },
         },
       ],
@@ -728,23 +1116,45 @@ export class EditPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  /*editImageDate(value: any, formIndex: number) {
-    this.imageTestsArray[formIndex].date = value;
-  }
-  
-  editImageField(value: any, formIndex: number, fieldIndex?: number) {
-    this.imageTestsArray[formIndex].fields[fieldIndex].value = value;
-  }*/
+  async deleteReproductionTest(index: number) {
+    const alert = await this.alertController.create({
+      header: "¿Estás seguro?",
+      message: "Pulse aceptar para eliminar",
+      buttons: [
+        {
+          text: "Cancelar",
+          role: "cancel",
+          cssClass: "secondary",
+          handler: (blah) => { },
+        },
+        {
+          text: "Aceptar",
+          handler: () => {
+            this.reproductionTestsService.delete(this.reproductionTests[index].id).then(() => {
+              if (this.reproductionTests.length === 0) {
+                this.subjectsService.updateSubject(this.id, {
+                  hasReproductionTests: false,
+                });
+              }
+              this.toastService.show(
+                "success",
+                "Prueba eliminada con éxito"
+              );
+              console.log(this.imageTests);
+            })
+              .catch(() => {
+                this.toastService.show(
+                  "danger",
+                  "Error al eliminar la prueba"
+                );
+              });
+          },
+        },
+      ],
+    });
 
-  /*showField(index: string) {
-    if (this.visibleFields.includes(index)) {
-      this.visibleFields = this.visibleFields.filter(
-        element => element !== index
-      );
-    } else {
-      this.visibleFields.push(index);
-    }
-  }*/
+    await alert.present();
+  }
 
   addSignAndSymptom(signAndSypmtom: any) {
     this.currentSignsAndSymptoms.push({ id: signAndSypmtom.id, name: signAndSypmtom.name });
@@ -753,25 +1163,24 @@ export class EditPage implements OnInit, OnDestroy {
   }
 
   deleteSignAndSymptoms(index: any) {
-    this.currentSignsAndSymptoms = this.currentSignsAndSymptoms.splice(1, index);
+    console.log(index);
+    console.log(this.currentSignsAndSymptoms);
+    this.currentSignsAndSymptoms.splice(index, 1);
   }
 
   onQuerySignsAndSymptoms(query: string) {
-    //console.log(query);
     this.querySignsAndSymptomsList = this.signsAndSymptoms.filter(element => this.removeAccents(element.name.trim().toLowerCase()).includes(this.removeAccents(query.trim().toLowerCase())));
     console.log(this.querySignsAndSymptomsList);
   }
 
   addDisease(disease: any) {
     this.currentDiseases.push({ id: disease.id, name: disease.name });
-    //console.log(this.currentDiseases);
-
     this.queryDiseaseList = [];
     this.queryDisease = null;
   }
 
   deleteDisease(index: any) {
-    this.currentDiseases = this.currentDiseases.splice(1, index);
+    this.currentDiseases.splice(index, 1);
   }
 
   onDiseaseQueryChange(query: string) {
@@ -779,31 +1188,21 @@ export class EditPage implements OnInit, OnDestroy {
   }
 
   save() {
-    /* switch (this.segment.value) {
-      case "phenotypic-data":
-        this.savePhenotypic();
-        break;
-      case "genetic-study":
-        break;
-      case "analytic-study":
-        break;
-      case "image-study":
-        /*this.saveImage();
-        break;
-      default:
-    break;     
-    } */
-
     this.savePhenotypic()
   }
 
   async savePhenotypic(): Promise<any> {
+    // Calcular edad si es necesario
+
+    this.calculateAge();
+
     const data = {
       actualpacsId: this.actualpacsId || null,
       inicialesDelSujeto: this.inicialesDelSujeto || null,
       centroReferente: this.centroReferente || null,
       genre: this.genre || null,
       birthDate: this.birthDate || null,
+      age: this.age || null,
       height: this.height || null,
       weight: this.weight || null,
       populationGroup: this.populationGroup || null,
@@ -841,9 +1240,11 @@ export class EditPage implements OnInit, OnDestroy {
       signsAndSymptoms: this.currentSignsAndSymptoms || [],
       diseases: this.currentDiseases || []
     };
+
+
     if (this.identifier.length > 0) {
       await this.subjectsService
-        .updateSubject(this.id, { identifier: this.identifier, history: data })
+        .updateSubject(this.id, { identifier: this.identifier, history: data, embriology: this.embryos || null })
         .then(() => {
           this.toastService.show(
             "success",
@@ -858,6 +1259,33 @@ export class EditPage implements OnInit, OnDestroy {
         });
     } else {
       this.toastService.show("danger", "El identificador no puede estar vacío");
+    }
+  }
+
+  async saveReproductionMark(index: number, checked: boolean) {
+    console.log(index, checked);
+    this.subjectImageTestsService.update(this.reproductionTests[index].id, {
+      isReproductionTest: checked
+    })
+      .then(() => {
+        this.toastService.show("success", "Guardado con éxito");
+      })
+      .catch(() => {
+        this.toastService.show("danger", "Error al guardar");
+      });
+  }
+
+  calculateAge() {
+    if (this.age && !this.birthDate) {
+      // Calcular fecha de nacimiento
+      const fecha = moment().subtract(this.age, 'years');
+      console.log(fecha);
+      this.birthDate = moment(fecha).format();
+    } else if (this.birthDate && !this.age) {
+      // Calcular edad
+      const edad = moment().diff(this.birthDate, 'years', false);
+      console.log(edad);
+      this.age = edad;
     }
   }
 
@@ -884,12 +1312,11 @@ export class EditPage implements OnInit, OnDestroy {
     return await modal.present();
   }
 
-  async openQuibim(index: number) {
+  async openQuibim(id: string) {
     const modal = await this.modalController.create({
       component: EditQuibimPage,
       componentProps: {
-        id: this.id,
-        index,
+        id: id
       },
       cssClass: "my-custom-modal-css",
     });
@@ -911,15 +1338,19 @@ export class EditPage implements OnInit, OnDestroy {
   }
 
   async showAddAnalytic() {
-    const modal = await this.modalController.create({
-      component: AddAnalyticStudyPage,
-      componentProps: {
-        id: this.id,
-      },
-      cssClass: "my-custom-modal-css",
-      backdropDismiss: false,
-    });
-    return await modal.present();
+    if (this.subject.history && this.subject.history.genre && (this.subject.history.age || this.subject.history.birthDate)) {
+      const modal = await this.modalController.create({
+        component: AddAnalyticStudyPage,
+        componentProps: {
+          id: this.id,
+        },
+        cssClass: "my-custom-modal-css",
+        backdropDismiss: false,
+      });
+      return await modal.present();
+    } else {
+      this.toastService.show("danger", "No se pueden crear analísis clínicos hasta que la edad y el sexo sean rellenados");
+    }
   }
 
   async showEditAnalytic(testId: string) {
@@ -935,16 +1366,61 @@ export class EditPage implements OnInit, OnDestroy {
     return await modal.present();
   }
 
-  async showAddImage() {
+  async showEditAnalyticWithLimits(testId: string) {
     const modal = await this.modalController.create({
-      component: AddImageStudyPage,
+      component: EditAnalyticStudyLimitsPage,
       componentProps: {
         id: this.id,
+        testId,
       },
       cssClass: "my-custom-modal-css",
       backdropDismiss: false,
     });
     return await modal.present();
+  }
+
+  async showAddImage() {
+    const modal = await this.modalController.create({
+      component: AddImageStudyPage,
+      componentProps: {
+        id: this.id, // Id del sujeto
+      },
+      cssClass: "my-custom-modal-css",
+      backdropDismiss: false,
+    });
+    return await modal.present();
+  }
+
+  async showAddReproductionTest() {
+    const modal = await this.modalController.create({
+      component: AddReproductionTechniquePage,
+      componentProps: {
+        id: this.id, // Id del sujeto
+      },
+      cssClass: "my-custom-modal-css"
+    });
+    return await modal.present();
+  }
+
+  async showEmbryoDetails(i: number, j: number) {
+    const modal = await this.modalController.create({
+      component: ShowEmbryoDetailsPage,
+      componentProps: {
+        embryoData: this.embryos[i].samples[j], // Datos del embrión
+      },
+      cssClass: "my-custom-modal-css"
+    });
+    return await modal.present();
+  }
+
+  async deleteEmbryo(i: number, j: number) {
+
+    const embryo = this.embryos[i].samples[j];
+    console.log(embryo);
+
+    this.embryos[i].samples.splice(j, 1);
+    console.log(this.embryos);
+
   }
 
   async showImageTest(testId: string) {
@@ -959,24 +1435,46 @@ export class EditPage implements OnInit, OnDestroy {
     return await modal.present();
   }
 
-  /*async saveImage(): Promise<any> {
-    this.usersService
-      .updateUser(this.id, {
-        imageTests: this.imageTestsArray
-      })
-      .then(() => {
-        this.toastService.show(
-          "success",
-          "Pruebas de imagen guardadas con éxito"
-        );
-      })
-      .catch(() => {
-        this.toastService.show(
-          "danger",
-          "Error al guardar las pruebas de imagen"
-        );
-      });
-  }*/
+  async showReproductionTest(testId: string) {
+    const modal = await this.modalController.create({
+      component: EditReproductionTestPage,
+      componentProps: {
+        id: testId
+      },
+      cssClass: "my-custom-modal-css",
+      backdropDismiss: false,
+    });
+    return await modal.present();
+  }
+
+  async showAnalysisDescription(elementId: string, isAdmin: boolean) {
+    const modal = await this.modalController.create({
+      component: ShowAnalysisDescriptionPage,
+      componentProps: {
+        id: elementId,
+        isAdmin: isAdmin
+      },
+      cssClass: "my-custom-modal-css",
+      backdropDismiss: false,
+    });
+    return await modal.present();
+  }
+
+  doReorder(ev: any) {
+    const item = this.reproductionTests.splice(ev.detail.from, 1)[0];
+    this.reproductionTests.splice(ev.detail.to, 0, item);
+    let index = 0;
+    this.reproductionTests.forEach(element => {
+      element.order = index;
+      index = index + 1;
+    });
+    ev.detail.complete();
+    console.log(this.reproductionTests);
+    this.reproductionTests.forEach(test => {
+      this.subjectImageTestsService.update(test.id, test);
+    })
+    this.toastService.show("success", "Pruebas ordenadas con éxito");
+  }
 
   async import(): Promise<any> { }
 
@@ -1072,6 +1570,15 @@ export class EditPage implements OnInit, OnDestroy {
     }
     if (this.geneticNumberSub) {
       this.geneticNumberSub.unsubscribe();
+    }
+    if (this.subjectTestsSub) {
+      this.subjectTestsSub.unsubscribe();
+    }
+    if (this.analyticStudiesSub) {
+      this.analyticStudiesSub.unsubscribe();
+    }
+    if (this.reproductionTestsSub) {
+      this.reproductionTestsSub.unsubscribe();
     }
   }
 }

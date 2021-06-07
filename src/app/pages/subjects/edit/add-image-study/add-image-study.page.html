@@ -8,40 +8,49 @@
   <ion-grid fixed>
     <ion-row>
 
+      <!-- Checkbox para abrir la ruta de pruebas personalizadas -->
+      
       <ion-col size="12" class="ion-margin-top">
-        <ion-item lines="none">
-          <ion-label>Activar pruebas personalizadas</ion-label>
+        <ion-item lines="none" disabled>
+          <ion-label>¿Activar pruebas personalizadas?</ion-label>
           <ion-checkbox slot="start" [(ngModel)]="isCustom"></ion-checkbox>
         </ion-item>
       </ion-col>
 
+      <!-- SELECTOR DE PRUEBAS PREDISEÑADAS CON BUSCADOR -->
       <ion-col size="12" *ngIf="!isCustom">
         <ion-item lines="full">
+
           <ion-label *ngIf="lang.isSpanish()">Pruebas de imagen prediseñadas</ion-label>
           <ion-label *ngIf="!lang.isSpanish()">Predesigned image tests</ion-label>
-          <!--  
-          <ion-select [placeholder]="lang.isSpanish()?'Seleccione prueba de imagen':'Select image test'"
-            [(ngModel)]="currentImageTest" cancelText="Cancelar" (ionChange)="getCurrentImageTest($event.target.value)">
-            <ion-select-option *ngFor="let test of imageTests" [value]="test.id">
-              {{ test.name }}
-            </ion-select-option>
-          </ion-select>
-          -->
+
           <ionic-selectable [(ngModel)]="currentImageTest" [items]="imageTests"
           itemValueField="id" itemTextField="name" [canSearch]="true" confirmButtonText="Seleccionar"
-          closeButtonText="Cancelar" (onChange)="getCurrentImageTest($event.value)" headerColor="primary"
+          closeButtonText="Cancelar" (onChange)="getCurrentImageTest($event.value)" [hasVirtualScroll]="true" (onSearch)="onSearch($event)" headerColor="primary"
           searchFailText="No hay items disponibles" searchPlaceholder="Buscar" [isMultiple]="false">
           <ng-template ionicSelectableCloseButtonTemplate>
             <ion-icon name="close" style="font-size: 24px;"></ion-icon>
           </ng-template>
         </ionic-selectable>
+
         </ion-item>
       </ion-col>
 
+      <!-- INPUT DE NOMBRE DE PRUEBA PERSONALIZADA -->
+      <!-- 
+      <ion-col size="12" *ngIf="isCustom">
+        <ion-item>
+          <ion-label position="floating" *ngIf="lang.isSpanish()">Nombre de la prueba</ion-label>
+          <ion-label position="floating" *ngIf="!lang.isSpanish()">Test name</ion-label>
+          <ion-input type="text" [(ngModel)]="customTestName"></ion-input>
+        </ion-item>
+      </ion-col>
+      -->
+      <!-- 
       <ion-col size="12" *ngIf="isCustom">
         <ion-item>
           <ion-label position="floating">Elementos de pruebas de imagen</ion-label>
-          <ionic-selectable [(ngModel)]="currentImageTestData" [items]="imageTestsElements | async"
+          <ionic-selectable [(ngModel)]="currentImageTestData" [items]="imageTestsElements"
             itemValueField="id" itemTextField="name" [canSearch]="true" confirmButtonText="Seleccionar"
             closeButtonText="Cancelar" (onChange)="getTestsElements()" headerColor="primary"
             searchFailText="No hay items disponibles" searchPlaceholder="Buscar" [isMultiple]="true">
@@ -51,15 +60,7 @@
           </ionic-selectable>
         </ion-item>
       </ion-col>
-
-      <ion-col size="12" *ngIf="isCustom">
-        <ion-item>
-          <ion-label position="floating" *ngIf="lang.isSpanish()">Nombre de la prueba</ion-label>
-          <ion-label position="floating" *ngIf="!lang.isSpanish()">Test name</ion-label>
-          <ion-input type="text" [(ngModel)]="customTestName"></ion-input>
-        </ion-item>
-      </ion-col>
-
+      -->
       <ion-col size="12" *ngIf="currentImageTestData">
         <ion-item lines="full">
           <ion-label position="floating" *ngIf="lang.isSpanish()">Fecha de realización</ion-label>
@@ -69,10 +70,17 @@
         </ion-item>
       </ion-col>
 
-      <!-- CASO NUEVO -->
+      <ion-col size="12" *ngIf="currentImageTestData">
+        <ion-item>
+          <ion-label position="floating">Accession number</ion-label>
+          <ion-input placeholder="Introduzca accesion number" [(ngModel)]="accessionNumber"></ion-input>
+        </ion-item>
+      </ion-col>
+
+      <!-- PRUEBA POR DEFECTO -->
       <ion-col size="12" *ngIf="currentImageTestData && date && currentImageTestData.name !== 'Endometriosis'" class="ion-margin-bottom">
         <ion-item *ngFor="let biomarker of currentImageTestData.elements; let i = index" lines="full"
-        [color]="biomarker.status==='positive'?'danger':'light'">
+        [color]="values[i].status && values[i].status === 'positive'?'danger':'light'">
           <ion-label position="floating">
             {{ biomarker.data.name }}
           </ion-label>
@@ -90,7 +98,7 @@
         </ion-textarea>
         <ion-select *ngIf="biomarker.data.type==='multiple'"
           [placeholder]="lang.isSpanish()?'Introduzca '+biomarker.data.name.toLowerCase():'Enter '+ biomarker.data.name.toLowerCase()"
-          (ionChange)="editImageField($event.target.value,i)" [value]="biomarker.defaultOption" cancelText="Cancelar" multiple>
+          (ionChange)="editImageField($event.target.value,i)" [value]="biomarker.data.defaultOption" cancelText="Cancelar" multiple>
           <ion-select-option *ngFor="let option of biomarker.data.options" [value]="option" class="ion-text-wrap">{{option}}
           </ion-select-option>
         </ion-select>
@@ -101,9 +109,9 @@
           <ion-select-option *ngIf="!biomarker.data.defaultInput" [value]="biomarker.data.falseInput">
             {{biomarker.data.falseInput}}
           </ion-select-option>
-          <ion-select-option *ngIf="!biomarker.data.defaultInput" [value]="biomarker.data.trueInput">{{field.trueInput}}
+          <ion-select-option *ngIf="!biomarker.data.defaultInput" [value]="biomarker.data.trueInput">{{biomarker.data.trueInput}}
           </ion-select-option>
-          <ion-select-option *ngIf="biomarker.data.defaultInput" [value]="biomarker.data.trueInput">{{field.trueInput}}
+          <ion-select-option *ngIf="biomarker.data.defaultInput" [value]="biomarker.data.trueInput">{{biomarker.data.trueInput}}
           </ion-select-option>
           <ion-select-option *ngIf="biomarker.data.defaultInput" [value]="biomarker.data.falseInput">
             {{biomarker.data.falseInput}}
@@ -120,11 +128,14 @@
           [placeholder]="lang.isSpanish()?'Introduzca '+biomarker.data.name.toLowerCase():'Enter '+ biomarker.data.name.toLowerCase()"
           (ionChange)="editImageField($event.target.value,i)" [value]="biomarker.value"></ion-input>
         <ion-note slot="end" *ngIf="biomarker.data.type==='unit'">{{biomarker.data.unit}}</ion-note>
+
         <ion-buttons slot="end">
-          <ion-button (click)="addImage(i,biomarker.data.name, biomarker.data.value)">
+          <!--  
+          <ion-button (click)="addImage(currentImageTestData.id, biomarker.id, i)" *ngIf="values[i].value">
             <ion-icon slot="icon-only" name="location"></ion-icon>
           </ion-button>
-          <ion-button (click)="showGallery(i)">
+          -->
+          <ion-button (click)="showGallery(biomarker.id)">
             <ion-icon slot="icon-only" name="images"></ion-icon>
           </ion-button>
         </ion-buttons>

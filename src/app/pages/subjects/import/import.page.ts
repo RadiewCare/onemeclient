@@ -21,20 +21,24 @@ export class ImportPage implements OnInit {
   csvGeneticData: any;
   csvAnalyticData: any;
   csvImageData: any;
+  csvEmbryologyData: any;
 
   doneMessagePhenotypic: string;
   doneMessageGenetic: string;
   doneMessageAnalytic: string;
   doneMessageImage: string;
+  doneMessageEmbryology: string;
   errorMessagePhenotypic: string;
   errorMessageGenetic: string;
   errorMessageAnalytic: string;
   errorMessageImage: string;
+  errorMessageEmbryology: string;
 
   subject: any;
   filename: string;
 
   analyticFilename: string;
+  embryologyFilename: string;
 
   date: string;
 
@@ -171,6 +175,37 @@ export class ImportPage implements OnInit {
     }
   }
 
+  loadEmbryologyData(event: any) {
+    this.embryologyFilename = event.target.files[0].name;
+    const csvFile = event.target.files[0];
+
+    const csvOptions = {
+      header: true,
+      dynamicTyping: true,
+      skipEmptyLines: true,
+      complete: (results: any, file: any) => {
+        if (results.errors.length > 0) {
+          this.doneMessageEmbryology = null;
+          this.errorMessageEmbryology = JSON.stringify(results.errors);
+        } else {
+          this.errorMessageEmbryology = null;
+          this.doneMessageEmbryology = "Procesado correctamente";
+          this.csvEmbryologyData = results.data;
+          this.csvEmbryologyData = JSON.parse(JSON.stringify(this.csvEmbryologyData).replace(/"\s+|\s+"/g, '"'))
+          console.log(this.csvEmbryologyData);
+        }
+      }
+    };
+
+    if (event.target.files[0].name.split(".").pop() === "csv") {
+      this.filename = event.target.files[0].name;
+      this.papa.parse(csvFile, csvOptions);
+      console.log("es csv");
+    } else {
+      this.errorMessageEmbryology = "No es un archivo .csv";
+    }
+  }
+
   async import(): Promise<any> {
     if (this.csvGeneticData) {
       console.log("Loading");
@@ -219,6 +254,25 @@ export class ImportPage implements OnInit {
       loading.present().then(() => {
         this.subjectsService
           .importAnalyticData(this.id, this.csvAnalyticData, this.analyticFilename, this.date)
+          .then(async () => {
+            await loading.dismiss();
+            this.toastService.show("success", "Datos importados con éxito");
+          })
+          .catch(async (error) => {
+            await loading.dismiss();
+            console.log(error);
+
+            this.toastService.show("danger", "Error al importar datos");
+          });
+      });
+    }
+    if (this.csvEmbryologyData) {
+      console.log(this.csvEmbryologyData);
+
+      const loading = await this.loadingController.create(null);
+      loading.present().then(() => {
+        this.subjectsService
+          .importEmbryologyData(this.id, this.csvEmbryologyData, this.embryologyFilename, this.date)
           .then(async () => {
             await loading.dismiss();
             this.toastService.show("success", "Datos importados con éxito");

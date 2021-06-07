@@ -66,16 +66,15 @@ export class SynlabCatalogPage implements OnInit, OnDestroy {
     let iterator = 0;
     await this.analisysElementsService.getClinicAnalysisElementsList().then(data => {
       const datos = data.docs.map(element => element = element.data());
-      this.analysisElements = [...datos]
+      this.analysisElements = [...datos];
+      this.analysisElements = this.analysisElements.sort((a, b) => a.codigo < b.codigo ? -1 : 1);
     });
     this.loadingController.dismiss();
   }
 
   onSearchChange(query: string) {
     if (query.length > 0) {
-      this.queryElements = this.analysisElements.filter((analysisElement) =>
-        this.removeAccents(analysisElement.DESCRIPCION.toLowerCase()).includes(this.removeAccents(query.toLowerCase())) || analysisElement.CODIGO.toString().includes(query.toLowerCase())
-      );
+      this.queryElements = this.analysisElements.filter((analysisElement) => analysisElement.codigo.toString().includes(query.toLowerCase()))
     } else {
       this.queryElements = null;
     }

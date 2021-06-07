@@ -4,6 +4,7 @@ import { LanguageService } from "src/app/services/language.service";
 import { DoctorsService } from "src/app/services/doctors.service";
 import { ModalController } from "@ionic/angular";
 import { InvitationPage } from "./invitation/invitation.page";
+import { AuthService } from "src/app/services/auth.service";
 
 @Component({
   selector: "app-doctors",
@@ -13,18 +14,34 @@ import { InvitationPage } from "./invitation/invitation.page";
 export class DoctorsPage implements OnInit, OnDestroy {
   doctors: any;
   queryDoctors: any;
+
   doctorsSub: Subscription;
+
+  user$: any;
+  userData: any;
+  userSub: Subscription;
 
   constructor(
     private doctorsService: DoctorsService,
     public lang: LanguageService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private auth: AuthService
   ) { }
 
   ngOnInit() {
+
+  }
+
+  ionViewDidEnter() {
     this.doctorsSub = this.doctorsService.getDoctors().subscribe((data) => {
       this.doctors = data;
       this.doctors = this.doctors.sort((a, b) => this.removeAccents(a.name).localeCompare(this.removeAccents(b.name)))
+    });
+
+    this.user$ = this.auth.user$;
+
+    this.userSub = this.user$.subscribe((data) => {
+      this.userData = data;
     });
   }
 
@@ -50,6 +67,8 @@ export class DoctorsPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.doctorsSub.unsubscribe();
+    if (this.doctorsSub) {
+      this.doctorsSub.unsubscribe();
+    }
   }
 }

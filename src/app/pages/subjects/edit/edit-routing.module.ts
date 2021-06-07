@@ -39,6 +39,50 @@ const routes: Routes = [
   {
     path: 'create-report',
     loadChildren: () => import('./create-report/create-report.module').then( m => m.CreateReportPageModule)
+  },
+  {
+    path: 'add-reproduction-technique',
+    loadChildren: () => import('./add-reproduction-technique/add-reproduction-technique.module').then( m => m.AddReproductionTechniquePageModule)
+  },
+  {
+    path: 'show-embryo-details',
+    loadChildren: () => import('./show-embryo-details/show-embryo-details.module').then( m => m.ShowEmbryoDetailsPageModule)
+  },
+  {
+    path: 'edit-reproduction-test',
+    loadChildren: () => import('./edit-reproduction-test/edit-reproduction-test.module').then( m => m.EditReproductionTestPageModule)
+  },
+  {
+    path: 'analytics',
+    loadChildren: () => import('./analytics/analytics.module').then( m => m.AnalyticsPageModule)
+  },
+  {
+    path: 'genetics',
+    loadChildren: () => import('./genetics/genetics.module').then( m => m.GeneticsPageModule)
+  },
+  {
+    path: 'fenotipics',
+    loadChildren: () => import('./fenotipics/fenotipics.module').then( m => m.FenotipicsPageModule)
+  },
+  {
+    path: 'radiology',
+    loadChildren: () => import('./radiology/radiology.module').then( m => m.RadiologyPageModule)
+  },
+  {
+    path: 'show-analysis-description',
+    loadChildren: () => import('./show-analysis-description/show-analysis-description.module').then( m => m.ShowAnalysisDescriptionPageModule)
+  },
+  {
+    path: 'show-disease-description',
+    loadChildren: () => import('./show-disease-description/show-disease-description.module').then( m => m.ShowDiseaseDescriptionPageModule)
+  },
+  {
+    path: 'edit-analytic-study-limits',
+    loadChildren: () => import('./edit-analytic-study-limits/edit-analytic-study-limits.module').then( m => m.EditAnalyticStudyLimitsPageModule)
+  },
+  {
+    path: 'add-image-create',
+    loadChildren: () => import('./add-image-create/add-image-create.module').then( m => m.AddImageCreatePageModule)
   }
 ];
 

@@ -5,8 +5,16 @@
         <ion-back-button></ion-back-button>
       </ion-buttons>
     </ion-buttons>
-    <ion-title *ngIf="lang.isSpanish()">Editar sujeto: {{identifier}}</ion-title>
-    <ion-title *ngIf="!lang.isSpanish()">Edit subject: {{identifier}}</ion-title>
+    <ion-title *ngIf="lang.isSpanish()">Editar paciente: {{identifier}}</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Edit patient: {{identifier}}</ion-title>
+    <ion-button slot="primary" [routerLink]="['/subjects/diseases/'+ id]" expand="block" shape="round" class="ion-margin-end">
+      <ion-icon slot="start" name="medical"></ion-icon>
+      Enfermedades/condiciones asociadas
+    </ion-button>
+    <ion-button slot="primary" [routerLink]="['/subjects/documents/'+ id]" expand="block" shape="round" class="ion-margin-end">
+      <ion-icon slot="start" name="document"></ion-icon>
+      Documentos
+    </ion-button>
     <ion-buttons slot="end">
       <ion-button (click)="delete()" [disabled]="!userData?.isAdmin || userData?.id !== subject?.mainDoctor"
         color="danger">
@@ -47,10 +55,10 @@
       <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Estudio genético</ion-label>
       <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Genetic study</ion-label>
     </ion-segment-button>
-    <ion-segment-button value="epigenetic-study" layout="icon-start" disabled>
-      <ion-icon name="git-pull-request"></ion-icon>
-      <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Estudio epigenético</ion-label>
-      <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Epigenetic study</ion-label>
+    <ion-segment-button value="epigenetic-study" layout="icon-start">
+      <ion-icon name="male-female"></ion-icon>
+      <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Técnicas de reproducción asistida</ion-label>
+      <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">Assisted Reproduction Techniques</ion-label>
     </ion-segment-button>
     <ion-segment-button value="analytic-study" layout="icon-start"
       [disabled]="userData?.id !== subject?.mainDoctor && !userData?.sharedSubjectsAnalytic.includes(id)">
@@ -102,6 +110,13 @@
                 <ion-select-option value="intersexo" *ngIf="!lang.isSpanish()">Intersex</ion-select-option>
                 <ion-select-option value="none" *ngIf="!lang.isSpanish()">Unknown</ion-select-option>
               </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+            <ion-item lines="none">
+              <ion-label position="floating" *ngIf="lang.isSpanish()">Edad</ion-label>
+              <ion-label position="floating" *ngIf="!lang.isSpanish()">Age</ion-label>
+              <ion-input type="number" [placeholder]="lang.isSpanish()?'Introduzca edad':'Enter age'" [(ngModel)]="age"></ion-input>
             </ion-item>
           </ion-col>
           <ion-col size="12" size-lg="6">
@@ -446,7 +461,7 @@
           <ion-col size="12">
             <ng-container *ngIf="currentSignsAndSymptoms.length>0">
               <ion-chip color="primary" mode="ios" *ngFor="let sign of currentSignsAndSymptoms; let i = index" class="ion-margin-bottom">
-                <ion-label>{{sign.name}}</ion-label>
+                <ion-label>{{sign.name}} <span *ngIf="sign.accessionNumber">(AN: {{sign.accessionNumber}}) </span> <span *ngIf="sign.date">(Fecha: {{sign.date | date: 'd/M/yy' }})</span></ion-label>
                 <ion-icon name="close" (click)="deleteSignAndSymptoms(i)"></ion-icon>
               </ion-chip>
             </ng-container>
@@ -460,6 +475,16 @@
             <ng-container *ngIf="querySignsAndSymptoms">
               <ion-item *ngFor="let item of querySignsAndSymptomsList" (click)="addSignAndSymptom(item)" button lines="full">
                 <ion-label>{{item.name}}</ion-label>
+              </ion-item>
+            </ng-container>
+            <ng-container *ngFor="let sign of currentSignsAndSymptoms; let j = index">
+              <ion-item class="ion-margin-top">
+                <ion-label position="floating">Accession number para: {{sign.name}}</ion-label>
+                <ion-input type="number" placeholder="Accession number" [(ngModel)]="sign.accessionNumber"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="floating">Fecha del síntoma: {{sign.name}} </ion-label>
+                <ion-datetime display-format="DD/MM/YYYY" [(ngModel)]="sign.date"></ion-datetime>
               </ion-item>
             </ng-container>
           </ion-col>
@@ -608,7 +633,7 @@
           <ion-col size="12" *ngIf="geneticStudy?.length>0">
             <ion-text color="primary">
               <h5 *ngIf="lang.isSpanish()">
-                Polimorfismos del sujeto: {{ numberOfVariants }}
+                Polimorfismos del paciente: {{ numberOfVariants }}
               </h5>
               <h5 *ngIf="!lang.isSpanish()">
                 Subject's polymorphisms: {{ numberOfVariants }}
@@ -639,6 +664,195 @@
     </div>
     <!-- FIN DE ESTUDIO GENÉTICO -->
 
+    <!-- TÉCNICAS DE REPRODUCCIÓN ASISTIDA -->
+    <ng-container *ngIf="userData?.id === subject?.mainDoctor || userData?.sharedSubjectsImage.includes(id)">
+      <ion-row *ngSwitchCase="'epigenetic-study'" class="ion-padding-vertical">
+
+        <!--  
+          <ion-col size="5">
+          </ion-col>
+          <ion-col size="2" class="ion-margin-bottom">
+            <ion-img src="assets/images/overture-logo-complete.png" style="max-width: 100px; margin-top: 1rem;"></ion-img>
+          </ion-col>
+          <ion-col size="5"></ion-col>
+          -->
+
+        <ion-col size="4">
+          <ion-item>
+            <ion-label position="floating">Iniciales del paciente</ion-label>
+            <ion-input placeholder="Introduzca iniciales" [(ngModel)]="inicialesDelSujeto"></ion-input>
+          </ion-item>
+        </ion-col>
+        <ion-col size="4">
+          <ion-item>
+            <ion-label position="floating">ID paciente</ion-label>
+            <ion-input placeholder="Introduzca ID" [(ngModel)]="actualpacsId"></ion-input>
+          </ion-item>
+        </ion-col>
+        <ion-col size="4">
+          <ion-item>
+            <ion-label position="floating">Clínica referente</ion-label>
+            <ion-input placeholder="Introduzca clínica referente" [(ngModel)]="centroReferente"></ion-input>
+          </ion-item>
+        </ion-col>
+
+        <!-- LISTADO DE EMBRIONES -->
+        <ion-col size="12" class="ion-margin-vertical">
+          <ion-item color="primary" lines="none">
+            <ion-label style="font-size: 18px;">Listado de embriones</ion-label>
+          </ion-item>
+          <ng-container *ngFor="let embryo of embryos; let i = index">
+            <ion-item *ngFor="let sample of embryo.samples; let j = index" lines="full">
+              <ion-label>
+                <p>
+                  Sample Name: <b>{{sample['Sample Name']}}</b>
+                </p>
+                <p>
+                  Sample ID: <b>{{sample["Sample ID"]}}</b>
+                </p>
+                <p>
+                  Date: <b>{{embryo.date | date: 'd/M/yy' }}</b>
+                </p>
+                <p>
+                  Filename: <b>{{embryo.fileName}}</b>
+                </p>
+              </ion-label>
+              <ion-chip color="primary" mode="ios" outline="true">
+                <ion-label>MEI: {{sample.MEI}}</ion-label>
+              </ion-chip>
+              <ion-chip color="primary" mode="ios" outline="true">
+                <ion-label>MPI: {{sample.MPI}}</ion-label>
+              </ion-chip>
+              <ion-buttons slot="end">
+                <ion-button (click)="deleteEmbryo(i,j)" color="danger">
+                  <ion-icon slot="start" name="trash"></ion-icon>
+                  Eliminar
+                </ion-button>
+                <ion-button (click)="showEmbryoDetails(i,j)">
+                  <ion-icon slot="start" name="eye"></ion-icon>
+                  Ver detalles
+                </ion-button>
+              </ion-buttons>
+            </ion-item>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <ion-button (click)="showAddReproductionTest()" expand="full" color="secondary">
+            <ion-icon slot="start" name="add"></ion-icon>
+            <ion-label *ngIf="lang.isSpanish()">Crear prueba</ion-label>
+            <ion-label *ngIf="!lang.isSpanish()">Create test</ion-label>
+          </ion-button>
+        </ion-col>
+
+        <ion-col size="6">
+          <ion-item>
+            <ion-icon slot="start" name="folder" color="dark"></ion-icon>
+            <ion-label>Filtrar por categorías</ion-label>
+            <ion-input [(ngModel)]="queryCategory" (ionChange)="onCategoryChange($event.detail.value)"></ion-input>
+          </ion-item>
+
+          <ng-container *ngIf="queryCategory; else elseCategory">
+            <ion-item *ngFor="let suggestedCategory of suggestedCategories" (click)="addCategory(suggestedCategory)" style="cursor: pointer;" lines="full">
+              <ion-label>{{suggestedCategory.name}}</ion-label>
+            </ion-item>
+            <ion-item *ngIf="suggestedCategories.length === 0">
+              <ion-label>¿No existe la categoría?</ion-label>
+              <ion-button [routerLink]="['/database/categories/create']" color="primary">
+                Crear
+              </ion-button>
+            </ion-item>
+          </ng-container>
+          <ng-template #elseCategory>
+            
+          </ng-template>
+          
+          <ng-container class="ion-padding-top">
+            <ion-chip color="primary" mode="ios" outline="true" *ngFor="let category of selectedCategories; let i = index" (click)="removeCategory(i)">
+              <ion-label>{{category.name}}</ion-label>
+              <ion-icon name="close-circle"></ion-icon>
+            </ion-chip>
+          </ng-container>
+        
+        </ion-col>
+
+        <ion-col size="6">
+
+          <ion-item>
+            <ion-icon slot="start" name="pricetags" color="dark"></ion-icon>
+            <ion-label>Filtrar por etiquetas</ion-label>
+            <ion-input [(ngModel)]="queryLabel" (ionChange)="onLabelChange($event.detail.value)"></ion-input>
+          </ion-item>
+
+          <ng-container *ngIf="queryLabel; else elseLabel">
+            <ion-item *ngFor="let suggestedLabel of suggestedLabels" (click)="addLabel(suggestedLabel)" style="cursor: pointer;" lines="full">
+              <ion-label>{{suggestedLabel.name}}</ion-label>
+            </ion-item>
+            <ion-item *ngIf="suggestedLabels.length === 0">
+              <ion-label>¿No existe la etiqueta?</ion-label>
+              <ion-button [routerLink]="['/database/labels/create']" color="primary">
+                Crear
+              </ion-button>
+            </ion-item>
+          </ng-container>
+          <ng-template #elseLabel>
+            
+          </ng-template>
+
+          <ng-container class="ion-padding-top">
+            <ion-chip color="primary" mode="ios" outline="true" *ngFor="let label of selectedLabels; let i = index" (click)="removeLabel(i)">
+              <ion-label>{{label.name}}</ion-label>
+              <ion-icon name="close-circle"></ion-icon>
+            </ion-chip>
+          </ng-container>
+
+        </ion-col>
+
+        <!-- LISTADO DE PRUEBAS DE IMAGEN DE FERTILIDAD -->
+        <ion-col size="12" class="ion-padding-top">
+          <ion-reorder-group (ionItemReorder)="doReorder($event)" disabled="false">
+            <ion-item lines="none" *ngFor="let reproductionTest of reproductionTests ; let i = index" lines="full" text-wrap>
+              <ion-reorder slot="start" title="Arrastra para re-ordenar las pruebas"></ion-reorder>
+              <ion-label class="ion-text-wrap" color="primary" text-wrap>
+                <p style="font-size: 18px; margin-bottom: 0.5rem; font-weight: bold;">
+                  {{ reproductionTest.name }}
+                </p>
+                <p style="font-size: 16px; margin-bottom: 0.5rem; color: black; ">Accession number: {{reproductionTest.accessionNumber}}</p>
+                <p style="margin-bottom: 1rem; color: black;">
+                  Fecha de realización: {{ reproductionTest.date | date: 'dd/MM/yy' }}
+                </p>
+                <ng-container *ngFor="let element of reproductionTest.values">
+                  <ion-chip color="danger" mode="ios" outline="true"
+                    *ngIf="element.status && element.status === 'positive'">
+                    <ion-label>
+                      {{element.name}}: {{element.value}}{{element.metricUnit}}
+                    </ion-label>
+                  </ion-chip>
+                </ng-container>
+              </ion-label>
+              <ion-buttons slot="end">
+                <ion-button (click)="deleteReproductionTest(i)" color="danger">
+                  <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Eliminar':'Delete'}}</ion-label>
+                  <ion-icon slot="start" name="trash"></ion-icon>
+                </ion-button>
+                <ion-button (click)="openReports(reproductionTest)">
+                  <ion-label class="ion-hide-sm-down">PDF</ion-label>
+                  <ion-icon slot="start" name="document"></ion-icon>
+                </ion-button>
+                <ion-button (click)="showReproductionTest(reproductionTest.id)">
+                  <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Editar':'Edit'}}</ion-label>
+                  <ion-icon slot="start" name="create"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+              <!-- <ion-checkbox slot="end" [checked]="reproductionTest.isReproductionTest" (ionChange)="saveReproductionMark(i, $event.detail.checked)" color="success"></ion-checkbox> -->
+              
+            </ion-item>
+          </ion-reorder-group>
+        </ion-col>
+      </ion-row>
+    </ng-container>
+    <!-- FIN DE TÉCNICAS DE REPRODUCCIÓN ASISTIDA -->
+
     <!-- ESTUDIO ANALÍTICO -->
     <ion-row *ngSwitchCase="'analytic-study'" class="ion-padding-top">
       <ng-container *ngIf="userData?.id === subject?.mainDoctor || userData?.sharedSubjectsAnalytic.includes(id)">
@@ -649,49 +863,314 @@
             <ion-label *ngIf="!lang.isSpanish()">Create analytic study</ion-label>
           </ion-button>
         </ion-col>
-        <ion-col size="12">
-          <ng-container *ngFor="let study of analyticStudy$ | async" lines="full">
-            <ion-item lines="none" color="primary">
-              <ion-label>
-                <p>Fecha de realización: {{study.date | date: 'dd/MM/yy'}}</p>
-                <p>
-                  <span (click)="copyToClipboard(study.shortcode)" style="cursor: pointer;">Shortcode:
-                    {{study.shortcode}}
-                  </span>
-                  <ion-icon name="copy" style="
-                      font-size: 18px;
-                      position: relative;
-                      top: 3px;
-                      cursor: pointer;
-                    ">
-                  </ion-icon>
-                </p>
-                <p *ngIf="study.filename">Importado desde: {{study.filename}}</p>
-              </ion-label>
-              <ion-buttons slot="end">
-                <ion-button (click)="deleteAnalyticStudy(study.id)" color="danger">
-                  <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Eliminar':'Delete'}}</ion-label>
-                  <ion-icon slot="start" name="trash"></ion-icon>
-                </ion-button>
-                <ion-button (click)="showEditAnalytic(study.id)">
-                  <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Editar':'Edit'}}</ion-label>
-                  <ion-icon slot="start" name="create"></ion-icon>
-                </ion-button>
-              </ion-buttons>
+
+        <!-- FILTRADO DE ANÁLISIS CLÍNICOS -->
+        <ion-col size="6">
+
+          <ion-item>
+            <ion-icon slot="start" name="folder" color="dark"></ion-icon>
+            <ion-label>Filtrar por categorías</ion-label>
+            <ion-input [(ngModel)]="queryCategory" (ionChange)="onCategoryChange($event.detail.value)"></ion-input>
+          </ion-item>
+  
+          <!-- AUTOCOMPLETADO CATEGORÍAS -->
+          <ng-container *ngIf="queryCategory; else elseCategory">
+            <ion-item *ngFor="let suggestedCategory of suggestedCategories" (click)="addCategoryAnalysis(suggestedCategory)" style="cursor: pointer;" lines="full">
+              <ion-label>{{suggestedCategory.name}}</ion-label>
             </ion-item>
-            <div style="border-bottom: 1px solid lightgrey; background: white;" class="ion-padding">
-              <ng-container *ngFor="let element of study.values">
-                <ion-chip color="danger" mode="ios" outline="true" *ngIf="element.status && element.status !=='normal'">
-                  <ion-label>{{element.name}}: {{element.value}}{{element.metricUnit}}
-                    <span *ngFor="let relatedDisease of element.relatedDiseases">({{relatedDisease}})</span>
-                  </ion-label>
-                  <ion-icon *ngIf="element.status ==='high'" name="trending-up"></ion-icon>
-                  <ion-icon *ngIf="element.status ==='low'" name="trending-down"></ion-icon>
-                </ion-chip>
-              </ng-container>
-            </div>
+            <ion-item *ngIf="suggestedCategories.length === 0">
+              <ion-label>¿No existe la categoría?</ion-label>
+              <ion-button [routerLink]="['/database/categories/create']" color="primary">
+                Crear
+              </ion-button>
+            </ion-item>
+          </ng-container>
+          <ng-template #elseCategory>
+            
+          </ng-template>
+          <!-- FIN DE AUTOCOMPLETADO CATEGORÍAS -->
+          
+          <ng-container class="ion-padding-top">
+            <ion-chip color="primary" mode="ios" outline="true" *ngFor="let category of selectedCategories; let i = index" (click)="removeCategoryAnalysis(i)">
+              <ion-label>{{category.name}}</ion-label>
+              <ion-icon name="close-circle"></ion-icon>
+            </ion-chip>
+          </ng-container>
+        
+        </ion-col>
+  
+        <ion-col size="6" class="ion-margin-bottom">
+  
+          <ion-item>
+            <ion-icon slot="start" name="pricetags" color="dark"></ion-icon>
+            <ion-label>Filtrar por etiquetas</ion-label>
+            <ion-input [(ngModel)]="queryLabel" (ionChange)="onLabelChange($event.detail.value)"></ion-input>
+          </ion-item>
+  
+          <!-- AUTOCOMPLETADO ETIQUETAS -->
+          <ng-container *ngIf="queryLabel; else elseLabel">
+            <ion-item *ngFor="let suggestedLabel of suggestedLabels" (click)="addLabelAnalysis(suggestedLabel)" style="cursor: pointer;" lines="full">
+              <ion-label>{{suggestedLabel.name}}</ion-label>
+            </ion-item>
+            <ion-item *ngIf="suggestedLabels.length === 0">
+              <ion-label>¿No existe la etiqueta?</ion-label>
+              <ion-button [routerLink]="['/database/labels/create']" color="primary">
+                Crear
+              </ion-button>
+            </ion-item>
+          </ng-container>
+          <ng-template #elseLabel>
+            
+          </ng-template>
+          <!-- FIN DE AUTOCOMPLETADO ETIQUETAS -->
+  
+          <ng-container class="ion-padding-top">
+            <ion-chip color="primary" mode="ios" outline="true" *ngFor="let label of selectedLabels; let i = index" (click)="removeLabelAnalysis(i)">
+              <ion-label>{{label.name}}</ion-label>
+              <ion-icon name="close-circle"></ion-icon>
+            </ion-chip>
+          </ng-container>
+  
+        </ion-col>
+
+        <!-- LISTADO DE ANÁLISIS CLÍNICOS SIN FILTRAR -->
+        <ion-col size="12" *ngIf="!isFiltered()">
+          <ng-container *ngFor="let study of analyticStudies" lines="full">
+            <ng-container *ngIf="study.format && study.format == 'actualpacs'; else elseTemplate">
+              <ion-item lines="none" color="primary">
+                <ion-label>
+                  <p *ngIf="study.testName"><b>{{study.testName}}</b></p>
+                  <p><i>Fecha de realización: </i> <b>{{study.date | date: 'dd/MM/yy'}}</b></p>
+                  <p *ngIf="study.accessionNumber"><i>Accession number: </i> <b>{{study.accessionNumber}}</b></p>
+                  <p>
+                    <span (click)="copyToClipboard(study.shortcode)" style="cursor: pointer;"><i>Shortcode: </i>
+                      <b>{{study.shortcode}} </b>
+                    </span>
+                    <span style="cursor: pointer;" *ngIf="study.format && study.format == 'actualpacs'"><i>Procedencia: </i>
+                      <b>Actualpacs</b>
+                    </span>
+                    <ion-icon name="copy" style="
+                        font-size: 18px;
+                        position: relative;
+                        top: 3px;
+                        cursor: pointer;
+                      ">
+                    </ion-icon> 
+                  </p>
+                </ion-label>
+                <ion-buttons slot="end">
+                  <ion-button (click)="deleteAnalyticStudy(study.id)" color="danger">
+                    <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Eliminar':'Delete'}}</ion-label>
+                    <ion-icon slot="start" name="trash"></ion-icon>
+                  </ion-button>
+                  <ion-button (click)="showEditAnalyticWithLimits(study.id)">
+                    <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Editar':'Edit'}}</ion-label>
+                    <ion-icon slot="start" name="create"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
+              </ion-item>
+              
+              <!-- VALORES POSITIVOS -->
+              <div style="border-bottom: 1px solid lightgrey; background: white;" class="ion-padding ion-margin-bottom">
+                  <ng-container *ngFor="let element of study.values">
+                    <ion-chip color="danger" mode="ios" outline="true" *ngIf="element.status && element.status !=='normal'" (click)="showAnalysisDescription(element.id, userData.isAdmin)">
+                      <ion-label>{{element.name}}
+                        <span *ngFor="let relatedDisease of element.relatedDiseases">({{relatedDisease}})</span>
+                        <span></span>
+                      </ion-label>
+                      <ion-icon *ngIf="element.status ==='high'" name="trending-up"></ion-icon>
+                      <ion-icon *ngIf="element.status ==='low'" name="trending-down"></ion-icon>
+                    </ion-chip>
+                  </ng-container>
+              </div>
+            </ng-container>
+
+            <ng-template #elseTemplate>
+              <!-- ITEM -->
+              <ion-item lines="none" color="primary">
+                <ion-label>
+                  <p *ngIf="study.testName"><b>{{study.testName}}</b></p>
+                  <p><i>Fecha de realización: </i> <b>{{study.date | date: 'dd/MM/yy'}}</b></p>
+                  <p *ngIf="study.accessionNumber"><i>Accession number: </i> <b>{{study.accessionNumber}}</b></p>
+                  <p>
+                    <span (click)="copyToClipboard(study.shortcode)" style="cursor: pointer;"><i>Shortcode: </i>
+                      <b>{{study.shortcode}} </b>
+                    </span>
+                    <ion-icon name="copy" style="
+                        font-size: 18px;
+                        position: relative;
+                        top: 3px;
+                        cursor: pointer;
+                      ">
+                    </ion-icon> 
+                  </p>
+                  <p *ngIf="study.filename"><i>Importado desde: </i> <b>{{study.filename}}</b></p>
+                </ion-label>
+                <ion-buttons slot="end">
+                  <ion-button (click)="deleteAnalyticStudy(study.id)" color="danger">
+                    <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Eliminar':'Delete'}}</ion-label>
+                    <ion-icon slot="start" name="trash"></ion-icon>
+                  </ion-button>
+                  <ion-button (click)="showEditAnalytic(study.id)">
+                    <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Editar':'Edit'}}</ion-label>
+                    <ion-icon slot="start" name="create"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
+              </ion-item>
+              
+              <!-- VALORES POSITIVOS -->
+              <div style="border-bottom: 1px solid lightgrey; background: white;" class="ion-padding ion-margin-bottom">
+                  <ng-container *ngFor="let element of study.values">
+                    <ng-container *ngIf="element.meaning; else elseTemplate">
+                      <ion-chip color="danger" mode="ios" outline="true" *ngIf="element.meaning && element.meaning =='positive'" (click)="showAnalysisDescription(element.id, userData.isAdmin)">
+                        <ion-label>{{element.name}}: {{element.value ? element.value : ''}} {{element.metricUnit ? element.metricUnit : element.ranges[0].UNIDAD}}
+                          <span *ngFor="let relatedDisease of element.relatedDiseases">({{relatedDisease}})</span>
+                          <span></span>
+                        </ion-label>
+                        <ion-icon *ngIf="element.status ==='high'" name="trending-up"></ion-icon>
+                        <ion-icon *ngIf="element.status ==='low'" name="trending-down"></ion-icon>
+                        <ion-icon *ngIf="element.status ==='normal'" name="code-download"></ion-icon>
+                      </ion-chip>
+                    </ng-container>
+                    <ng-template #elseTemplate>
+                      <ion-chip color="danger" mode="ios" outline="true" *ngIf="element.status && element.status !=='normal'" (click)="showAnalysisDescription(element.id, userData.isAdmin)">
+                        <ion-label>{{element.name}}: {{element.value ? element.value : ''}} {{element.metricUnit ? element.metricUnit : element.ranges[0].UNIDAD}}
+                          <span *ngFor="let relatedDisease of element.relatedDiseases">({{relatedDisease}})</span>
+                          <span></span>
+                        </ion-label>
+                        <ion-icon *ngIf="element.status ==='high'" name="trending-up"></ion-icon>
+                        <ion-icon *ngIf="element.status ==='low'" name="trending-down"></ion-icon>
+                      </ion-chip>
+                    </ng-template>
+                  
+                  </ng-container>
+              </div>
+            </ng-template>
+            
           </ng-container>
         </ion-col>
+
+        <!-- FIN DE LISTADO DE ANÁLISIS CLÍNICOS -->
+
+        <!-- LISTADO DE ANÁLISIS CLÍNICOS FILTRADOS -->
+
+        <ion-col size="12" *ngIf="isFiltered()">
+          <ng-container *ngFor="let study of analyticStudies" lines="full">
+            <ng-container *ngIf="study.format && study.format == 'actualpacs'; else elseTemplate">
+              <ion-item lines="none" color="primary">
+                <ion-label>
+                  <p *ngIf="study.testName"><b>{{study.testName}}</b></p>
+                  <p><i>Fecha de realización: </i> <b>{{study.date | date: 'dd/MM/yy'}}</b></p>
+                  <p *ngIf="study.accessionNumber"><i>Accession number: </i> <b>{{study.accessionNumber}}</b></p>
+                  <p>
+                    <span (click)="copyToClipboard(study.shortcode)" style="cursor: pointer;"><i>Shortcode: </i>
+                      <b>{{study.shortcode}} </b>
+                    </span>
+                    <span style="cursor: pointer;" *ngIf="study.format && study.format == 'actualpacs'"><i>Procedencia: </i>
+                      <b>Actualpacs</b>
+                    </span>
+                    <ion-icon name="copy" style="
+                        font-size: 18px;
+                        position: relative;
+                        top: 3px;
+                        cursor: pointer;
+                      ">
+                    </ion-icon> 
+                  </p>
+                </ion-label>
+                <ion-buttons slot="end">
+                  <ion-button (click)="deleteAnalyticStudy(study.id)" color="danger">
+                    <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Eliminar':'Delete'}}</ion-label>
+                    <ion-icon slot="start" name="trash"></ion-icon>
+                  </ion-button>
+                  <ion-button (click)="showEditAnalyticWithLimits(study.id)">
+                    <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Editar':'Edit'}}</ion-label>
+                    <ion-icon slot="start" name="create"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
+              </ion-item>
+              
+              <!-- VALORES POSITIVOS -->
+              <div style="border-bottom: 1px solid lightgrey; background: white;" class="ion-padding ion-margin-bottom">
+                  <ng-container *ngFor="let element of study.values">
+                    <ion-chip color="danger" mode="ios" outline="true" *ngIf="element.status && element.status !=='normal' && element.relevant" (click)="showAnalysisDescription(element.id, userData.isAdmin)">
+                      <ion-label>{{element.name}}
+                        <span *ngFor="let relatedDisease of element.relatedDiseases">({{relatedDisease}})</span>
+                        <span></span>
+                      </ion-label>
+                      <ion-icon *ngIf="element.status ==='high'" name="trending-up"></ion-icon>
+                      <ion-icon *ngIf="element.status ==='low'" name="trending-down"></ion-icon>
+                    </ion-chip>
+                  </ng-container>
+              </div>
+            </ng-container>
+
+            <ng-template #elseTemplate>
+              <!-- ITEM -->
+              <ion-item lines="none" color="primary">
+                <ion-label>
+                  <p *ngIf="study.testName"><b>{{study.testName}}</b></p>
+                  <p><i>Fecha de realización: </i> <b>{{study.date | date: 'dd/MM/yy'}}</b></p>
+                  <p *ngIf="study.accessionNumber"><i>Accession number: </i> <b>{{study.accessionNumber}}</b></p>
+                  <p>
+                    <span (click)="copyToClipboard(study.shortcode)" style="cursor: pointer;"><i>Shortcode: </i>
+                      <b>{{study.shortcode}} </b>
+                    </span>
+                    <ion-icon name="copy" style="
+                        font-size: 18px;
+                        position: relative;
+                        top: 3px;
+                        cursor: pointer;
+                      ">
+                    </ion-icon> 
+                  </p>
+                  <p *ngIf="study.filename"><i>Importado desde: </i> <b>{{study.filename}}</b></p>
+                </ion-label>
+                <ion-buttons slot="end">
+                  <ion-button (click)="deleteAnalyticStudy(study.id)" color="danger">
+                    <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Eliminar':'Delete'}}</ion-label>
+                    <ion-icon slot="start" name="trash"></ion-icon>
+                  </ion-button>
+                  <ion-button (click)="showEditAnalytic(study.id)">
+                    <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Editar':'Edit'}}</ion-label>
+                    <ion-icon slot="start" name="create"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
+              </ion-item>
+              
+              <!-- VALORES POSITIVOS -->
+              <div style="border-bottom: 1px solid lightgrey; background: white;" class="ion-padding ion-margin-bottom">
+                  <ng-container *ngFor="let element of study.values">
+                    <ng-container *ngIf="element.meaning; else elseTemplate">
+                      <ion-chip color="danger" mode="ios" outline="true" *ngIf="element.meaning && element.meaning =='positive' && element.relevant" (click)="showAnalysisDescription(element.id, userData.isAdmin)">
+                        <ion-label>{{element.name}}: {{element.value ? element.value : ''}} {{element.metricUnit ? element.metricUnit : element.ranges[0].UNIDAD}}
+                          <span *ngFor="let relatedDisease of element.relatedDiseases">({{relatedDisease}})</span>
+                          <span></span>
+                        </ion-label>
+                        <ion-icon *ngIf="element.status ==='high'" name="trending-up"></ion-icon>
+                        <ion-icon *ngIf="element.status ==='low'" name="trending-down"></ion-icon>
+                        <ion-icon *ngIf="element.status ==='normal'" name="code-download"></ion-icon>
+                      </ion-chip>
+                    </ng-container>
+                    <ng-template #elseTemplate>
+                      <ion-chip color="danger" mode="ios" outline="true" *ngIf="element.status && element.status !=='normal' && element.relevant" (click)="showAnalysisDescription(element.id, userData.isAdmin)">
+                        <ion-label>{{element.name}}: {{element.value ? element.value : ''}} {{element.metricUnit ? element.metricUnit : element.ranges[0].UNIDAD}}
+                          <span *ngFor="let relatedDisease of element.relatedDiseases">({{relatedDisease}})</span>
+                          <span></span>
+                        </ion-label>
+                        <ion-icon *ngIf="element.status ==='high'" name="trending-up"></ion-icon>
+                        <ion-icon *ngIf="element.status ==='low'" name="trending-down"></ion-icon>
+                      </ion-chip>
+                    </ng-template>
+                  
+                  </ng-container>
+              </div>
+            </ng-template>
+            
+          </ng-container>
+        </ion-col>
+        <!-- LISTADO FILTRADO -->
+
       </ng-container>
     </ion-row>
     <!-- FIN DE ESTUDIO ANALÍTICO -->
@@ -707,18 +1186,18 @@
          </ion-col>
          <ion-col size="4">
           <ion-item>
-            <ion-label position="floating">ID paciente ActualPacs</ion-label>
+            <ion-label position="floating">ID paciente</ion-label>
             <ion-input placeholder="Introduzca ID" [(ngModel)]="actualpacsId"></ion-input>
           </ion-item>
          </ion-col>
          <ion-col size="4">
           <ion-item>
             <ion-label position="floating">Centro referente</ion-label>
-            <ion-input [(ngModel)]="centroReferente"></ion-input>
+            <ion-input placeholder="Introduzca centro referente" [(ngModel)]="centroReferente"></ion-input>
           </ion-item>
          </ion-col>
         <ion-col size="12">
-          <ion-button (click)="showAddImage()" expand="full" color="secondary" disabled>
+          <ion-button (click)="showAddImage()" expand="full" color="secondary">
             <ion-icon slot="start" name="add"></ion-icon>
             <ion-label *ngIf="lang.isSpanish()">Crear prueba de imagen</ion-label>
             <ion-label *ngIf="!lang.isSpanish()">Create image test</ion-label>
@@ -793,11 +1272,15 @@
   
         </ion-col>
 
+        <!-- LISTADO DE PRUEBAS DE IMAGEN DEL SUJETO -->
         <ion-col size="12" *ngFor="let imageTest of imageTests ; let i = index" class="ion-padding-top">
           <ion-item color="primary" lines="none">
             <ion-label class="ion-text-wrap">
               <p style="font-size: 18px; margin-bottom: 0.5rem;">
                 {{ imageTest.name }}
+                <ion-icon color="success" *ngIf="imageTest.format" name="checkmark-circle"></ion-icon>
+                <ion-icon color="danger" *ngIf="!imageTest.format" name="close-circle"></ion-icon>
+                <ion-icon color="danger" *ngIf="imageTest.isReproductionTest" name="male-female"></ion-icon>
               </p>
               <p>
                 Fecha de realización: {{ imageTest.date | date: 'dd/MM/yy' }}
@@ -831,7 +1314,7 @@
                 <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Eliminar':'Delete'}}</ion-label>
                 <ion-icon slot="start" name="trash"></ion-icon>
               </ion-button>
-              <ion-button (click)="openQuibim(i)">
+              <ion-button (click)="openQuibim(imageTest.id)">
                 <ion-img src="assets/images/quibim-logo.png" style="max-width: 16px; margin-right: 0.5rem;"></ion-img>
                 <ion-label class="ion-hide-sm-down">Quibim</ion-label>
               </ion-button>
@@ -850,8 +1333,8 @@
             <ng-container *ngFor="let element of imageTest.values">
               <ion-chip color="danger" mode="ios" outline="true"
                 *ngIf="element.status && element.status === 'positive'">
-                <ion-label>{{element.name}}: {{element.value}}{{element.metricUnit}}
-                  <span *ngFor="let relatedDisease of element.relatedDiseases">({{relatedDisease}})</span>
+                <ion-label>{{element.name}}: 
+                  <span>{{element.value}}</span>
                 </ion-label>
               </ion-chip>
             </ng-container>

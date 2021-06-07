@@ -16,6 +16,13 @@
             Crear informe
           </ion-button>
         </ion-item>
+        <ion-item lines="full" class="ion-margin-vertical">
+          <ion-label>Totalidad de la prueba (únicamente campos rellenos)</ion-label>
+          <ion-button (click)="createFullReportWithoutEmptyFields()">
+            <ion-icon slot="start" name="document"></ion-icon>
+            Crear informe
+          </ion-button>
+        </ion-item>
         <ion-item lines="full" class="ion-margin-bottom">
           <ion-label>Biomarcadores positivos</ion-label>
           <ion-button (click)="createPositivesReport()">

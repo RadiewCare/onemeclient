@@ -173,7 +173,7 @@ export class EditPage implements OnInit {
   onCategoryChange(input: string) {
     if (input.length > 0) {
       this.suggestedCategories = this.categories.filter(cat =>
-        cat.name.trim().toLowerCase().includes(input.trim().toLowerCase())
+        this.removeAccents(cat.name.trim().toLowerCase()).includes(this.removeAccents(input.trim().toLowerCase()))
       );
     } else {
       this.suggestedCategories = null;
@@ -183,11 +183,15 @@ export class EditPage implements OnInit {
   onLabelChange(input: string) {
     if (input.length > 0) {
       this.suggestedLabels = this.labels.filter(lab =>
-        lab.name.trim().toLowerCase().includes(input.trim().toLowerCase())
+        this.removeAccents(lab.name.trim().toLowerCase()).includes(this.removeAccents(input.trim().toLowerCase()))
       );
     } else {
       this.suggestedLabels = null;
     }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   async addCategory(category: any) {

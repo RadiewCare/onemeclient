@@ -121,6 +121,12 @@
             [value]="defaultOption" cancelText="Cancelar" [(ngModel)]="defaultOption">
             <ion-select-option *ngFor="let option of options" [value]="option">{{option}}</ion-select-option>
           </ion-select>
+          <ion-buttons slot="end">
+            <ion-button (click)="cleanDefaultOption()" color="danger">
+              <ion-icon slot="start" name="trash"></ion-icon>
+              Eliminar
+            </ion-button>
+          </ion-buttons>
         </ion-item>
       </ion-col>
       <ion-col size="12" *ngIf="type === 'unit'">
@@ -139,11 +145,11 @@
         </ion-item>
         <ion-item lines="none">
           <ion-label>Incluir imágenes ilustrativas</ion-label>
-          <ion-checkbox slot="start" [(ngModel)]="areIllustrated"></ion-checkbox>
+          <ion-checkbox slot="start" [(ngModel)]="isIllustrated"></ion-checkbox>
         </ion-item>
       </ion-col>
 
-      <ng-container *ngIf="areIllustrated">
+      <ng-container *ngIf="isIllustrated">
         <ion-col size="12 "size-md="4" *ngFor="let option of options; let i=index">
 
           <ion-card class="ion-no-margin">

@@ -5,13 +5,14 @@ import { Observable, Subscription, of } from "rxjs";
 import { ModalController } from "@ionic/angular";
 import { ToastService } from "src/app/services/toast.service";
 import { ImageStudiesService } from "src/app/services/image-studies.service";
-import { GalleryPage } from "../gallery/gallery.page";
-import { AddImagePage } from "../add-image/add-image.page";
 import { SubjectsService } from "src/app/services/subjects.service";
-import { DomSanitizer } from '@angular/platform-browser';
 import { ImageTestsElementsService } from 'src/app/services/image-tests-elements.service';
 import * as moment from "moment";
 import { AngularFirestore } from '@angular/fire/firestore';
+import { SubjectImageTestsService } from "src/app/services/subject-image-tests.service";
+import { GalleryPage } from "../gallery/gallery.page";
+import { AddImagePage } from "../add-image/add-image.page";
+import { AddImageCreatePage } from "../add-image-create/add-image-create.page";
 
 @Component({
   selector: "app-add-image-study",
@@ -26,17 +27,19 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
   currentImageTest: any;
   currentImageTestData: any;
   date: string;
-  values: any;
+  values = [];
   counter = 0;
 
   isCustom = false;
 
-  userSub: Subscription;
-  user: any;
+  subjectSub: Subscription;
+  subject: any;
 
   json: any;
 
   imageTestsElements = [];
+
+  testStatus: string = "negative";
 
   customTestName: string;
 
@@ -155,6 +158,8 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
 
   downloadJsonHref: any;
 
+  accessionNumber: string = "";
+
   private setting = {
     element: {
       dynamicDownload: null as HTMLElement
@@ -170,219 +175,264 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
     private imageTestsService: ImageTestsService,
     private subjectsService: SubjectsService,
     private modalController: ModalController,
-    private toastService: ToastService, private sanitizer: DomSanitizer,
+    private toastService: ToastService,
     private imageTestsElementsService: ImageTestsElementsService,
-    private db: AngularFirestore
+    private db: AngularFirestore,
+    private subjectImageTestsService: SubjectImageTestsService
   ) { }
 
   ngOnInit() {
-    this.userSub = this.subjectsService
-      .getSubject(this.id)
-      .subscribe((data) => {
-        this.user = data;
-      });
+    this.getSubject();
     this.getImageTests();
     this.getImageTestElements();
   }
 
+  /**
+   * Coger el sujeto
+   */
+  getSubject() {
+    this.subjectSub = this.subjectsService
+      .getSubject(this.id)
+      .subscribe((data) => {
+        this.subject = data;
+        console.log(this.subject, "Sujeto");
+      });
+  }
+
+  /**
+   * Recoge la totalidad de las pruebas de imagen
+   */
   getImageTests() {
     this.imageTests$ = this.imageTestsService.getImageTests();
     this.imageTestsSub = this.imageTests$.subscribe((data) => {
-      console.log("imageTests", data);
       this.imageTests = data;
+      console.log(this.imageTests, "Pruebas de imagen");
     });
   }
 
-  getTestsElements() {
-    console.log(this.currentImageTestData);
-  }
-
+  /**
+   * Recoge la totalidad de los elementos de pruebas de imagen
+   */
   async getImageTestElements() {
     this.imageTestsElements = (await this.imageTestsElementsService.getImageTestElementsData()).docs.map(element => element = element.data());
-    console.log(this.imageTestsElements);
+    console.log(this.imageTestsElements, "Elementos de pruebas de imagen");
   }
 
+  /**
+   * Recoge los datos de la prueba seleccionada 
+  */
   async getCurrentImageTest(imageTest: any) {
-    console.log(imageTest);
+    console.log(imageTest, "Prueba seleccionada");
     this.currentImageTestData = imageTest;
 
     const resultElements = []
     for await (const biomarker of this.currentImageTestData.elements) {
       const result = this.imageTestsElements.filter(element => element.id === biomarker.id);
-      biomarker.data = result[0];
-      biomarker.name = result[0].name;
-    }
-
-    console.log(this.currentImageTestData.elements);
-
-    if (this.currentImageTestData.elements) {
-      this.values = this.currentImageTestData.elements;
-      this.values.forEach((element) => {
-        element.value = null;
-        element.status = null;
-      });
-    }
-    /*
-    this.imageTestsService.getImageTestData(imageTest).then((data) => {
-      this.currentImageTestData = data.data();
-      console.log(this.currentImageTestData);
-
-      
-      if (this.currentImageTestData.elements) {
-        this.values = this.currentImageTestData.elements;
-        this.values.forEach((element) => {
-          element.value = null;
-          element.status = null;
-        });
-        console.log("currentImageTestData", this.currentImageTestData);
+      if (result.length > 0) {
+        // Se incluyen dinámicamente los datos de los elementos y el nombre de la prueba desde la base de datos para que siempre cargue lo más actualizado
+        biomarker.data = result[0];
+        biomarker.name = result[0].name;
       }
-    });*/
+    }
+
+    console.log(this.currentImageTestData.elements, "Elementos de la prueba seleccionada");
+
+    // Se inicializan los values y status
+    this.initValues();
   }
 
-  editImageField(value: any, index: number) {
+  /** 
+   * Inicializa los values del elemento
+   */
+  async initValues() {
+    if (this.currentImageTestData.elements) {
+      let counter = 0;
+      for await (const testElement of this.currentImageTestData.elements) {
+        this.values.push({ id: testElement.id, value: testElement.data.defaultOption || null, status: null })
+        if (testElement.data.defaultOption) {
+          this.editImageField([testElement.data.defaultOption], counter)
+        }
+        counter = counter + 1;
+      }
+      console.log(this.values, "Inicialización de values de los elementos");
+    }
+  }
+
+  onSearch(event: any) {
+    event.component.items = this.imageTests;
+    if (event.text.length > 0) {
+      event.component.items = event.component.items.filter(e => this.removeAccents(e.name.toLowerCase()).includes(this.removeAccents(event.text.toLowerCase())));
+    }
+
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
+  /**
+   * Edita el valor de un elemento de la prueba
+   * @param value 
+   * @param index 
+   */
+  async editImageField(value: any, index: number) {
+    console.log(value, index, this.currentImageTestData.elements[index].data.positiveOptions);
     this.values[index].value = value;
+
     if (
-      value === this.values[index].trueInput ||
-      (this.values[index].positiveOptions &&
-        this.values[index].positiveOptions.includes(value)) || this.values[index].positiveOptions.some((element) => value.includes(element))
+      value === this.currentImageTestData.elements[index].data.trueInput ||
+      this.currentImageTestData.elements[index].data.positiveOptions.some(element => {
+        let found = false;
+        value.forEach(value => {
+          if (value === element) {
+            found = true;
+          }
+        });
+        return found;
+      }) ||
+      this.currentImageTestData.elements[index].data.type === "unit" ||
+      this.currentImageTestData.elements[index].data.type === "text" ||
+      this.currentImageTestData.elements[index].data.type === "number" ||
+      this.currentImageTestData.elements[index].data.type === "textarea"
     ) {
       this.values[index].status = "positive";
     } else {
       this.values[index].status = "negative";
     }
-    this.saveWithoutExit();
+
+    if (!value || value.length === 0) {
+      this.values[index].status = "negative";
+    }
+
+    // Evaluar si es positiva la prueba en general
+    for await (const value of this.values) {
+      if (value.status === "positive") {
+        this.testStatus = "positive"
+      }
+    }
+
+    console.log(this.testStatus);
+
   }
 
+  /**
+   * Comprueba que son válidos los datos antes de guardarlos
+   */
   isValid() {
-    return true;
-  }
+    if (this.date === undefined || this.date === null) {
+      console.log(this.date, "fecha invalida");
 
-  saveWithoutExit() {
-    if (this.isValid()) {
-      const positive = this.values.some(
-        (element) => element.status === "positive"
-      );
-      if (this.counter === 0) {
-        this.counter++;
-        this.imageStudiesService
-          .addImageTest(this.id, {
-            values: this.values,
-            date: this.date,
-            name: this.currentImageTestData.name,
-            imageTestId: this.currentImageTestData.id,
-            shortcode:
-              "[IMA" + Math.floor(Math.random() * 1000 + 1).toString(10) + "]",
-            status: positive ? "positive" : "negative",
-          })
-          .then(async () => {
-            this.toastService.show(
-              "success",
-              "Prueba de imagen creada con éxito"
-            );
-          })
-          .catch(async (error) => {
-            this.toastService.show(
-              "danger",
-              "Ha habido algún problema con la creación de la prueba de imagen: " +
-              error
-            );
-          });
-      } else {
-        this.user.imageTests[
-          this.user.imageTests.length - 1
-        ].values = this.values;
-        this.subjectsService
-          .updateSubject(this.id, {
-            imageTests: this.user.imageTests,
-          })
-          .then(async () => {
-            this.toastService.show(
-              "success",
-              "Prueba de imagen editada con éxito"
-            );
-          })
-          .catch(async (error) => {
-            this.toastService.show(
-              "danger",
-              "Ha habido algún problema con la edición de la prueba de imagen: " +
-              error
-            );
-          });
-      }
+      return false;
+    }
+    else {
+      console.log(this.date, "fecha valida");
+      return true;
     }
   }
 
+  /**
+   * Guarda la prueba
+   */
   async save() {
-    if (
-      Object.keys(this.endometriosisData).length > 0 &&
-      this.endometriosisData.constructor === Object
-    ) {
-      this.saveEndometriosis();
-    } else if (this.isCustom) {
+    if (this.isValid()) {
+      if (
+        Object.keys(this.endometriosisData).length > 0 &&
+        this.endometriosisData.constructor === Object
+      ) {
+        this.saveEndometriosis();
+      } else if (this.isCustom) {
 
-      const data = {
-        name: this.customTestName,
-        isCustom: true,
-        owner: this.user.mainDoctor,
-        values: this.currentImageTestData,
-        date: this.date,
-        createdAt: moment().format(),
+        // TODO: REHACER ESTA PARTE
+        const data = {
+          name: this.customTestName,
+          isCustom: true,
+          owner: this.subject.mainDoctor,
+          values: this.currentImageTestData,
+          createdAt: moment().format(),
+        }
+
+        this.db
+          .collection("imageTests")
+          .add(data)
+          .then((doc) => {
+            this.db.doc(`imageTests/${doc.id}`).update({ id: doc.id }).then(() => {
+
+              this.subjectImageTestsService.create({
+                date: this.date,
+                subjectId: this.subject.id,
+                imageTestId: doc.id,
+                values: this.values,
+                shortcode: "[IMA" + Math.floor(Math.random() * 1000 + 1).toString(10) + "]",
+                quibimData: null,
+                accessionNumber: this.accessionNumber || null,
+                images: [],
+                format: "new"
+              });
+
+              this.toastService.show("success", "Prueba de imagen creada con éxito");
+            }).catch(() => {
+              this.toastService.show("danger", "Error al crear la prueba de imagen");
+            });
+          });
+      } else if (!this.isCustom) {
+
+        // Eliminar los elementos por defecto si tiene otras opciones seleccionadas
+        let indice = 0;
+        for await (const item of this.values) {
+          if (item.value && item.value.length > 1) {
+            console.log(item.value, "más de uno");
+            console.log(this.currentImageTestData.elements[indice].data.defaultOption);
+
+            const index = item.value.indexOf(this.currentImageTestData.elements[indice].data.defaultOption)
+            console.log(index);
+
+            if (index > -1) {
+              item.value.splice(index, 1);
+            }
+          }
+          indice = indice + 1;
+        }
+
+        const data = {
+          date: this.date,
+          subjectId: this.subject.id,
+          imageTestId: this.currentImageTest.id,
+          values: this.values,
+          status: this.testStatus,
+          shortcode: "[IMA" + Math.floor(Math.random() * 1000 + 1).toString(10) + "]",
+          quibimData: null,
+          accessionNumber: this.accessionNumber || null,
+          images: [],
+          format: "new"
+        }
+        console.log(data);
+
+
+
+        this.subjectImageTestsService.create(data).then(() => {
+          this.toastService.show("success", "Prueba de imagen creada con éxito");
+        }).catch(error => {
+          this.toastService.show("danger", "Error al crear la prueba de imagen: " + error);
+        });
       }
 
-      this.db
-        .collection("imageTests")
-        .add(data)
-        .then((doc) => {
-          this.db.doc(`imageTests/${doc.id}`).update({ id: doc.id }).then(() => {
-            this.user.imageTests.push({
-              ...data,
-              imageTestId: doc.id,
-              shortcode:
-                "[IMA" + Math.floor(Math.random() * 1000 + 1).toString(10) + "]",
-            });
-
-            this.subjectsService.updateSubject(this.user.id, {
-              imageTests: this.user.imageTests,
-            })
-
-            this.toastService.show("success", "Prueba de imagen creada con éxito");
-          }).catch(() => {
-            this.toastService.show("danger", "Error al crear la prueba de imagen");
-          });
-        });
+      this.dismissModal();
+    } else {
+      this.toastService.show(
+        "danger",
+        "Formulario no válido"
+      );
     }
-
-    this.dismissModal();
   }
 
-  async showGallery(field: number, test: string) {
-    const modal = await this.modalController.create({
-      component: GalleryPage,
-      componentProps: {
-        id: this.id,
-        field: field,
-        test: test,
-      },
-      cssClass: "my-custom-modal-css",
-    });
-    return await modal.present();
-  }
-
-  async addImage(field: number, test: string) {
-    const modal = await this.modalController.create({
-      component: AddImagePage,
-      componentProps: {
-        id: this.id,
-        field: field,
-        test: test,
-      },
-    });
-    return await modal.present();
-  }
-
+  /**
+   * Quita ventana modal
+   */
   async dismissModal(): Promise<any> {
     return await this.modalController.dismiss();
   }
+
+  // FUNCIONES PARA ENDOMETRIOSIS
 
   addLesion(key: any, value: any) {
     this.report[key] = value;
@@ -988,10 +1038,34 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
 
   }
 
+  async addImage(imageTestId: string, biomarkerId: string, field: number) {
+    const modal = await this.modalController.create({
+      component: AddImageCreatePage,
+      componentProps: {
+        imageTestId: imageTestId,
+        biomarkerId: biomarkerId,
+        field: field,
+        value: this.values[field].value
+      }
+    });
+    return await modal.present();
+  }
+
+  async showGallery(id: string) {
+    const modal = await this.modalController.create({
+      component: GalleryPage,
+      componentProps: {
+        id: id,
+      },
+      cssClass: "my-custom-modal-css"
+    });
+    return await modal.present();
+  }
+
   dynamicDownloadJson() {
     this.fakeValidateUserData().subscribe((res) => {
       this.dyanmicDownloadByHtmlTag({
-        fileName: `endometriosis-${this.user.identifier}-${this.date}.json`,
+        fileName: `endometriosis-${this.subject.identifier}-${this.date}.json`,
         text: JSON.stringify(res)
       });
     });
@@ -1016,6 +1090,9 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.imageTestsSub) {
       this.imageTestsSub.unsubscribe();
+    }
+    if (this.subjectSub) {
+      this.subjectSub.unsubscribe();
     }
   }
 }

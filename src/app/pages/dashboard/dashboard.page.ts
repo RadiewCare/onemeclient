@@ -36,7 +36,7 @@ export class DashboardPage implements OnInit {
     private mutationsService: MutationsService,
     private drugElementsService: DrugElementsService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.hideMenu();
@@ -46,10 +46,12 @@ export class DashboardPage implements OnInit {
     this.userSub = this.authService.user$.subscribe((user) => {
       this.userData = user;
       console.log(this.userData);
-      
+
       this.subjectsService
         .getSubjectsByDoctor(this.userData.id)
         .then((data) => {
+          console.log(data);
+
           this.numberOfOwnSubjects = data.length;
         });
 

@@ -14,6 +14,10 @@ const routes: Routes = [
       import("./create/create.module").then((m) => m.CreatePageModule)
   },
   {
+    path: 'create/:id',
+    loadChildren: () => import('./create/create.module').then(m => m.CreatePageModule)
+  },
+  {
     path: "edit/:id",
     loadChildren: () =>
       import("./edit/edit.module").then((m) => m.EditPageModule)
@@ -24,4 +28,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class AnalysisElementsPageRoutingModule {}
+export class AnalysisElementsPageRoutingModule { }

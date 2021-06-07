@@ -23,6 +23,11 @@ export class CreateReportPage implements OnInit {
     this.reportsService.exportImageTest(this.imageTest, this.subject, this.doctor);
   }
 
+  createFullReportWithoutEmptyFields() {
+    this.imageTest.values = this.imageTest.values.filter(element => element.value);
+    this.reportsService.exportImageTest(this.imageTest, this.subject, this.doctor);
+  }
+
   createPositivesReport() {
     this.imageTest.values = this.imageTest.values.filter(element => element.status === "positive");
     this.reportsService.exportImageTest(this.imageTest, this.subject, this.doctor);

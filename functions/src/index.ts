@@ -16,17 +16,41 @@ const createSubjectDataValidation = {
       .required(),
     mainDoctor: Joi.string()
       .required(),
+    history: Joi.object({
+      centroReferente: Joi.string(),
+      inicialesDelSujeto: Joi.string(),
+      actualpacsId: Joi.string(),
+      genre: Joi.string(),
+      birthDate: Joi.string(),
+      age: Joi.number(),
+      otherBackground: Joi.string(),
+      diseases: Joi.array().items(Joi.object({
+        id: Joi.string(),
+        name: Joi.string()
+      })),
+      signsAndSymptoms: Joi.array().items(Joi.object({
+        accessionNumber: Joi.number(),
+        date: Joi.string(),
+        id: Joi.string(),
+        name: Joi.string()
+      }))
+    })
   }),
 }
 
-/*const deleteSubjectDataValidation = {
-  body: Joi.object({
-    id: Joi.string()
-      .required(),
-    mainDoctor: Joi.string()
-      .required(),
-  }),
-}*/
+/*
+Para poner en createSubjectDataValidation
+  signsAndSymptoms: Joi.array().items(Joi.object({
+    accessionNumber: Joi.number(),
+    date: Joi.string(),
+    id: Joi.string(),
+    name: Joi.string()
+  })),
+  diseases: Joi.array().items(Joi.object({
+    id: Joi.string(),
+    name: Joi.string()
+  }))
+*/
 
 /**
  * MIDDLEWARE DE AUTORIZACIÓN
@@ -38,9 +62,12 @@ const auth = (
 ) => {
   const actualpacsKey = "95149134-42ca-4b19-8c32-416eebef2dd0";
   const quibimKey = "cbf11d2f-9358-46bd-afd6-f6e893014731";
+  // const oddityKey = "5c71da19-1573-4e6d-adb4-59d3c91c8592";
 
-  if ((request.headers.authorization !== quibimKey) &&
-    (request.headers.authorization !== actualpacsKey)) {
+  if (
+    (request.headers.authorization !== quibimKey) &&
+    (request.headers.authorization !== actualpacsKey)
+  ) {
     response.status(400).send("Operación no autorizada");
   }
   next();
@@ -61,95 +88,34 @@ app.use(function (error: any, request: express.Request, response: express.Respon
 })
 
 /**
- * API
+ * API ONE-ME
  */
 
 /**
-* LISTA LOS SUJETOS DE UN DOCTOR DADO POR ID
-*/
-app.post("/listSubjects", (request, response) => {
-  console.log(request);
-
-  admin.firestore().collection(`subjects`).where('doctorId', '==', request.body.doctorId).get()
-    .then((subjects) => {
-      response.send(subjects);
-    }).catch(error => {
-      response.send(error)
-    })
-});
-
-/**
- * CREA UN SUJETO EN UN DOCTOR DADO POR ID
+ * SUBJECTS
  */
-/*app.post("/createSubject", (request, response) => {
-  console.log(request);
 
-  admin.firestore().collection(`subjects`).where('doctorId', '==', request.body.doctorId).get()
-    .then(() => {
-      admin.firestore().collection(`subjects`).add(request.body)
-        .then((data) => {
-          response.send(data);
-        }).catch(error => {
-          response.send(error)
-        })
-    }).catch((error) => {
-      response.send(error)
-    })
-});*/
+app.get("/getSubjectById", (request, response) => { // OK
+  console.log(request.query);
 
-/**
- * AÑADE DATOS DE QUIBIM EN UNA PRUEBA DE IMAGEN
- */
-app.post("/addQuibimDataToImageTest", (request, response) => {
-  console.log(request);
-  let subjectData;
+  admin.firestore().doc(`subjects/${request.query.id}`).get()
+    .then((data: any) => {
+      const subject = data.data();
 
-  admin.firestore().doc(`subjects/${request.body.subjectId}`).get()
-    .then((subject): any => {
-      subjectData = subject.data()
-      if (subjectData !== undefined) {
-        // Copiar los test y añadir el quibimdata en la posición adecuada
-
-        // Actualizar el sujeto con los nuevos datos
-        admin.firestore().doc(`subjects/${request.body.subjectId}`).update(subjectData.imageTests)
-          .then((data) => {
-            response.send(data)
-          }).catch((error) => {
-            response.send(error);
-          })
-      } else {
-        response.send({ status: "error", message: "El sujeto no existe" });
+      const result = {
+        "id": subject.id,
+        "identifier": subject.identifier,
+        "history": subject.history || null,
+        "createdAt": subject.createdAt || null,
+        "updatedAt": subject.updatedAt || null
       }
+      response.send({ "subject": result });
     }).catch(error => {
-      response.send(error);
-    });
-});
-
-/**
- * 
- * 1 
- *  a) El radiólogo pulsa el botón de One-Me 
- *  b) Se le muestra la totalidad de las pruebas de imagen para seleccionar
- *  c) Elige una y recoge los biomarcadores de la prueba
- *  d) El radiólogo lo rellena en Actualpacs
- * 2 
- *  a) La guarda en su sistema y en One-Me
- */
-
-app.get("/getImageTests", (request, response) => {
-  admin.firestore().collection(`imageTests`).get()
-    .then((data) => {
-      const result: FirebaseFirestore.DocumentData[] = [];
-      data.docs.forEach(element => {
-        result.push(element.data());
-      })
-      response.send({ "imageTests": result });
-    }).catch(error => {
-      response.status(500).send(error)
+      response.status(500).send(error);
     })
 });
 
-app.get("/getSubjectsFromDoctorId", (request, response) => {
+app.get("/getSubjectsByDoctorId", (request, response) => { // OK
   console.log(request.query);
 
   admin.firestore().collection(`subjects`).where('mainDoctor', '==', request.query.doctorId).get()
@@ -162,9 +128,6 @@ app.get("/getSubjectsFromDoctorId", (request, response) => {
         return {
           "id": element.id,
           "identifier": element.identifier,
-          "imageTests": element.imageTests || null,
-          "history": element.history || null,
-          "hasImageAnalysis": element.hasImageAnalysis || null,
           "createdAt": element.createdAt || null,
           "updatedAt": element.updatedAt || null
         }
@@ -175,51 +138,34 @@ app.get("/getSubjectsFromDoctorId", (request, response) => {
     })
 });
 
-app.get("/getSubject", (request, response) => {
-  console.log(request.query);
-
-  admin.firestore().doc(`subjects/${request.query.subjectId}`).get()
-    .then((data: any) => {
-      let subject = data.data();
-
-      const result = {
-        "id": subject.id,
-        "identifier": subject.identifier,
-        "imageTests": subject.imageTests || null,
-        "history": subject.history || null,
-        "hasImageAnalysis": subject.hasImageAnalysis || null,
-        "createdAt": subject.createdAt || null,
-        "updatedAt": subject.updatedAt || null
-      }
-      response.send({ "subject": result });
-    }).catch(error => {
-      response.status(500).send(error);
-    })
-});
+app.post("/createSubject", validate(createSubjectDataValidation, {}, {}), (request, response) => { // OK
+  console.log(request.body.mainDoctor, "ID del doctor");
 
 
-app.post("/createSubject", validate(createSubjectDataValidation, {}, {}), (request, response) => {
-  console.log(request.body);
+  admin.firestore().collection(`doctors`).where('id', '==', request.body.mainDoctor).get().then(async (doctores) => {
+    console.log("válido");
 
-  admin.firestore().collection(`subjects`).where('mainDoctor', '==', request.body.mainDoctor).get().then(async (data) => {
-    const subjects = data.docs;
+    const doctors = doctores.docs;
 
-    if (subjects.length > 0) {
+    if (doctors.length > 0) {
       let found = false;
-
       let subjectId;
 
-      for await (const subject of subjects) {
-        if (subject.data().identifier.trim().toLowerCase() === request.body.identifier.trim().toLowerCase()) {
-          found = true;
-          subjectId = subject.data().id;
+      await admin.firestore().collection(`subjects`).where('mainDoctor', '==', request.body.mainDoctor).get().then(async (sujetos) => {
+        const subjects = sujetos.docs;
+        for await (const subject of subjects) {
+          if (subject.data().identifier.trim().toLowerCase() === request.body.identifier.trim().toLowerCase()) {
+            found = true;
+            subjectId = subject.data().id;
+          }
         }
-      }
+      });
 
       if (found) {
         response.status(500).send({ message: "El identificador del sujeto ya está en uso en el doctor dado", id: subjectId })
       } else {
         request.body.createdAt = moment().format();
+        request.body.hasImageAnalysis = true;
         admin.firestore()
           .collection("subjects")
           .add(request.body)
@@ -239,18 +185,18 @@ app.post("/createSubject", validate(createSubjectDataValidation, {}, {}), (reque
       response.status(500).send({ error: "El id del doctor no existe" })
     }
   }).catch(() => {
-    response.status(500).send({ error: "Error al consultar los sujetos" })
+    response.status(500).send({ error: "Error al consultar los doctores" })
   })
 });
 
-app.put("/editSubject", (request, response) => {
+app.put("/editSubject", (request, response) => { // OK
   console.log(request.body);
 
   admin.firestore().collection(`subjects`).where("mainDoctor", "==", request.body.mainDoctor).get().then((data) => {
     if (data.docs.length > 0) {
       admin.firestore().doc(`subjects/${request.body.id}`).update(request.body)
         .then((subject) => {
-          response.send({ "update": "ok" });
+          response.send({ "update": "ok", "updatedData": request.body });
         }).catch((error) => {
           response.status(500).send({ error: "No se ha podido actualizar el sujeto" })
         });
@@ -262,7 +208,7 @@ app.put("/editSubject", (request, response) => {
   })
 });
 
-app.delete("/deleteSubject", (request, response) => {
+app.delete("/deleteSubject", (request, response) => { // OK
   console.log(request.query);
 
   admin.firestore().collection(`subjects`).where("id", "==", request.query.id).get().then((data) => {
@@ -281,69 +227,335 @@ app.delete("/deleteSubject", (request, response) => {
   })
 });
 
-// Revisar
-app.post("/addImageTestToSubject", (request, response) => {
-  const imageTest = request.body.imageTest;
+/**
+ * IMAGETESTS
+ */
 
-  // TO DO: Comprobar validez de los datos introducidos
-  if (imageTest.imageTestId &&
-    imageTest.name &&
-    imageTest.values &&
-    imageTest.accessionNumber &&
-    imageTest.source) {
+app.get("/getImageTests", (request, response) => { // OK
+  admin.firestore().collection(`imageTests`).get()
+    .then((data) => {
+      const result: FirebaseFirestore.DocumentData[] = [];
+      data.docs.forEach(element => {
+        result.push(element.data());
+      })
+      response.send({ "imageTests": result });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
 
-    // Realizar acciones
-    admin.firestore().doc(`subjects/${request.body.subjectId}`).get()
-      .then((data) => {
-        const subjectData = data.data();
-        let imageTests = [];
+app.get("/getImageTestById", (request, response) => { // OK
+  admin.firestore().doc(`imageTests/${request.query.id}`).get()
+    .then((data: any) => {
+      const imageTest = data.data();
+      response.send({ "imageTest": imageTest });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
 
-        if (subjectData !== undefined) {
-          if (subjectData.hasImageAnalysis) {
-            imageTests = subjectData.imageTests
-          }
+app.get("/getImageTestElements", (request, response) => { // OK
+  admin.firestore().collection(`imageTestElements`).get()
+    .then((data) => {
+      const result: FirebaseFirestore.DocumentData[] = [];
+      data.docs.forEach(element => {
+        result.push(element.data());
+      })
+      response.send({ "imageTestElements": result });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
 
-          // TO DO: Calcular status global, status de los values, shortcode y dates.
+app.get("/getImageTestElementById", (request, response) => { // OK
+  admin.firestore().doc(`imageTestElements/${request.query.id}`).get()
+    .then((data) => {
+      const imageTestElement = data.data();
+      response.send({ "imageTestElement": imageTestElement });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
 
-          // Date
-          imageTest.date = "";
+/**
+ * SUBJECTIMAGETESTS
+ */
 
-          // Shortcode
-          imageTest.shortcode = "";
-
-          imageTest.status = "negative"
-
-          // Status de los values
-
-          for (const index of imageTest.values) {
-            let positivo = false;
-
-            // Para opciones
-            if (imageTest.type === "multiple" && imageTest.positiveOptions.includes(imageTest.values[index].value)) {
-              positivo = true;
-            }
-
-            // Para rangos
-
-            // Para booleans
-
-            if (positivo) {
-              imageTest.status = "positive" // Global
-            }
-          }
-
-          imageTests.push(imageTest);
-
-          admin.firestore().doc(`subjects/${request.body.subjectId}`).update({ imageTests: imageTests })
-            .then(() => { response.send({ "imageTest": imageTest }) })
-            .catch((error) => { response.status(500).send(error) });
+app.get("/getSubjectImageTestById", (request, response) => {
+  admin.firestore().collection(`subjectImageTests`).where('id', '==', request.query.id).get()
+    .then((data) => {
+      let result: FirebaseFirestore.DocumentData[] = [];
+      data.docs.forEach(element => {
+        result.push(element.data());
+      })
+      result = result.map(element => {
+        return {
+          "id": element.id,
+          "subjectId": element.subjectId,
+          "imageTestId": element.imageTestId,
+          "biomarkers": element.biomarkers || null,
+          "date": element.date || null,
+          "status": element.status || null,
+          "quibimData ": element.quibimData || null,
+          "images": element.images || null,
+          "accessionNumber": element.accessionNumber || null,
+          "values": element.values || null,
         }
       })
-      .catch((error) => { response.status(500).send(error) });
-  }
+      response.send({ "subjectImageTest": result });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
+
+app.get("/getSubjectImageTestsBySubjectId", (request, response) => {
+  admin.firestore().collection(`subjectImageTests`).where('subjectId', '==', request.query.subjectId).get()
+    .then((data) => {
+      let result: FirebaseFirestore.DocumentData[] = [];
+      data.docs.forEach(element => {
+        result.push(element.data());
+      })
+      result = result.map(element => {
+        return {
+          "id": element.id,
+          "subjectId": element.subjectId,
+          "imageTestId": element.imageTestId,
+          "biomarkers": element.biomarkers || null,
+          "date": element.date || null,
+          "status": element.status || null,
+          "quibimData ": element.quibimData || null,
+          "images": element.images || null,
+          "accessionNumber": element.accessionNumber || null,
+          "values": element.values || null
+        }
+      });
+      response.send({ "subjectImageTest": result });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
+
+app.post("/createSubjectImageTest", (request, response) => { // OK
+  console.log(request.body);
+  request.body.createdAt = moment().format();
+  request.body.format = "new";
+  admin.firestore()
+    .collection("subjectImageTests")
+    .add(request.body)
+    .then((doc) => {
+      admin.firestore().doc(`subjectImageTests/${doc.id}`).update({ id: doc.id })
+        .then((success) => {
+          response.send({ "create": "ok", "id": doc.id });
+        }).catch(() => {
+          response.status(500).send({ error: "No se ha podido crear la prueba, inténtelo de nuevo" })
+        });
+    }).catch(() => {
+      response.status(500).send({ error: "No se ha podido crear la prueba, inténtelo de nuevo" })
+    });
+});
+
+app.put("/editSubjectImageTest", (request, response) => { // OK
+  console.log(request.body);
+  request.body.updatedAt = moment().format();
+  admin.firestore().doc(`subjectImageTests/${request.body.id}`).update(request.body)
+    .then((subjectImageTest) => {
+      response.send({ "update": "ok", "subjectImageTest": request.body });
+    }).catch((error) => {
+      response.status(500).send({ error: "No se ha podido actualizar la prueba" })
+    });
+});
+
+app.delete("/deleteSubjectImageTest", (request, response) => { // OK
+  console.log(request.query);
+
+  admin.firestore().collection(`subjectImageTests`).where("id", "==", request.query.id).get().then((data) => {
+    if (data.docs.length > 0) {
+      admin.firestore().doc(`subjectImageTests/${request.query.id}`).delete()
+        .then(() => {
+          response.send({ "delete": "ok" });
+        }).catch((error) => {
+          response.status(500).send({ error: "No se ha podido eliminar la prueba" })
+        });
+    } else {
+      response.status(500).send({ error: "La prueba dada no existe" })
+    }
+  }).catch(() => {
+    response.status(500).send({ error: "Error al consultar las pruebas" });
+  })
+});
+
+/**
+ * SIGNOS Y SÍNTOMAS
+ */
+
+app.get("/getSignsAndSymptoms", (request, response) => { // OK
+  admin.firestore().collection(`symptoms`).get()
+    .then((data) => {
+      const result: FirebaseFirestore.DocumentData[] = [];
+      data.docs.forEach(element => {
+        result.push(element.data());
+      })
+      response.send({ "symptoms": result });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
+
+app.get("/getSignAndSymptomById", (request, response) => { // OK
+  admin.firestore().doc(`symptoms/${request.query.id}`).get()
+    .then((data: any) => {
+      const symptom = data.data();
+      response.send({ "symptom": symptom });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
+
+/**
+ * PRUEBAS DE ANÁLISIS DEL SUJETO
+ */
+
+app.get("/getSubjectClinicAnalysis", (request, response) => { // OK
+  admin.firestore().collection(`subjects/${request.query.id}/analysisStudies`).get()
+    .then((data) => {
+      const result: FirebaseFirestore.DocumentData[] = [];
+      data.docs.forEach(element => {
+        result.push(element.data());
+      })
+      response.send({ "clinicAnalysis": result });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
+
+app.post("/createSubjectClinicAnalysis", (request, response) => { // OK
+  console.log(request.body);
+
+  request.body.createdAt = moment().format();
+  request.body.format = "actualpacs";
+  request.body.relatedCategories = [];
+  request.body.relatedLabels = [];
+  request.body.shortcode = "[ANA" + Math.floor(Math.random() * 1000 + 1).toString(10) + "]";
+
+  admin.firestore().doc(`subjects/${request.body.id}`)
+    .collection("analysisStudies")
+    .add(request.body)
+    .then((doc) => {
+      admin.firestore().doc(`subjects/${request.body.id}/analysisStudies/${doc.id}`).update({ id: doc.id })
+        .then((success) => {
+          response.send({ "create": "ok", "clinicAnalysisId": doc.id });
+        }).catch(() => {
+          response.status(500).send({ error: "No se ha podido crear la prueba, inténtelo de nuevo" })
+        });
+    }).catch(() => {
+      response.status(500).send({ error: "No se ha podido crear la prueba, inténtelo de nuevo" })
+    });
+});
+
+app.delete("/deleteSubjectClinicAnalysis", (request, response) => { // OK
+  console.log(request.query);
+
+  admin.firestore().collection(`subjects/${request.query.subjectId}/analysisStudies`).where("id", "==", request.query.id).get().then((data) => {
+    if (data.docs.length > 0) {
+      admin.firestore().doc(`subjects/${request.query.subjectId}/analysisStudies/${request.query.id}`).delete()
+        .then(() => {
+          response.send({ "delete": "ok" });
+        }).catch((error) => {
+          response.status(500).send({ error: "No se ha podido eliminar la prueba" })
+        });
+    } else {
+      response.status(500).send({ error: "La prueba dada no existe" })
+    }
+  }).catch(() => {
+    response.status(500).send({ error: "Error al consultar las pruebas" });
+  })
+});
+
+/**
+ * PRUEBAS DE ANÁLISIS
+ */
+
+app.get("/getClinicAnalysis", (request, response) => { // OK
+  admin.firestore().collection(`clinicAnalysis`).get()
+    .then((data) => {
+      const result: FirebaseFirestore.DocumentData[] = [];
+      data.docs.forEach(element => {
+        result.push(element.data());
+      })
+      response.send({ "clinicAnalysis": result });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
+
+app.get("/getClinicAnalysisById", (request, response) => { // OK
+  admin.firestore().doc(`clinicAnalysis/${request.query.id}`).get()
+    .then((data: any) => {
+      const clinicAnalysis = data.data();
+      response.send({ "clinicAnalysis": clinicAnalysis });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
+
+/**
+ * ELEMENTOS DE PRUEBAS DE ANÁLISIS
+ */
+
+app.get("/getClinicAnalysisElements", (request, response) => { // OK
+  admin.firestore().collection(`clinicAnalysisElements`).get()
+    .then((data) => {
+      const result: FirebaseFirestore.DocumentData[] = [];
+      data.docs.forEach(element => {
+        result.push(element.data());
+      })
+      response.send({ "clinicAnalysisElements": result });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
+
+app.get("/getClinicAnalysisElementById", (request, response) => { // OK
+  admin.firestore().doc(`clinicAnalysisElements/${request.query.id}`).get()
+    .then((data: any) => {
+      const clinicAnalysisElement = data.data();
+      response.send({ "clinicAnalysisElement": clinicAnalysisElement });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
+
+/**
+ * ENFERMEDADES
+ */
+
+app.get("/getDiseases", (request, response) => { // OK
+  admin.firestore().collection(`diseases`).get()
+    .then((data: any) => {
+      let result = []
+      result = data.docs.map((element: any) => {
+        return { id: element.data().id, name: element.data().name }
+      })
+      response.send({ "diseases": result });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
+
+app.get("/getDiseasesWithData", (request, response) => { // OK
+  admin.firestore().collection(`diseases`).get()
+    .then((data) => {
+      const result: FirebaseFirestore.DocumentData[] = [];
+      data.docs.forEach(element => {
+        result.push(element.data());
+      })
+      response.send({ "diseases": result });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
 });
 
 /**
  * EXPORTACIÓN DE LA API COMO CLOUD FUNCTION
  */
-// export const api = functions.region('europe-west3').https.onRequest(app);
+export const api = functions.region('europe-west3').https.onRequest(app);

@@ -11,7 +11,7 @@ export class SubjectImageTestsService {
   constructor(private db: AngularFirestore) { }
 
   getOne(id: string): Observable<any> {
-    return this.db.doc(`subjectImageTests/${id}`).valueChanges()
+    return this.db.doc(`subjectImageTests/${id}`).valueChanges();
   }
 
   async getOneData(id: string): Promise<firebase.firestore.DocumentData> {
@@ -28,6 +28,14 @@ export class SubjectImageTestsService {
 
   async getAllDataBySubject(subjectId: string) {
     return (await this.db.firestore.collection("subjectImageTests").where('subjectId', '==', subjectId).get()).docs
+  }
+
+  async getAllDataByWithReproduction() {
+    return await this.db.firestore.collection("subjectImageTests").where('isReproductionTest', '==', true).get();
+  }
+
+  getAllDataBySubjectObservable(subjectId: string): Observable<any> {
+    return this.db.collection("subjectImageTests", ref => ref.where('subjectId', '==', subjectId)).valueChanges();
   }
 
   async create(data: any): Promise<void> {

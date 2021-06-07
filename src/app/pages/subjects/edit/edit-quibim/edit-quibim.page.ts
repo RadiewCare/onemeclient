@@ -1,9 +1,9 @@
 import { Component, OnInit, Input } from "@angular/core";
 import { ModalController } from "@ionic/angular";
 import { LanguageService } from "src/app/services/language.service";
-import { SubjectsService } from "src/app/services/subjects.service";
 import { Papa } from "ngx-papaparse";
 import { ToastService } from "src/app/services/toast.service";
+import { SubjectImageTestsService } from "src/app/services/subject-image-tests.service";
 
 @Component({
   selector: "app-edit-quibim",
@@ -11,13 +11,14 @@ import { ToastService } from "src/app/services/toast.service";
   styleUrls: ["./edit-quibim.page.scss"],
 })
 export class EditQuibimPage implements OnInit {
-  @Input() id: string;
-  @Input() index: string;
+  @Input() id: string; // id de la prueba
 
   quibimData: any;
-  quibimLoadedData: any;
+  quibimLoadedData = null;
+  transformedQuibimData: any;
   imageTest: any;
   imageTests: any;
+  result: any;
 
   subject: any;
 
@@ -29,27 +30,28 @@ export class EditQuibimPage implements OnInit {
   constructor(
     private modalController: ModalController,
     public lang: LanguageService,
-    private subjectService: SubjectsService,
+    private subjectImageTestsService: SubjectImageTestsService,
     private papa: Papa,
     private toastService: ToastService
-  ) {}
+  ) { }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   ionViewDidEnter() {
     this.getQuibimData();
   }
 
   getQuibimData() {
-    this.subjectService.getSubjectData(this.id).then((subject) => {
-      this.subject = subject.data();
-      if (this.subject.imageTests[this.index].quibimData) {
+
+    this.subjectImageTestsService.getOneData(this.id).then((test) => {
+      this.imageTest = test;
+      console.log(test);
+      if (this.imageTest.quibimData) {
         this.quibimLoadedData = Object.entries(
-          this.subject.imageTests[this.index].quibimData
+          this.imageTest.quibimData
         );
         this.quibimLoadedData = this.quibimLoadedData.sort();
       }
-      this.imageTests = this.subject.imageTests;
     });
   }
 
@@ -68,19 +70,20 @@ export class EditQuibimPage implements OnInit {
           this.errorMessageQuibim = null;
           this.doneMessageQuibim = "Procesado correctamente";
           this.quibimLoadedData = null;
+
           this.quibimData = results.data;
 
-          const array = [];
+          console.log(results.data);
 
           for (let index = 0; index < this.quibimData[1].length; index++) {
             if (this.quibimData[1][index].trim().length > 0) {
-              this.viewQuibimData[
-                this.quibimData[1][index].trim()
-              ] = this.quibimData[2][index];
+              this.viewQuibimData[this.quibimData[1][index].trim()] = this.quibimData[2][index];
             }
           }
 
-          this.imageTests[this.index].quibimData = this.viewQuibimData;
+          this.result = this.viewQuibimData;
+          console.log(this.result);
+
         }
       },
     };
@@ -94,10 +97,12 @@ export class EditQuibimPage implements OnInit {
   }
 
   save() {
-    if (this.quibimData !== null && this.quibimData !== undefined) {
-      this.subjectService
-        .updateSubject(this.id, {
-          imageTests: this.imageTests,
+    console.log(this.quibimData);
+
+    if (this.result !== null && this.result !== undefined) {
+      this.subjectImageTestsService
+        .update(this.id, {
+          quibimData: this.result,
         })
         .then(() => {
           this.dismissModal().then(() => {
@@ -105,8 +110,10 @@ export class EditQuibimPage implements OnInit {
           });
         })
         .catch(() => {
-          this.toastService.show("error", "Fallo al importar datos");
+          this.toastService.show("danger", "Fallo al importar datos");
         });
+    } else {
+      this.dismissModal();
     }
   }
 

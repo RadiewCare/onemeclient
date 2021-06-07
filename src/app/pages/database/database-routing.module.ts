@@ -87,6 +87,10 @@ const routes: Routes = [
   {
     path: 'synlab-catalog',
     loadChildren: () => import('./synlab-catalog/synlab-catalog.module').then( m => m.SynlabCatalogPageModule)
+  },
+  {
+    path: 'clinic-analysis',
+    loadChildren: () => import('./clinic-analysis/clinic-analysis.module').then( m => m.ClinicAnalysisPageModule)
   }
 ];
 

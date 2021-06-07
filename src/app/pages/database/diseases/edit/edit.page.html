@@ -113,6 +113,7 @@
 
       </ion-col>
 
+      <!-- DATOS FENOTÍPICOS -->
       <ion-col size="12" class="ion-padding-top">
         <ion-item color="secondary" lines="none">
           <ion-icon slot="start" name="body"></ion-icon>
@@ -125,6 +126,7 @@
           </ion-buttons>
         </ion-item>
       </ion-col>
+      
       <ion-col size="12" size-xl="4" color="secondary"
         *ngFor="let field of disease?.phenotypicElements; let i = index">
         <ion-item lines="none">
@@ -143,6 +145,35 @@
             </ion-button>
           </ion-buttons>
         </ion-item>
+        <ion-item>
+          <ion-label>Ponderación</ion-label>
+          <ion-select placeholder="Seleccione ponderación para el diagnóstico" [(ngModel)]="field.ponderation">
+            <ion-select-option value="1">1</ion-select-option>
+            <ion-select-option value="2">2</ion-select-option>
+            <ion-select-option value="3">3</ion-select-option>
+            <ion-select-option value="4">4</ion-select-option>
+            <ion-select-option value="5">5</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <!-- ANTECEDENTES FAMILIARES -->
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item color="secondary" lines="none">
+          <ion-icon slot="start" name="body"></ion-icon>
+          <ion-label>Computar antecedentes con esta enfermedad confirmada:</ion-label>
+          <ion-checkbox [(ngModel)]="isHereditary"></ion-checkbox>
+        </ion-item>
+        <ion-item *ngIf="isHereditary">
+          <ion-label>Ponderación</ion-label>
+          <ion-select placeholder="Seleccione ponderación para el diagnóstico" [(ngModel)]="hereditaryPonderation">
+            <ion-select-option value="1">1</ion-select-option>
+            <ion-select-option value="2">2</ion-select-option>
+            <ion-select-option value="3">3</ion-select-option>
+            <ion-select-option value="4">4</ion-select-option>
+            <ion-select-option value="5">5</ion-select-option>
+          </ion-select>
+        </ion-item>
       </ion-col>
 
       <!-- SIGNOS Y SÍNTOMAS -->
@@ -152,14 +183,6 @@
           <ion-label *ngIf="lang.isSpanish()">Signos y síntomas</ion-label>
           <ion-label *ngIf="!lang.isSpanish()">Signos y síntomas</ion-label>
         </ion-item>
-      </ion-col>
-      <ion-col size="12">
-        <ng-container *ngIf="currentSignsAndSymptoms.length>0">
-          <ion-chip color="primary" mode="ios" *ngFor="let sign of currentSignsAndSymptoms; let i = index" class="ion-margin-bottom">
-            <ion-label>{{sign.name}}</ion-label>
-            <ion-icon name="close" (click)="deleteSignAndSymptoms(i)"></ion-icon>
-          </ion-chip>
-        </ng-container>
         <ion-item lines="none">
           <ion-label position="floating" *ngIf="lang.isSpanish()">Signos y síntomas</ion-label>
           <ion-label position="floating" *ngIf="!lang.isSpanish()">Signs and symptoms</ion-label>
@@ -167,13 +190,32 @@
             [placeholder]="lang.isSpanish()?'Introduzca signos o síntomas y seleccione':'Enter one by one signs or symptoms and select properly'"
             (ionChange)="onQuerySignsAndSymptoms($event.target.value)" [(ngModel)]="querySignsAndSymptoms"></ion-input>
         </ion-item>
+      </ion-col>
+      <ion-col size="12"> 
+        <ng-container *ngIf="currentSignsAndSymptoms.length>0">
+          <ion-chip color="primary" mode="ios" *ngFor="let sign of currentSignsAndSymptoms; let i = index" class="ion-margin-bottom">
+            <ion-label>{{sign.name}}</ion-label>
+            <ion-icon name="close" (click)="deleteSignAndSymptoms(i)"></ion-icon>
+          </ion-chip>
+        </ng-container>
         <ng-container *ngIf="querySignsAndSymptoms">
           <ion-item *ngFor="let item of querySignsAndSymptomsList" (click)="addSignAndSymptom(item)" button lines="full">
             <ion-label>{{item.name}}</ion-label>
           </ion-item>
         </ng-container>
+        <ion-item *ngFor="let sign of currentSignsAndSymptoms; let j = index">
+          <ion-label>Ponderación para {{sign.name}}</ion-label>
+          <ion-select placeholder="Seleccione ponderación para el diagnóstico" (ionChange)="onChangeSignPonderation(j,$event.target.value)" [value]="sign.ponderation">
+            <ion-select-option value="1">1</ion-select-option>
+            <ion-select-option value="2">2</ion-select-option>
+            <ion-select-option value="3">3</ion-select-option>
+            <ion-select-option value="4">4</ion-select-option>
+            <ion-select-option value="5">5</ion-select-option>
+          </ion-select>
+        </ion-item>
       </ion-col>
 
+      <!-- GENÉTICA -->
       <ion-col size="12" class="ion-padding-top">
         <ion-item color="secondary" lines="none">
           <ion-icon slot="start" name="finger-print"></ion-icon>
@@ -190,11 +232,12 @@
       <ion-col size="12" size-lg="3" color="secondary"
         *ngFor="let geneticElement of disease?.geneticElements">
         <ion-item lines="none" [routerLink]="['/database/genetic-elements/edit/', geneticElement.id]">
-          <ion-label>{{ geneticElement.name }} {{geneticElement.id}}
+          <ion-label>{{ geneticElement.name }}
           </ion-label>
         </ion-item>
       </ion-col>
 
+      <!--  
       <ion-col size="12">
         <ion-item lines="none" color="danger">
           <ion-label position="floating">Disposición Alto Riesgo</ion-label>
@@ -216,6 +259,7 @@
           <ion-textarea placeholder="Introduzca disposición" [(ngModel)]="lowRiskExplanation"></ion-textarea>
         </ion-item>
       </ion-col>
+      -->
 
       <ion-col size="12" size-lg="6">
         <ion-item lines="none">
@@ -268,49 +312,75 @@
             </ion-button>
           </ion-buttons>
         </ion-item>
+        <div style="margin-top: 1rem; margin-bottom: 0.5rem;">
+          Leyenda: <ion-icon name="checkmark-circle" color="success"></ion-icon> = Formato nuevo Synlab (El asistente computa exclusivamente elementos de análisis con este formato nuevo)
+        </div>
       </ion-col>
       <ion-col size="12" size-lg="4" color="secondary"
         *ngFor="let analysisElement of disease?.analysisElements; let j = index">
         <ion-item lines="none">
-          <ion-label>{{analysisElement.name}}</ion-label>
+          <ion-label><ion-icon name="checkmark-circle" color="success" *ngIf="analysisElement.format && analysisElement.format === 'synlab'"></ion-icon> {{analysisElement.name}}</ion-label>
           <ion-buttons slot="end">
             <ion-button [routerLink]="['/database/analysis-elements/edit/', analysisElement.id]">
               <ion-icon slot="icon-only" name="create"></ion-icon>
             </ion-button>
-            <ion-button (click)="deleteAnalysisElement(disease.id, analysisElement.id)">
+            <ion-button (click)="deleteAnalysisElement(disease.id, analysisElement.id)" color="danger">
               <ion-icon slot="icon-only" name="close"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-item>
-        <ng-container *ngIf="analysisElement.ranges">
-          <ion-item *ngFor="let range of analysisElement.ranges; let i = index" lines="full">
-            <ion-text>
-              <p *ngIf="range.sex"><b>Sexo:</b> {{range.sex === "male"?'Hombre':'Mujer'}}</p>
-              <p *ngIf="range.lowerAge || range.upperAge"><b>Edad:</b> {{range.lowerAge}}-{{range.upperAge}}
-                años</p>
-              <p *ngIf="range.lowerLevel || range.upperLevel"><b>Valores:</b>
-                {{range.lowerLevel}}-{{range.upperLevel}}</p>
-            </ion-text>
-            <ion-buttons slot="end">
-              <ion-button (click)="deleteRange(j,i)">
-                <ion-label>Eliminar</ion-label>
-                <ion-icon slot="start" name="trash"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-          </ion-item>
-        </ng-container>
-        <ng-container>
-          <ion-item lines="full">
-            <ion-label><b>Condición lógica para el diagnóstico:</b></ion-label>
-          </ion-item>
-          <ion-item>
-              <ion-select (ionChange)="onClinicConditionChange(j, $event.detail.value)" placeholder="Seleccione condición lógica para el diagnóstico" [value]="analysisElement.condition">
-                <ion-select-option value="enough">Condición suficiente</ion-select-option>
-                <ion-select-option value="needed">Condición necesaria</ion-select-option>
-                <ion-select-option value="exclusion">Excluye el diagnóstico</ion-select-option>
+
+        <ion-item *ngIf="!analysisElement.isCustom" lines="full"> <!-- NO TIENE RANGOS -->
+          <ion-label><b>Relevancia:</b></ion-label>
+          <ion-select multiple="false" placeholder="Seleccione relevancia" [(ngModel)]="analysisElement.relevancy">
+            <ion-select-option value="superior">Superior</ion-select-option>
+            <ion-select-option value="inferior">Inferior</ion-select-option>
+            <ion-select-option value="both">Ambos límites</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ng-container *ngIf="analysisElement.ranges"> <!-- TIENE RANGOS -->
+
+          <ng-container *ngFor="let range of analysisElement.ranges; let i = index" >
+
+            <ion-item lines="none">
+              <ion-text>
+                <p *ngIf="range.SEXO"><b>Sexo:</b> {{range.SEXO}}</p>
+                <p *ngIf="range.INTERVALO_INF_EDAD || range.INTERVALO_SUP_EDAD"><b>Edad:</b> {{range.INTERVALO_INF_EDAD}}-{{range.INTERVALO_SUP_EDAD}}
+                  {{range.UNIDAD_INTERVALO_EDAD}}</p>
+                <p *ngIf="range.LIM_INF || range.LIM_SUP"><b>Valores: </b>{{range.LIM_INF}}-{{range.LIM_SUP}} {{range.UNIDAD}}</p>
+              </ion-text>
+              <ion-buttons slot="end">
+                <ion-button (click)="deleteRange(j,i)" color="danger">
+                  <ion-icon slot="icon-only" name="trash"></ion-icon>
+                </ion-button>
+               </ion-buttons>
+            </ion-item>
+
+            <ion-item lines="full">
+              <ion-label><b>Relevancia:</b></ion-label>
+              <ion-select multiple="false" placeholder="Seleccione relevancia" [(ngModel)]="range.relevancy">
+                <ion-select-option value="superior">Superior</ion-select-option>
+                <ion-select-option value="inferior">Inferior</ion-select-option>
+                <ion-select-option value="both">Ambos límites</ion-select-option>
               </ion-select>
-          </ion-item>
+            </ion-item>
+
+          </ng-container>
+          
         </ng-container>
+
+        <ion-item lines="full">
+          <ion-label><b>Ponderación:</b></ion-label>
+           <ion-select (ionChange)="onClinicConditionChange(j, $event.detail.value)" placeholder="Seleccione condición lógica para el diagnóstico" [value]="analysisElement.condition">
+             <ion-select-option value="1">1</ion-select-option>
+             <ion-select-option value="2">2</ion-select-option>
+             <ion-select-option value="3">3</ion-select-option>
+             <ion-select-option value="4">4</ion-select-option>
+             <ion-select-option value="5">5</ion-select-option>
+           </ion-select>
+       </ion-item>
+
       </ion-col>
 
       <ion-col size="12" class="ion-padding-top">
@@ -357,7 +427,7 @@
 
         <ng-container *ngIf="imageBiomarker.values">
           <ion-item lines="full">
-            <ion-label><b>Condiciones lógicas para el diagnóstico:</b></ion-label>
+            <ion-label><b>Ponderación:</b></ion-label>
           </ion-item>
           <ion-item *ngFor="let value of imageBiomarker.values; let k = index">
             <ion-label>{{value}}</ion-label>
@@ -384,7 +454,7 @@
         
       </ion-col>
 
-      <ion-col size="12">
+      <ion-col size="12" *ngIf="disease?.imageTests">
         <ion-item color="dangerprimary">
           <ion-label>VALORES ORIGINALES ANTES DEL CAMBIO PARA COMPROBACIÓN</ion-label>
         </ion-item>

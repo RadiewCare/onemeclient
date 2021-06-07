@@ -1,0 +1,33 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/database/clinic-analysis"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Editar prueba de análisis clínico</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" color="success">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label>Guardar</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item>
+          <ion-label position="floating">Código</ion-label>
+          <ion-input type="text" placeholder="Introduzca código" [(ngModel)]="testCode"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input type="text" placeholder="Introduzca nombre" [(ngModel)]="name"></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

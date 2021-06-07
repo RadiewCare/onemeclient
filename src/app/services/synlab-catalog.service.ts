@@ -11,13 +11,25 @@ export class SynlabCatalogService {
 
   getClinicAnalysisElements(): Observable<any> {
     return this.db
-      .collection("synlabCatalog", (ref) => ref.orderBy("CODIGO"))
+      .collection("synlabCatalog")
+      .valueChanges();
+  }
+
+  async getClinicAnalysisElementsData(): Promise<any> {
+    return await this.db.firestore
+      .collection("synlabCatalog")
+      .get();
+  }
+
+  getDefaultClinicAnalysisElements(): Observable<any> {
+    return this.db
+      .collection("synlabCatalog", ref => ref.where('isDefault', '==', true))
       .valueChanges();
   }
 
   getClinicAnalysisElementsList(): Promise<any> {
     return this.db.firestore
-      .collection("synlabCatalog").orderBy("CODIGO")
+      .collection("synlabCatalog")
       .get();
   }
 

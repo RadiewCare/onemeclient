@@ -15,6 +15,7 @@
           <ion-label position="floating" *ngIf="!lang.isSpanish()">Image tests elements</ion-label>
           <ionic-selectable [(ngModel)]="imageTestsData" [items]="imageTestsElements" itemValueField="id"
             itemTextField="name" [canSearch]="true"
+            [hasVirtualScroll]="true" (onSearch)="onSearch($event)"
             [confirmButtonText]="lang.isSpanish()?'Seleccionar':'Select'"
             [closeButtonText]="lang.isSpanish()?'Cancelar':'Cancel'" headerColor="primary"
             [searchFailText]="lang.isSpanish()?'No hay items disponibles':'No items available'"

@@ -5,6 +5,8 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { ToastService } from "./toast.service";
 import * as moment from 'moment';
+import { ImageTestsElementsService } from "./image-tests-elements.service";
+import { DiseasesService } from "./diseases.service";
 
 
 @Injectable({
@@ -21,9 +23,13 @@ export class ReportsService {
   tables: any;
   tableBody = [];
 
+  diseases = [];
+
   constructor(
     private db: AngularFirestore,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private imageTestsElementsService: ImageTestsElementsService,
+    private diseasesService: DiseasesService
   ) { }
 
   /**
@@ -298,6 +304,17 @@ export class ReportsService {
     this.y = this.y + 10;
   }
 
+  async renderSimpleText(text: string) {
+    const splitText = this.doc.splitTextToSize(
+      text,
+      this.pageWidth - 2 * this.x
+    );
+    for await (const line of splitText) {
+      this.doc.text(line, this.x, this.y);
+      this.y = this.y + 10;
+    }
+  }
+
   async renderAnalytics(block: any, userId: string, reportId: string) {
     await this.db.firestore
       .doc(`doctors/${userId}/reports/${reportId}`)
@@ -434,6 +451,7 @@ export class ReportsService {
   }
 
   async exportImageTest(imageTest: any, subjectData: any, mainDoctor: string) {
+    await this.getDiseases();
     console.log(imageTest);
 
     this.x = 40;
@@ -453,17 +471,25 @@ export class ReportsService {
 
     // Logo
     var img = new Image();
-    img.src = 'assets/images/logo-microsound.jpg';
-    this.doc.addImage(img, 'JPEG', this.x - 20, this.y, 100, 50);
-    this.y = this.y + 80;
+    if (imageTest.relatedCategories.map(element => element = element.name).includes("Fertilidad")) {
+      img.src = 'assets/images/logo-overture.jpg';
+      this.doc.addImage(img, 'JPEG', this.x, this.y, 75, 40);
+      this.y = this.y + 60;
+    } else {
+      img.src = 'assets/images/logo-microsound.jpg';
+      this.doc.addImage(img, 'JPEG', this.x - 30, this.y, 125, 50);
+      this.y = this.y + 70;
+    }
 
     this.doc.setFontSize(10);
     // ID del paciente
     this.doc.text("Paciente: " + subjectData.identifier, this.x, this.y);
     this.y = this.y + 10;
     // Accession number
-    this.doc.text("Accession number: " + imageTest.accessionNumber, this.x, this.y);
-    this.y = this.y + 10;
+    if (imageTest.accessionNumber !== null) {
+      this.doc.text("Accession number: " + imageTest.accessionNumber, this.x, this.y);
+      this.y = this.y + 10;
+    }
     // Nombre de la prueba
     this.doc.text("Nombre de la prueba: " + imageTest.name, this.x, this.y);
     this.y = this.y + 10;
@@ -471,9 +497,10 @@ export class ReportsService {
     this.doc.text("Fecha de la prueba: " + moment(imageTest.date).format("DD/MM/YYYY"), this.x, this.y);
     this.y = this.y + 10;
     // Doctor
-    this.doc.text("Doctor: " + mainDoctor, this.x, this.y);
+    this.doc.text("Clínica: " + mainDoctor, this.x, this.y);
     this.y = this.y + 20;
 
+    // RENDERIZADO DE VALORES
     for await (const value of imageTest.values) {
       const splitTitle = this.doc.splitTextToSize(
         value.name,
@@ -498,15 +525,16 @@ export class ReportsService {
       if (value.value) {
         if (value.status === "positive") {
           this.doc.setTextColor(255, 0, 0);
+          await this.renderSimpleText("* " + value.value)
+        } else {
+          if (value.status === "negative") {
+            this.doc.setTextColor(0, 0, 255);
+          }
+          if (value.status === "default") {
+            this.doc.setTextColor(0, 0, 0);
+          }
+          await this.renderSimpleText(value.value);
         }
-        if (value.status === "negative") {
-          this.doc.setTextColor(0, 255, 0);
-        }
-        if (value.status === "default") {
-          this.doc.setTextColor(0, 0, 0);
-        }
-        await this.doc.text("Hallazgos: " + value.value, this.x, this.y);
-        this.y = this.y + 10;
       }
 
 
@@ -522,7 +550,102 @@ export class ReportsService {
       this.y = this.y + 10;
     }
 
+    this.doc.setTextColor(0, 0, 0);
+
+    // RENDERIZADO DE ENFERMEDADES RELACIONADAS
+    const imageBiomarkers = [];
+    for await (const element of imageTest.values) {
+      if (element.status === "positive") {
+        imageBiomarkers.push(element);
+      }
+    }
+
+    let frecuencies = {};
+    let imageTestsElements = (await this.imageTestsElementsService.getImageTestElementsData()).docs.map(element => element = element.data());
+    let imageDiseases = [];
+    let imageDiseasesWithoutFrecuencies = [];
+
+    console.log(imageTestsElements, "previo for");
+
+    for await (const biomarker of imageBiomarkers) {
+      console.log(biomarker, "yei");
+
+      const biomarkerData = imageTestsElements.find(element => element.id === biomarker.id);
+
+      if (biomarkerData && biomarkerData.relatedDiseases) {
+        imageDiseases = imageDiseases.concat(biomarkerData.relatedDiseases);
+        imageDiseasesWithoutFrecuencies = [...new Set([...imageDiseases, ...biomarkerData.relatedDiseases])]
+      }
+    }
+    console.log(imageDiseases, "bruto de de enfermedades relacionadas con los biomarcadores positivos de imagen");
+
+    for await (const imageDisease of imageDiseases) {
+      var num = imageDisease;
+      frecuencies[num] = frecuencies[num] ? frecuencies[num] + 1 : 1;
+    }
+
+    console.log(imageDiseasesWithoutFrecuencies, "total de enfermedades relacionadas con los biomarcadores positivos de imagen");
+    console.log(frecuencies, "frecuencias de enfermedades relacionadas con los biomarcadores positivos de imagen");
+
+    let result = [];
+
+    for await (const dis of imageDiseasesWithoutFrecuencies) {
+      console.log(dis);
+
+      console.log(this.diseases.find(disease => disease.id === dis));
+      if (this.diseases.find(disease => disease.id === dis)) {
+        const toBePushed = this.diseases.find(disease => disease.id === dis);
+        toBePushed.frequency = frecuencies[dis];
+        result.push(
+          {
+            id: toBePushed.id,
+            name: toBePushed.name,
+            frequency: toBePushed.frequency
+          }
+        );
+      }
+    }
+
+    result = result.sort((a, b) => {
+      if (a.frequency < b.frequency) {
+        return 1;
+      }
+      if (a.frequency > b.frequency) {
+        return -1;
+      }
+      return 0;
+    });
+
+    this.doc.addPage();
+    this.x = 40;
+    this.y = 40;
+
+    await this.doc.text("ENFERMEDADES ASOCIADAS", this.x, this.y);
+    this.y = this.y + 20;
+
+    for await (const disease of result) {
+      if (disease.name.length > 0) {
+        if (this.y > this.pageHeight - 40) {
+          this.renderDelimiter();
+        }
+
+        this.doc.setFont("helvetica", "normal");
+        this.doc.setTextColor(0, 0, 0);
+        // Nombre
+        await this.doc.text(disease.name, this.x, this.y);
+        this.y = this.y + 10;
+      }
+    }
+
     this.saveReport(imageTest.name);
+  }
+
+  async getDiseases() {
+    const diseases = await this.diseasesService.getDiseasesData();
+    diseases.forEach(element => {
+      this.diseases.push(element.data());
+    })
+    console.log(this.diseases, "Totalidad de las enfermedades");
   }
 
   async renderTable(block: any, userId: string, reportId: string) {

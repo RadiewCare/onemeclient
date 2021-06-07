@@ -1,0 +1,158 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/database/clinic-analysis"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Editar prueba de análisis clínico</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="delete()" color="danger">
+        <ion-icon slot="start" name="trash"></ion-icon>
+        <ion-label>Eliminar</ion-label>
+      </ion-button>
+      <ion-button (click)="save()" color="success">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label>Guardar</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item>
+          <ion-label position="floating">Código</ion-label>
+          <ion-input type="text" placeholder="Introduzca código" [(ngModel)]="testCode" disabled></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input type="text" placeholder="Introduzca nombre" [(ngModel)]="name"></ion-input>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label position="floating">Información adicional</ion-label>
+          <ion-textarea placeholder="Introduzca notas" [(ngModel)]="information" rows="4" autoGrow="true"></ion-textarea>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="6">
+
+        <ion-item>
+          <ion-label>Añadir categorías</ion-label>
+          <ion-input [(ngModel)]="queryCategory" (ionChange)="onCategoryChange($event.detail.value)"></ion-input>
+        </ion-item>
+
+        <!-- AUTOCOMPLETADO -->
+        <ng-container *ngIf="queryCategory; else elseCategory">
+          <ion-item *ngFor="let suggestedCategory of suggestedCategories" (click)="addCategory(suggestedCategory)" style="cursor: pointer;" lines="full">
+            <ion-label>{{suggestedCategory.name}}</ion-label>
+          </ion-item>
+          <ion-item *ngIf="suggestedCategories.length === 0">
+            <ion-label>¿No existe la categoría?</ion-label>
+            <ion-button [routerLink]="['/database/categories/create']" color="primary">
+              Crear
+            </ion-button>
+          </ion-item>
+        </ng-container>
+        <ng-template #elseCategory>
+          
+        </ng-template>
+        <!-- FIN DE AUTOCOMPLETADO -->
+        
+        <ng-container class="ion-padding-top">
+          <ion-chip color="primary" mode="ios" outline="true" *ngFor="let category of relatedCategories; let i = index" (click)="removeCategory(i, category)">
+            <ion-label>{{category.name}}</ion-label>
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-chip>
+        </ng-container>
+      
+      </ion-col>
+
+      <ion-col size="6">
+
+        <ion-item>
+          <ion-label>Añadir etiquetas</ion-label>
+          <ion-input [(ngModel)]="queryLabel" (ionChange)="onLabelChange($event.detail.value)"></ion-input>
+        </ion-item>
+
+        <!-- AUTOCOMPLETADO -->
+        <ng-container *ngIf="queryLabel; else elseLabel">
+          <ion-item *ngFor="let suggestedLabel of suggestedLabels" (click)="addLabel(suggestedLabel)" style="cursor: pointer;" lines="full">
+            <ion-label>{{suggestedLabel.name}}</ion-label>
+          </ion-item>
+          <ion-item *ngIf="suggestedLabels.length === 0">
+            <ion-label>¿No existe la etiqueta?</ion-label>
+            <ion-button [routerLink]="['/database/labels/create']" color="primary">
+              Crear
+            </ion-button>
+          </ion-item>
+        </ng-container>
+        <ng-template #elseLabel>
+          
+        </ng-template>
+        <!-- FIN DE AUTOCOMPLETADO -->
+
+        <ng-container class="ion-padding-top">
+          <ion-chip color="primary" mode="ios" outline="true" *ngFor="let label of relatedLabels; let i = index" (click)="removeLabel(i, label)">
+            <ion-label>{{label.name}}</ion-label>
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-chip>
+        </ng-container>
+
+      </ion-col>
+
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label>Establecer por defecto</ion-label>
+          <ion-checkbox [(ngModel)]="isDefault"></ion-checkbox>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item color="primary" lines="none">
+          <ion-icon slot="start" name="water"></ion-icon>
+          <ion-label>Elementos de la prueba de análisis clínico</ion-label>
+          
+          <ion-buttons slot="end">
+            <!-- 
+            <ion-button [routerLink]="[ '/database/analysis-elements/create', id ]">
+              <ion-icon slot="start" name="add"></ion-icon>
+              <ion-label>Añadir nuevo</ion-label>
+            </ion-button>
+             -->
+            <ion-button (click)="addAnalysisElement()">
+              <ion-icon slot="start" name="add"></ion-icon>
+              <ion-label>Añadir existentes</ion-label>
+            </ion-button>
+          </ion-buttons>
+          
+        </ion-item>
+
+        <ion-reorder-group (ionItemReorder)="doReorder($event)" disabled="false">
+          <ion-item *ngFor="let element of clinicAnalysis?.elements; let i = index" lines="full">
+            <ion-reorder slot="start" title="Arrastra para re-ordenar los elementos de la prueba"></ion-reorder>
+            <ion-label class="ion-text-wrap">{{ element.name }}</ion-label>
+            <ion-buttons slot="end">
+              
+              <ion-button (click)="deleteAnalysisElement(element.id)" color="danger">
+                <ion-icon slot="start" name="close"></ion-icon>
+                <ion-label>Eliminar</ion-label>
+              </ion-button>
+              
+              <ion-button [routerLink]="[ '/database/analysis-elements/edit', element.id ]">
+                <ion-icon slot="start" name="create"></ion-icon>
+                <ion-label>Editar</ion-label>
+              </ion-button>
+            </ion-buttons>
+          </ion-item>
+        </ion-reorder-group>
+     
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

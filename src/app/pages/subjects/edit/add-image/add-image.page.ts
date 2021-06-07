@@ -2,8 +2,11 @@ import { Component, OnInit, Input } from "@angular/core";
 import { LoadingController, ModalController } from "@ionic/angular";
 import { ToastService } from "src/app/services/toast.service";
 import { LanguageService } from "src/app/services/language.service";
-import { SubjectsService } from "src/app/services/subjects.service";
-import { ImageTestsService } from "src/app/services/image-tests.service";
+import { SubjectImageTestsService } from "src/app/services/subject-image-tests.service";
+import { ImageTestsElementsService } from "src/app/services/image-tests-elements.service";
+import { AngularFireStorage } from "@angular/fire/storage";
+import { Subscription } from "rxjs";
+import { ReproductionTestsService } from "src/app/services/reproduction-tests.service";
 
 @Component({
   selector: "app-add-image",
@@ -11,11 +14,19 @@ import { ImageTestsService } from "src/app/services/image-tests.service";
   styleUrls: ["./add-image.page.scss"]
 })
 export class AddImagePage implements OnInit {
-  @Input() id: string;
+  @Input() subjectImageTestId: string;
+  @Input() biomarkerId: string;
   @Input() field: number;
-  @Input() value: any;
-  @Input() indexTest: any;
+  @Input() origin: string;
 
+  imageTestElement: any;
+  subjectImageTest: any;
+
+  biomarker: any;
+  indexOfBiomarker: any;
+
+  id: string;
+  indexTest: number;
   test: any;
   tests: any;
   currentSection: string;
@@ -23,6 +34,10 @@ export class AddImagePage implements OnInit {
   currentY: number;
   currentZ: number;
   preview: any;
+
+  currentFiles: any;
+
+  fileSubscription: Subscription;
 
   images = [];
 
@@ -33,32 +48,74 @@ export class AddImagePage implements OnInit {
   constructor(
     private modalController: ModalController,
     private toastService: ToastService,
-    private subjectsService: SubjectsService,
-    private imageTestsService: ImageTestsService,
     public lang: LanguageService,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private subjectImageTestsService: SubjectImageTestsService,
+    private imageTestsElementsService: ImageTestsElementsService,
+    private storage: AngularFireStorage,
+    private reproductionTestsService: ReproductionTestsService
   ) { }
 
   ngOnInit() {
-    this.loadLocation()
+    if (this.origin == "reproduction") {
+      this.getDataReproduction();
+    } else {
+      this.getData();
+    }
+
   }
 
-  loadLocation() {
-    this.subjectsService
-      .getSubjectData(this.id).then(data => {
-        this.subject = data.data();
-        console.log(this.subject);
+  getData() {
+    this.subjectImageTestsService.getOneData(this.subjectImageTestId).then(data => {
+      this.subjectImageTest = data;
+      console.log(this.subjectImageTest, "subjectImageTest");
+      this.imageTestsElementsService.getImageTestElementData(this.biomarkerId).then(data => {
+        this.imageTestElement = data.data();
+        console.log(this.imageTestElement);
 
+        this.indexOfBiomarker = this.subjectImageTest.values.findIndex(element => element.id === this.biomarkerId);
+        console.log(this.indexOfBiomarker, "index of biomarker");
+
+        this.biomarker = this.subjectImageTest.values.filter(element => element.id === this.biomarkerId);
+        console.log(this.biomarker);
+        if (this.biomarker.length > 0) {
+          this.biomarker = this.biomarker[0];
+          this.biomarkers = this.subjectImageTest.values[this.indexOfBiomarker].locations || [];
+          console.log(this.biomarkers);
+        }
       })
+    })
   }
 
-  loadImage(files: any) {
+  getDataReproduction() {
+    this.reproductionTestsService.getOneData(this.subjectImageTestId).then(data => {
+      this.subjectImageTest = data;
+      console.log(this.subjectImageTest, "subjectImageTest");
+      this.imageTestsElementsService.getImageTestElementData(this.biomarkerId).then(data => {
+        this.imageTestElement = data.data();
+        console.log(this.imageTestElement);
+
+        this.indexOfBiomarker = this.subjectImageTest.values.findIndex(element => element.id === this.biomarkerId);
+        console.log(this.indexOfBiomarker, "index of biomarker");
+
+        this.biomarker = this.subjectImageTest.values.filter(element => element.id === this.biomarkerId);
+        console.log(this.biomarker);
+        if (this.biomarker.length > 0) {
+          this.biomarker = this.biomarker[0];
+          this.biomarkers = this.subjectImageTest.values[this.indexOfBiomarker].locations || [];
+          console.log(this.biomarkers);
+        }
+      })
+    })
+  }
+
+  loadImage(index: number, files: any) {
     const file = files[0];
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => {
-      this.preview = reader.result;
-      console.log(reader.result);
+      this.biomarkers[index].image = reader.result;
+      this.biomarkers[index].files = files;
     };
     reader.onerror = error => {
       console.log("Error: ", error);
@@ -90,6 +147,9 @@ export class AddImagePage implements OnInit {
         case "section":
           this.biomarkers[index].section = value;
           break;
+        case "sequence":
+          this.biomarkers[index].sequence = value;
+          break;
         default:
           break;
       }
@@ -107,11 +167,14 @@ export class AddImagePage implements OnInit {
         case "section":
           this.biomarkers.push({ section: value });
           break;
+        case "sequence":
+          this.biomarkers[index].sequence = value;
+          break;
         default:
           break;
       }
     }
-
+    console.log(this.biomarkers, "location");
   }
 
   dismissModal() {
@@ -128,78 +191,86 @@ export class AddImagePage implements OnInit {
     }
   }
 
-  save() {
-    /*
-    console.log(this.id);
-
-    if (this.isValid()) {
-      this.subjectsService
-        .getSubjectData(this.id)
-        .then(data => {
-          const newImageTests = data.data().imageTests;
-
-          const image = {
-            url: this.preview,
-            section: this.currentSection,
-            coordinates: [this.currentX, this.currentY, this.currentZ],
-            test: this.test
-          };
-
-          if (newImageTests[this.field].images) {
-            newImageTests[this.field].images.push(image);
-            console.log(newImageTests);
-          } else {
-            newImageTests[this.field].images = [];
-            newImageTests[this.field].images.push(image);
-            console.log(newImageTests);
-          }
-          this.subjectsService
-            .updateSubject(this.id, {
-              imageTests: newImageTests
-            })
-            .then(() => {
-              this.dismissModal();
-              this.toastService.show("success", "Imagen añadida con éxito");
-            })
-            .catch(() => {
-              this.toastService.show("danger", "Error al añadir imagen");
+  saveImage(biomarker: any): Promise<void> {
+    return new Promise(async (resolve) => {
+      const code = this.createFileCode();
+      this.storage
+        .upload(
+          `/subjectBiomarkerImages/${code}${biomarker.files[0].name}`,
+          biomarker.files[0]
+        )
+        .then(async () => {
+          // Se guarda la url de la imagen en la actividad
+          this.fileSubscription = this.storage
+            .ref(`/subjectBiomarkerImages/${code}${biomarker.files[0].name}`)
+            .getDownloadURL()
+            .subscribe(async data => {
+              biomarker.url = data;
+              biomarker.code = code;
+              biomarker.fileName = biomarker.files[0].name;
+              resolve();
             });
-          // Aquí se debería de añadir la imagen en el biomarcador general
+        }).catch(error => {
+          this.toastService.show("danger", `Error al subir el archivo: ${error}`);
         })
-        .catch(error => console.log(error));
+    })
+  }
+
+  async save() {
+    this.presentLoading();
+    // Guardar las imágenes
+    for await (const el of this.biomarkers) {
+      if (el.image) {
+        console.log("imagen nueva");
+        // Borrar la anterior
+        this.storage.ref(`/subjectBiomarkerImages/${el.code}${el.fileName}`).delete();
+        // Subir la nueva
+        await this.saveImage(el);
+        delete el.image;
+        delete el.files;
+      }
+    }
+
+    // Guardar la información
+    this.subjectImageTest.values[this.indexOfBiomarker].locations = this.biomarkers;
+
+    if (this.origin == "reproduction") {
+      this.reproductionTestsService.update(this.subjectImageTestId, { values: this.subjectImageTest.values })
+        .then(async () => {
+          this.loadingController.dismiss();
+          await this.toastService.show("success", "Coordenadas añadidas con éxito");
+          this.modalController.dismiss();
+        }).catch(async () => {
+          this.loadingController.dismiss();
+          await this.toastService.show("danger", "Error al añadir las coordenadas");
+          this.modalController.dismiss();
+        })
     } else {
-      this.toastService.show(
-        "danger",
-        "Error: Hay campos erróneos o incompletos"
-      );
-    }
-    */
-
-    if (this.isValid) {
-      this.presentLoading();
-      this.subjectsService
-        .getSubjectData(this.id)
-        .then(data => {
-          const newImageTests = data.data().imageTests;
-          console.log(newImageTests);
-          newImageTests[this.indexTest].values[this.field].locations = this.biomarkers;
-          console.log(newImageTests);
-
-          this.subjectsService.updateSubject(this.id, {
-            imageTests: newImageTests
-          }).then(async () => {
-            await this.toastService.show("success", "Coordenadas añadidas con éxito");
-            this.loadingController.dismiss();
-            this.modalController.dismiss();
-          }).catch(async () => {
-            await this.toastService.show("danger", "Error al añadir las coordenadas");
-            this.loadingController.dismiss();
-            this.modalController.dismiss();
-          })
+      this.subjectImageTestsService.update(this.subjectImageTestId, { values: this.subjectImageTest.values })
+        .then(async () => {
+          this.loadingController.dismiss();
+          await this.toastService.show("success", "Coordenadas añadidas con éxito");
+          this.modalController.dismiss();
+        }).catch(async () => {
+          this.loadingController.dismiss();
+          await this.toastService.show("danger", "Error al añadir las coordenadas");
+          this.modalController.dismiss();
         })
     }
 
+  }
 
+  createFileCode() {
+    const dictionary = ["A", "9", "B", "C", "8", "D", "F", "G", "H", "J", "1", "K", "L", "M", "N", "Ñ", "2", "P", "Q", "R", "S", "T", "V", "3", "W", "X", "Y", "Z", "a", "b",
+      "4", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "ñ", "o", "5", "p", "q", "6", "r", "s", "t", "7", "u", "v", "w", "x", "y", "z"
+    ];
+    let returnedCode = "";
+
+    for (let index = 0; index < 8; index++) {
+      returnedCode += dictionary[Math.floor(Math.random() * dictionary.length - 1 + 1)];
+    }
+
+    return returnedCode;
   }
 
   async presentLoading() {

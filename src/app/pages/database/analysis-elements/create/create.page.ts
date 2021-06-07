@@ -11,16 +11,8 @@ import * as moment from "moment";
 })
 export class CreatePage implements OnInit {
   name: string;
-  category: string;
-  metricUnit: string;
-  lowerLevel: number;
-  upperLevel: number;
-  lowerAge: number;
-  upperAge: number;
-  sex: string;
-  information: string;
-
-  ranges = [];
+  elementCode: string;
+  loinc: string;
 
   constructor(
     private analysisElementsService: ClinicAnalysisElementsService,
@@ -30,43 +22,18 @@ export class CreatePage implements OnInit {
 
   ngOnInit() { }
 
-  addRange() {
-    if (this.lowerLevel || this.upperLevel) {
-      this.ranges.push({
-        sex: this.sex || null,
-        lowerAge: this.lowerAge || null,
-        upperAge: this.upperAge || null,
-        lowerLevel: this.lowerLevel || null,
-        upperLevel: this.upperLevel || null
-      });
-    } else {
-      this.toastService.show(
-        "danger",
-        "Al menos debes introducir valor mínimo ó máximo"
-      );
-    }
-  }
-
-  deleteRange(index: number) {
-    this.ranges.splice(index, 1);
-  }
-
   save() {
     if (
       this.name !== undefined &&
       this.name.length > 0 &&
-      this.category !== undefined &&
-      this.category.length > 0 &&
-      this.metricUnit !== undefined &&
-      this.metricUnit.length > 0
+      this.elementCode !== undefined &&
+      this.elementCode.length > 0
     ) {
       const element = {
         name: this.name,
-        category: this.category,
-        metricUnit: this.metricUnit,
-        ranges: this.ranges,
-        information: this.information || null,
-        createdAt: moment().format()
+        elementCode: this.elementCode,
+        createdAt: moment().format(),
+        loinc: this.loinc || null
       };
       console.log(element);
 

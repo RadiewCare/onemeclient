@@ -39,6 +39,8 @@ export class EditPage implements OnInit, OnDestroy {
     this.symptomSub = this.symptomsService
       .getSymptom(this.id)
       .subscribe((symptom) => {
+        console.log(symptom);
+
         this.name = symptom.name;
         this.initialName = symptom.name;
       });

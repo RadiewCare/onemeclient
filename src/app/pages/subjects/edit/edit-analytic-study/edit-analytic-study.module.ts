@@ -7,14 +7,16 @@ import { IonicModule } from '@ionic/angular';
 import { EditAnalyticStudyPageRoutingModule } from './edit-analytic-study-routing.module';
 
 import { EditAnalyticStudyPage } from './edit-analytic-study.page';
+import { IonicSelectableModule } from 'ionic-selectable';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    EditAnalyticStudyPageRoutingModule
+    EditAnalyticStudyPageRoutingModule,
+    IonicSelectableModule
   ],
   declarations: [EditAnalyticStudyPage]
 })
-export class EditAnalyticStudyPageModule {}
+export class EditAnalyticStudyPageModule { }

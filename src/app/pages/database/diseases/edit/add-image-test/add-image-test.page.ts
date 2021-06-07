@@ -81,6 +81,17 @@ export class AddImageTestPage implements OnInit {
     this.modalController.dismiss();
   }
 
+  onSearch(event: any) {
+    event.component.items = this.imageTestsElements;
+    if (event.text.length > 0) {
+      event.component.items = event.component.items.filter(e => this.removeAccents(e.name.toLowerCase()).includes(this.removeAccents(event.text.toLowerCase())));
+    }
+  }
+
+  removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
   isValid() {
     if (this.imageTestsData === undefined) {
       return false;
