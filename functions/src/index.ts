@@ -207,14 +207,17 @@ app.post("/createSubject", validate(createSubjectDataValidation, {}, {}), (reque
     if (subjects.length > 0) {
       let found = false;
 
+      let subjectId;
+
       for await (const subject of subjects) {
         if (subject.data().identifier.trim().toLowerCase() === request.body.identifier.trim().toLowerCase()) {
           found = true;
+          subjectId = subject.data().id;
         }
       }
 
       if (found) {
-        response.status(500).send({ message: "El identificador del sujeto ya está en uso en el doctor dado" })
+        response.status(500).send({ message: "El identificador del sujeto ya está en uso en el doctor dado", id: subjectId })
       } else {
         request.body.createdAt = moment().format();
         admin.firestore()
@@ -343,4 +346,4 @@ app.post("/addImageTestToSubject", (request, response) => {
 /**
  * EXPORTACIÓN DE LA API COMO CLOUD FUNCTION
  */
-export const api = functions.region('europe-west3').https.onRequest(app);
+// export const api = functions.region('europe-west3').https.onRequest(app);

@@ -29,7 +29,7 @@
           -->
           <ionic-selectable [(ngModel)]="currentImageTest" [items]="imageTests"
           itemValueField="id" itemTextField="name" [canSearch]="true" confirmButtonText="Seleccionar"
-          closeButtonText="Cancelar" (onChange)="getCurrentImageTest($event.target.value)" headerColor="primary"
+          closeButtonText="Cancelar" (onChange)="getCurrentImageTest($event.value)" headerColor="primary"
           searchFailText="No hay items disponibles" searchPlaceholder="Buscar" [isMultiple]="false">
           <ng-template ionicSelectableCloseButtonTemplate>
             <ion-icon name="close" style="font-size: 24px;"></ion-icon>
@@ -69,66 +69,65 @@
         </ion-item>
       </ion-col>
 
-      <!-- Caso por defecto -->
-      <ion-col size="12" *ngIf="date && currentImageTestData.name !== 'Endometriosis'">
-        <ion-item *ngFor="let field of currentImageTestData.fields; let i = index" lines="full"
-          [color]="field.status==='positive'?'danger':'light'">
-          <ion-label position="floating" [ngStyle]="{'padding-bottom': field.type==='interval'?'5px':'0px'}">
-            {{ field.name }}
+      <!-- CASO NUEVO -->
+      <ion-col size="12" *ngIf="currentImageTestData && date && currentImageTestData.name !== 'Endometriosis'" class="ion-margin-bottom">
+        <ion-item *ngFor="let biomarker of currentImageTestData.elements; let i = index" lines="full"
+        [color]="biomarker.status==='positive'?'danger':'light'">
+          <ion-label position="floating">
+            {{ biomarker.data.name }}
           </ion-label>
-          <ion-input *ngIf="field.type==='text'" type="text"
-            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            (ionChange)="editImageField($event.target.value,i)" [value]="field.value">
-          </ion-input>
-          <ion-textarea *ngIf="field.type==='textarea'"
-            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            rows="4" (ionChange)="editImageField($event.target.value,i)" [value]="field.value">
-          </ion-textarea>
-          <ion-textarea *ngIf="field.type==='conclusion'"
-            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            rows="4" (ionChange)="editImageField($event.target.value,i)" [value]="field.value">
-          </ion-textarea>
-          <ion-select *ngIf="field.type==='multiple'"
-            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            (ionChange)="editImageField($event.target.value,i)" [value]="field.value? field.value : field.defaultOption" cancelText="Cancelar" multiple>
-            <ion-select-option *ngFor="let option of field.options" [value]="option">{{option}}
-            </ion-select-option>
-          </ion-select>
-          <ion-select
-            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            *ngIf="field.type==='binary'" [value]="field.value" cancelText="Cancelar"
-            (ionChange)="editImageField($event.target.value,i)">
-            <ion-select-option *ngIf="!field.defaultInput" [value]="field.falseInput">
-              {{field.falseInput}}
-            </ion-select-option>
-            <ion-select-option *ngIf="!field.defaultInput" [value]="field.trueInput">{{field.trueInput}}
-            </ion-select-option>
-            <ion-select-option *ngIf="field.defaultInput" [value]="field.trueInput">{{field.trueInput}}
-            </ion-select-option>
-            <ion-select-option *ngIf="field.defaultInput" [value]="field.falseInput">
-              {{field.falseInput}}
-            </ion-select-option>
-          </ion-select>
-          <ion-input *ngIf="field.type==='number'" type="number"
-            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            (ionChange)="editImageField($event.target.value,i)" [value]="field.value"></ion-input>
-          <ion-range *ngIf="field.type==='interval'" (ionChange)="editImageField($event.target.value,i)"
-            [min]="field.min" [max]="field.max" pin="true" snaps="true" step="1" ticks="true" value="0" color="primary"
-            [value]="field.value">
-          </ion-range>
-          <ion-input *ngIf="field.type==='unit'" type="number"
-            [placeholder]="lang.isSpanish()?'Introduzca '+field.name.toLowerCase():'Enter '+ field.name.toLowerCase()"
-            (ionChange)="editImageField($event.target.value,i)" [value]="field.value">
-          </ion-input>
-          <ion-note slot="end" *ngIf="field.type==='unit'">{{field.unit}}</ion-note>
-          <ion-buttons slot="end" *ngIf="values[i] && field.value">
-            <ion-button (click)="showGallery(i,field.name)">
-              <ion-icon slot="icon-only" name="images"></ion-icon>
-            </ion-button>
-            <ion-button (click)="addImage(i,field.name)">
-              <ion-icon slot="icon-only" name="add"></ion-icon>
-            </ion-button>
-          </ion-buttons>
+          <ion-input *ngIf="biomarker.data.type==='text'" type="text"
+          [placeholder]="lang.isSpanish()?'Introduzca '+biomarker.data.name.toLowerCase():'Enter '+ biomarker.data.name.toLowerCase()"
+          (ionChange)="editImageField($event.target.value,i)" [value]="biomarker.value">
+        </ion-input>
+        <ion-textarea *ngIf="biomarker.data.type==='textarea'"
+          [placeholder]="lang.isSpanish()?'Introduzca '+biomarker.data.name.toLowerCase():'Enter '+ biomarker.data.name.toLowerCase()"
+          rows="4" (ionChange)="editImageField($event.target.value,i)" [value]="biomarker.value">
+        </ion-textarea>
+        <ion-textarea *ngIf="biomarker.data.type==='conclusion'"
+          [placeholder]="lang.isSpanish()?'Introduzca '+biomarker.data.name.toLowerCase():'Enter '+ biomarker.data.name.toLowerCase()"
+          rows="4" (ionChange)="editImageField($event.target.value,i)" [value]="biomarker.value">
+        </ion-textarea>
+        <ion-select *ngIf="biomarker.data.type==='multiple'"
+          [placeholder]="lang.isSpanish()?'Introduzca '+biomarker.data.name.toLowerCase():'Enter '+ biomarker.data.name.toLowerCase()"
+          (ionChange)="editImageField($event.target.value,i)" [value]="biomarker.defaultOption" cancelText="Cancelar" multiple>
+          <ion-select-option *ngFor="let option of biomarker.data.options" [value]="option" class="ion-text-wrap">{{option}}
+          </ion-select-option>
+        </ion-select>
+        <ion-select
+          [placeholder]="lang.isSpanish()?'Introduzca '+biomarker.data.name.toLowerCase():'Enter '+ biomarker.data.name.toLowerCase()"
+          *ngIf="biomarker.data.type==='binary'" [value]="biomarker.value" cancelText="Cancelar"
+          (ionChange)="editImageField($event.target.value,i)">
+          <ion-select-option *ngIf="!biomarker.data.defaultInput" [value]="biomarker.data.falseInput">
+            {{biomarker.data.falseInput}}
+          </ion-select-option>
+          <ion-select-option *ngIf="!biomarker.data.defaultInput" [value]="biomarker.data.trueInput">{{field.trueInput}}
+          </ion-select-option>
+          <ion-select-option *ngIf="biomarker.data.defaultInput" [value]="biomarker.data.trueInput">{{field.trueInput}}
+          </ion-select-option>
+          <ion-select-option *ngIf="biomarker.data.defaultInput" [value]="biomarker.data.falseInput">
+            {{biomarker.data.falseInput}}
+          </ion-select-option>
+        </ion-select>
+        <ion-input *ngIf="biomarker.data.type==='number'" type="number"
+          [placeholder]="lang.isSpanish()?'Introduzca '+biomarker.data.name.toLowerCase():'Enter '+ biomarker.data.name.toLowerCase()"
+          (ionChange)="editImageField($event.target.value,i)" [value]="biomarker.value"></ion-input>
+        <ion-range *ngIf="biomarker.data.type==='interval'" (ionChange)="editImageField($event.target.value,i)"
+          [min]="biomarker.data.min" [max]="biomarker.data.max" pin="true" snaps="true" step="1" ticks="true" value="0" color="primary"
+          [value]="biomarker.data.value">
+        </ion-range>
+        <ion-input *ngIf="biomarker.data.type==='unit'" type="number"
+          [placeholder]="lang.isSpanish()?'Introduzca '+biomarker.data.name.toLowerCase():'Enter '+ biomarker.data.name.toLowerCase()"
+          (ionChange)="editImageField($event.target.value,i)" [value]="biomarker.value"></ion-input>
+        <ion-note slot="end" *ngIf="biomarker.data.type==='unit'">{{biomarker.data.unit}}</ion-note>
+        <ion-buttons slot="end">
+          <ion-button (click)="addImage(i,biomarker.data.name, biomarker.data.value)">
+            <ion-icon slot="icon-only" name="location"></ion-icon>
+          </ion-button>
+          <ion-button (click)="showGallery(i)">
+            <ion-icon slot="icon-only" name="images"></ion-icon>
+          </ion-button>
+        </ion-buttons>
         </ion-item>
       </ion-col>
 

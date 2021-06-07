@@ -31,13 +31,13 @@
         </ion-item>
       </ion-col>
 
-     <!--  
+      <!-- 
       <ion-col size="12">
-        <ion-button (click)="migrateImageBiomarkers()" expand="block" color="primary">
+        <ion-button (click)="algoritmo()" expand="block" color="primary">
           MIGRATE
         </ion-button>
       </ion-col>
-      -->
+     -->
 
       <ion-col size="12" class="ion-margin-bottom">
         <ion-item>
@@ -363,20 +363,59 @@
             <ion-label>{{value}}</ion-label>
             <ng-container *ngIf="imageBiomarker.conditions; else elseTemplate">
               <ion-select placeholder="Seleccione condición lógica para el diagnóstico" (ionChange)="onImageConditionChange(i, k, $event.detail.value)" [value]="imageBiomarker.conditions[k]">
-                <ion-select-option value="enough">Condición suficiente</ion-select-option>
-                <ion-select-option value="needed">Condición necesaria</ion-select-option>
-                <ion-select-option value="exclusion">Excluye el diagnóstico</ion-select-option>
+                <ion-select-option value="1">1</ion-select-option>
+                <ion-select-option value="2">2</ion-select-option>
+                <ion-select-option value="3">3</ion-select-option>
+                <ion-select-option value="4">4</ion-select-option>
+                <ion-select-option value="5">5</ion-select-option>
               </ion-select>
             </ng-container>
             <ng-template #elseTemplate>
               <ion-select placeholder="Seleccione condición lógica para el diagnóstico" (ionChange)="onImageConditionChange(i, k, $event.detail.value)">
-                <ion-select-option value="enough">Condición suficiente</ion-select-option>
-                <ion-select-option value="needed">Condición necesaria</ion-select-option>
-                <ion-select-option value="exclusion">Excluye el diagnóstico</ion-select-option>
+                <ion-select-option value="1">1</ion-select-option>
+                <ion-select-option value="2">2</ion-select-option>
+                <ion-select-option value="3">3</ion-select-option>
+                <ion-select-option value="4">4</ion-select-option>
+                <ion-select-option value="5">5</ion-select-option>
               </ion-select>
             </ng-template>
           </ion-item>
         </ng-container>
+        
+      </ion-col>
+
+      <ion-col size="12">
+        <ion-item color="dangerprimary">
+          <ion-label>VALORES ORIGINALES ANTES DEL CAMBIO PARA COMPROBACIÓN</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" color="secondary" *ngFor="let imageBiomarker of disease?.imageTests; let i = index">
+        <ion-item lines="none" color="danger">
+          <ion-label>
+            <ion-text>
+              <div style="font-weight: bold;">{{imageBiomarker.test}}</div>
+            </ion-text>
+          </ion-label>
+
+          <ion-buttons slot="end">
+            <!-- <ion-button
+              [routerLink]="['/database/diseases/edit/edit-image-test', {id: imageTest.id, index: i}]">
+              <ion-icon slot="icon-only" name="create"></ion-icon>
+            </ion-button> -->
+            <ion-button [routerLink]="[ '/database/image-tests-elements/edit/', imageBiomarker.id ]">
+              <ion-icon slot="icon-only" name="create"></ion-icon>
+            </ion-button>
+            <ion-button>
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+        <ion-item>
+          <ion-label><b>Biomarcadores implicados:</b></ion-label>
+          <ion-select [value]="imageBiomarker.value" multiple="true" placeholder="Seleccione los biomarcadores implicados en esta enfermedad" cancelText="Cancelar" okText="Aceptar">
+            <ion-select-option [value]="value" *ngFor="let value of imageBiomarker.options; let i=index">{{value}}</ion-select-option>
+          </ion-select>
+        </ion-item>
         
       </ion-col>
 

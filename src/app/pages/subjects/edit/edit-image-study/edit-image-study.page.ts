@@ -7,6 +7,9 @@ import { SubjectsService } from "src/app/services/subjects.service";
 import { AddImagePage } from "../add-image/add-image.page";
 import { GalleryPage } from "../gallery/gallery.page";
 import { ImageStudiesService } from 'src/app/services/image-studies.service';
+import { SubjectImageTestsService } from "src/app/services/subject-image-tests.service";
+import { ImageTestsService } from "src/app/services/image-tests.service";
+import { ImageTestsElementsService } from "src/app/services/image-tests-elements.service";
 
 @Component({
   selector: "app-edit-image-study",
@@ -15,7 +18,7 @@ import { ImageStudiesService } from 'src/app/services/image-studies.service';
 })
 export class EditImageStudyPage implements OnInit, OnDestroy {
   @Input() id: string;
-  @Input() index: string;
+
   currentImageTestData: any;
   date: string;
   values: any;
@@ -148,6 +151,12 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
     }
   }
 
+  subjectImageTest: any;
+  imageTest: any;
+  imageTestFields: any;
+  subjectValues: any;
+  imageTestsElements: any;
+
   // B, VU, VV, R, V, RV, C, P, RU, U, leftOvary, rightOvary, UT, ufl,
   // IM, SS, SM, otheruf
 
@@ -156,26 +165,322 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
     private modalController: ModalController,
     private toastService: ToastService,
     private usersService: SubjectsService,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private subjectImageTestsService: SubjectImageTestsService,
+    private imageTestsService: ImageTestsService,
+    private imageTestsElementsService: ImageTestsElementsService
   ) { }
 
   ngOnInit() {
     console.log(this.id);
-    console.log(this.index);
-
-
   }
 
   ionViewDidEnter() {
-    this.getSubjectImageTests();
+    // this.getTest();
+    // this.getSubjectImageTests();
+    this.getImageTests();
+    // this.updateBiomarkers();
   }
+
+  async getTest() {
+    this.subjectImageTest = await this.subjectImageTestsService.getOneData(this.id);
+    console.log(this.subjectImageTest);
+
+    this.imageTest = (await this.imageTestsService.getImageTestData(this.subjectImageTest.imageTestId)).data();
+    console.log(this.imageTest);
+
+    this.date = this.subjectImageTest.date;
+    this.accessionNumber = this.subjectImageTest.accessionNumber || "";
+
+    if (this.imageTest.name == "Endometriosis") {
+      this.endometriosisData = this.values;
+      this.clinical_info = this.endometriosisData.clinical_info;
+      this.technique = this.endometriosisData.technique;
+      this.report = this.endometriosisData.report;
+      this.conclusionExists = this.endometriosisData.conclusions.exists;
+      this.motor_m1 = this.endometriosisData.conclusions.motor_m1;
+      this.motor_0 = this.endometriosisData.conclusions.motor_0;
+      this.motor_1 = this.endometriosisData.conclusions.motor_1;
+      if (this.motor_m1) { this.findingsEdit.push("motor_m1") }
+      if (this.motor_0) { this.findingsEdit.push("motor_0") }
+      if (this.motor_1) { this.findingsEdit.push("motor_1") }
+      this.subjectKey = this.endometriosisData.subjectKey;
+      this.locationOID = this.endometriosisData.locationOID;
+      this.mriyn = this.endometriosisData.mriyn;
+      this.mrirsn = this.endometriosisData.mrirsn;
+      this.mridat = this.endometriosisData.mridat;
+      this.mritim = this.endometriosisData.mritim;
+      this.fastyn = this.endometriosisData.fastyn;
+      this.fastrsnd = this.endometriosisData.fastrsnd;
+      this.abnormalFindingsExists = this.endometriosisData.abnormal_findings.exists;
+      this.abnormalFindingsValue = this.endometriosisData.abnormal_findings.value;
+
+      if (this.endometriosisData.report.B) {
+        this.bnLesions = this.endometriosisData.report.B.n_lesions;
+        this.bLesions = this.endometriosisData.report.B.lesions;
+
+        for (let index = 0; index < this.bLesions.length; index++) {
+          this.bDiamLesions[index] = this.bLesions[index].diameter;
+          this.bIsAnUpdate[index] = this.bLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.V) {
+        this.vunLesions = this.endometriosisData.report.V.n_lesions;
+        this.vuLesions = this.endometriosisData.report.V.lesions;
+        for (let index = 0; index < this.vuLesions.length; index++) {
+          this.vDiamLesions[index] = this.vuLesions[index].diameter;
+          this.vIsAnUpdate[index] = this.vuLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.VV) {
+        this.vvnLesions = this.endometriosisData.report.VV.n_lesions;
+        this.vvLesions = this.endometriosisData.report.VV.lesions;
+        for (let index = 0; index < this.vvLesions.length - 1; index++) {
+          this.vvDiamLesions[index] = this.vvLesions[index].diameter;
+          this.vvIsAnUpdate[index] = this.vvLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.R) {
+        this.rnLesions = this.endometriosisData.report.R.n_lesions;
+        this.rLesions = this.endometriosisData.report.R.lesions;
+        for (let index = 0; index < this.rLesions.length; index++) {
+          this.rDiamLesions[index] = this.rLesions[index].diameter;
+          this.rIsAnUpdate[index] = this.rLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.V) {
+        this.vnLesions = this.endometriosisData.report.V.n_lesions;
+        this.vLesions = this.endometriosisData.report.V.lesions;
+        for (let index = 0; index < this.vLesions.length; index++) {
+          this.vDiamLesions[index] = this.vLesions[index].diameter;
+          this.vIsAnUpdate[index] = this.vLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.RV) {
+        this.rvnLesions = this.endometriosisData.report.RV.n_lesions;
+        this.rvLesions = this.endometriosisData.report.RV.lesions;
+        for (let index = 0; index < this.rvLesions.length; index++) {
+          this.rvDiamLesions[index] = this.rvLesions[index].diameter;
+          this.rvIsAnUpdate[index] = this.rvLesions[index].isUpdate;
+        }
+      }
+
+
+      if (this.endometriosisData.report.C) {
+        this.cnLesions = this.endometriosisData.report.C.n_lesions;
+        this.cLesions = this.endometriosisData.report.C.lesions;
+        for (let index = 0; index < this.cLesions.length; index++) {
+          this.cDiamLesions[index] = this.cLesions[index].diameter;
+          this.cIsAnUpdate[index] = this.cLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.P) {
+        this.pnLesions = this.endometriosisData.report.P.n_lesions;
+        this.pLesions = this.endometriosisData.report.P.lesions;
+        for (let index = 0; index < this.pLesions.length; index++) {
+          this.pDiamLesions[index] = this.pLesions[index].diameter;
+          this.pIsAnUpdate[index] = this.pLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.RU) {
+        this.runLesions = this.endometriosisData.report.RU.n_lesions;
+        this.ruLesions = this.endometriosisData.report.RU.lesions;
+        for (let index = 0; index < this.ruLesions.length; index++) {
+          this.ruDiamLesions[index] = this.ruLesions[index].diameter;
+          this.ruIsAnUpdate[index] = this.ruLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.U) {
+        this.unLesions = this.endometriosisData.report.U.n_lesions;
+        this.uLesions = this.endometriosisData.report.U.lesions;
+        for (let index = 0; index < this.uLesions.length; index++) {
+          this.uDiamLesions[index] = this.uLesions[index].diameter;
+          this.uIsAnUpdate[index] = this.uLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.Left_Ovary) {
+        this.leftOvarynLesions = this.endometriosisData.report.Left_Ovary.n_lesions;
+        this.leftOvaryLesions = this.endometriosisData.report.Left_Ovary.lesions;
+        for (let index = 0; index < this.leftOvaryLesions.length; index++) {
+          this.leftOvaryDiamLesions[index] = this.leftOvaryLesions[index].diameter;
+          this.leftOvaryIsAnUpdate[index] = this.leftOvaryLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.Right_Ovary) {
+        this.rightOvarynLesions = this.endometriosisData.report.Right_Ovary.n_lesions;
+        this.rightOvaryLesions = this.endometriosisData.report.Right_Ovary.lesions;
+        for (let index = 0; index < this.rightOvaryLesions.length; index++) {
+          this.rightOvaryDiamLesions[index] = this.rightOvaryLesions[index].diameter;
+          this.rightOvaryIsAnUpdate[index] = this.rightOvaryLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.UT) {
+        this.utnLesions = this.endometriosisData.report.UT.n_lesions;
+        this.utLesions = this.endometriosisData.report.UT.lesions;
+        for (let index = 0; index < this.utLesions.length; index++) {
+          this.utDiamLesions[index] = this.utLesions[index].diameter;
+          this.utIsAnUpdate[index] = this.utLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.UFL) {
+        this.uflnLesions = this.endometriosisData.report.UFL.n_lesions;
+        this.uflLesions = this.endometriosisData.report.UFL.lesions;
+        for (let index = 0; index < this.uflLesions.length; index++) {
+          this.uflDiamLesions[index] = this.uflLesions[index].diameter;
+          this.uflIsAnUpdate[index] = this.uflLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.IM) {
+        this.imnLesions = this.endometriosisData.report.IM.n_lesions;
+        this.imLesions = this.endometriosisData.report.IM.lesions;
+        for (let index = 0; index < this.imLesions.length; index++) {
+          this.imDiamLesions[index] = this.imLesions[index].diameter;
+          this.imIsAnUpdate[index] = this.imLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.SS) {
+        this.ssnLesions = this.endometriosisData.report.SS.n_lesions;
+        this.ssLesions = this.endometriosisData.report.SS.lesions;
+        for (let index = 0; index < this.ssLesions.length; index++) {
+          this.ssDiamLesions[index] = this.ssLesions[index].diameter;
+          this.ssIsAnUpdate[index] = this.ssLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.SM) {
+        this.smnLesions = this.endometriosisData.report.SM.n_lesions;
+        this.smLesions = this.endometriosisData.report.SM.lesions;
+        for (let index = 0; index < this.smLesions.length; index++) {
+          this.ssDiamLesions[index] = this.smLesions[index].diameter;
+          this.ssIsAnUpdate[index] = this.smLesions[index].isUpdate;
+        }
+      }
+
+
+      if (this.endometriosisData.report.other_UF) {
+        this.otherufnLesions = this.endometriosisData.report.other_UF.n_lesions;
+        this.otherufLesions = this.endometriosisData.report.other_UF.lesions;
+        for (let index = 0; index < this.otherufLesions.length; index++) {
+          this.otherufDiamLesions[index] = this.otherufLesions[index].diameter;
+          this.otherufIsAnUpdate[index] = this.otherufLesions[index].isUpdate;
+        }
+      }
+
+      if (this.endometriosisData.report.thickness) {
+        this.thickness = this.endometriosisData.report.thickness;
+      }
+
+    }
+  }
+
+  async getImageTests() {
+    // Prueba de imagen del sujeto
+    this.subjectImageTest = await this.subjectImageTestsService.getOneData(this.id);
+    console.log(this.subjectImageTest);
+
+    this.date = this.subjectImageTest.date;
+    this.accessionNumber = this.subjectImageTest.accessionNumber || "";
+
+    // Valores de la prueba de imagen del sujeto
+    this.values = this.subjectImageTest.values
+    console.log(this.values);
+
+    // Prueba de imagen (config)
+    this.imageTest = (await this.imageTestsService.getImageTestData(this.subjectImageTest.imageTestId)).data();
+    console.log(this.imageTest);
+
+    // Elementos de prueba de imagen
+    this.imageTestsElements = (await this.imageTestsElementsService.getImageTestElementsData()).docs.map(element => element = element.data());
+    console.log(this.imageTestsElements);
+
+    // Crear los biomarcadores
+    this.subjectImageTest.biomarkers = this.imageTest.elements;
+    console.log(this.subjectImageTest.biomarkers);
+
+    // Coger la información de los biomarcadores
+    for await (const biomarker of this.subjectImageTest.biomarkers) {
+      biomarker.data = this.imageTestsElements.filter(element => element.id === biomarker.id)[0];
+    }
+
+    for await (const biomarker of this.subjectImageTest.biomarkers) {
+      for await (const value of this.values) {
+        if (value.name.trim().toLowerCase() === biomarker.name.trim().toLowerCase()) {
+          biomarker.value = value.value;
+          biomarker.status = value.status;
+        }
+      }
+    }
+    console.log(this.subjectImageTest.biomarkers);
+  }
+
+  // Adenopatía/s con igualdad de diámetros en los tres planos (desechar)
+
+  async updateBiomarkers() {
+    const subjectImageTests = (await this.subjectImageTestsService.getAllData()).map(element => element = element.data());
+    const imageTests = (await this.imageTestsService.getImageTestsData()).map(element => element = element.data());
+    const imageTestsElements = (await this.imageTestsElementsService.getImageTestElementsData()).docs.map(element => element = element.data());
+
+    console.log(subjectImageTests);
+    console.log(imageTests);
+    console.log(imageTestsElements);
+
+    const result = [];
+
+    let contador = 0;
+
+    for await (const subjectImageTest of subjectImageTests) {
+      const values = subjectImageTest.values
+
+      // Crear los biomarcadores
+      let imageTest = imageTests.filter(element => element.id === subjectImageTest.imageTestId)
+      imageTest = imageTest[0];
+
+      subjectImageTest.biomarkers = imageTest.elements;
+
+      // Coger la información de los biomarcadores
+
+      for await (const biomarker of subjectImageTest.biomarkers) {
+        biomarker.data = await imageTestsElements.filter(element => element.id === biomarker.id)[0];
+        for await (const value of values) {
+          if (value.name.trim().toLowerCase() === biomarker.name.trim().toLowerCase()) {
+            biomarker.value = value.value;
+            biomarker.status = value.status;
+          }
+        }
+      }
+
+      result.push({ subjectImageTestId: subjectImageTest.id, biomarkers: subjectImageTest.biomarkers })
+
+      // await this.subjectImageTestsService.update(subjectImageTest.id, { biomarkers: subjectImageTest.biomarkers });
+      console.log(contador, "hecho")
+
+      contador = contador + 1;
+    }
+
+    console.log(result);
+  }
+
 
   getSubjectImageTests() {
     this.userSub = this.usersService.getSubject(this.id).subscribe(data => {
       this.user = data;
       console.log(this.user);
 
-      this.currentImageTestData = this.user.imageTests[this.index];
+      //this.currentImageTestData = this.user.imageTests[this.index];
       this.date = this.currentImageTestData.date;
       this.accessionNumber = this.currentImageTestData.accessionNumber || "";
       this.values = this.currentImageTestData.values;
@@ -564,15 +869,15 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
         const positive = this.values.some(
           element => element.status === "positive"
         );
-        this.updatedImageTests[this.index].values = this.values;
+        //this.updatedImageTests[this.index].values = this.values;
         if (positive) {
-          this.updatedImageTests[this.index].status = "positive";
+          //this.updatedImageTests[this.index].status = "positive";
         } else {
-          this.updatedImageTests[this.index].status = "negative";
+          //this.updatedImageTests[this.index].status = "negative";
         }
 
-        this.updatedImageTests[this.index].accessionNumber = this.accessionNumber;
-        this.updatedImageTests[this.index].date = this.date;
+        //this.updatedImageTests[this.index].accessionNumber = this.accessionNumber;
+        //this.updatedImageTests[this.index].date = this.date;
 
         this.usersService
           .updateSubject(this.id, {
@@ -628,10 +933,10 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
 
     // GUARDAR EN BASE DE DATOS LOS CAMBIOS
 
-    this.updatedImageTests[this.index].values = this.endometriosisData;
+    //this.updatedImageTests[this.index].values = this.endometriosisData;
 
-    this.updatedImageTests[this.index].accessionNumber = this.accessionNumber;
-    this.updatedImageTests[this.index].date = this.date;
+    //this.updatedImageTests[this.index].accessionNumber = this.accessionNumber;
+    //this.updatedImageTests[this.index].date = this.date;
 
     this.usersService
       .updateSubject(this.id, {
@@ -1059,7 +1364,7 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
       componentProps: {
         id: this.id,
         field: field,
-        index: this.index
+        //index: this.index
 
       },
       cssClass: "my-custom-modal-css"
@@ -1075,7 +1380,7 @@ export class EditImageStudyPage implements OnInit, OnDestroy {
         field: field,
         test: test,
         value: value,
-        indexTest: this.index
+        //indexTest: this.index
       }
     });
     return await modal.present();

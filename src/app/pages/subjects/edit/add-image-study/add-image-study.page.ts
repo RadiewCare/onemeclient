@@ -36,7 +36,7 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
 
   json: any;
 
-  imageTestsElements: Observable<any>;
+  imageTestsElements = [];
 
   customTestName: string;
 
@@ -195,25 +195,48 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
 
   getTestsElements() {
     console.log(this.currentImageTestData);
-
   }
 
-  getImageTestElements() {
-    this.imageTestsElements = this.imageTestsElementsService.getImageTestElements();
+  async getImageTestElements() {
+    this.imageTestsElements = (await this.imageTestsElementsService.getImageTestElementsData()).docs.map(element => element = element.data());
+    console.log(this.imageTestsElements);
   }
 
-  getCurrentImageTest(imageTest: any) {
+  async getCurrentImageTest(imageTest: any) {
+    console.log(imageTest);
+    this.currentImageTestData = imageTest;
+
+    const resultElements = []
+    for await (const biomarker of this.currentImageTestData.elements) {
+      const result = this.imageTestsElements.filter(element => element.id === biomarker.id);
+      biomarker.data = result[0];
+      biomarker.name = result[0].name;
+    }
+
+    console.log(this.currentImageTestData.elements);
+
+    if (this.currentImageTestData.elements) {
+      this.values = this.currentImageTestData.elements;
+      this.values.forEach((element) => {
+        element.value = null;
+        element.status = null;
+      });
+    }
+    /*
     this.imageTestsService.getImageTestData(imageTest).then((data) => {
       this.currentImageTestData = data.data();
-      if (this.currentImageTestData.fields) {
-        this.values = this.currentImageTestData.fields;
+      console.log(this.currentImageTestData);
+
+      
+      if (this.currentImageTestData.elements) {
+        this.values = this.currentImageTestData.elements;
         this.values.forEach((element) => {
           element.value = null;
           element.status = null;
         });
         console.log("currentImageTestData", this.currentImageTestData);
       }
-    });
+    });*/
   }
 
   editImageField(value: any, index: number) {

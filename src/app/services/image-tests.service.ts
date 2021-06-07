@@ -6,12 +6,17 @@ import { Observable } from "rxjs";
   providedIn: "root"
 })
 export class ImageTestsService {
-  constructor(private db: AngularFirestore) {}
+
+  constructor(private db: AngularFirestore) { }
 
   getImageTests(): Observable<any> {
     return this.db
       .collection("imageTests", (ref) => ref.orderBy("name"))
       .valueChanges();
+  }
+
+  async getImageTestsData(): Promise<any> {
+    return (await this.db.firestore.collection("imageTests").get()).docs
   }
 
   getImageTest(id: string): Observable<any> {

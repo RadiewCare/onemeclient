@@ -718,7 +718,7 @@
           </ion-item>
          </ion-col>
         <ion-col size="12">
-          <ion-button (click)="showAddImage()" expand="full" color="secondary">
+          <ion-button (click)="showAddImage()" expand="full" color="secondary" disabled>
             <ion-icon slot="start" name="add"></ion-icon>
             <ion-label *ngIf="lang.isSpanish()">Crear prueba de imagen</ion-label>
             <ion-label *ngIf="!lang.isSpanish()">Create image test</ion-label>
@@ -839,7 +839,7 @@
                 <ion-label class="ion-hide-sm-down">PDF</ion-label>
                 <ion-icon slot="start" name="document"></ion-icon>
               </ion-button>
-              <ion-button (click)="showImageTest(imageTest.id, i)">
+              <ion-button (click)="showImageTest(imageTest.id)">
                 <ion-label class="ion-hide-sm-down">{{lang.isSpanish()?'Editar':'Edit'}}</ion-label>
                 <ion-icon slot="start" name="create"></ion-icon>
               </ion-button>

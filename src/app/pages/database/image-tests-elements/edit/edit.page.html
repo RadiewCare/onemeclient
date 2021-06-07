@@ -19,6 +19,15 @@
 
 <ion-content>
   <ion-grid fixed>
+    <!-- 
+    <ion-row>
+      <ion-col size="12">
+        <ion-button (click)="fusionRepeated()" expand="block" shape="round">
+          FUSIONAR REPETIDOS
+        </ion-button>
+      </ion-col>
+    </ion-row>
+     -->
     <ion-row>
       <ion-col size="12" class="ion-margin-top">
         <ion-item color="primary">
@@ -164,6 +173,9 @@
        <ion-item *ngFor="let test of relatedTestsData" [routerLink]="['/database/image-tests/edit', test.id]" lines="none">
          <ion-label>{{test.name}}</ion-label>
        </ion-item>
+       <ion-item *ngIf="relatedTestsData.length===0">
+        <ion-label>Ningún test relacionado</ion-label>
+      </ion-item>
       </ion-col>
     </ion-row>
 
@@ -172,7 +184,7 @@
         <ion-item color="primary">
           <ion-label>Enfermedades relacionadas</ion-label>
         </ion-item>
-       <ion-item *ngFor="let disease of relatedDiseasesData" [routerLink]="['/database/diseases/edit', disease.id]">
+       <ion-item *ngFor="let disease of relatedDiseasesData" [routerLink]="['/database/diseases/edit', disease.id]" lines="full">
          <ion-label>{{disease.name}}</ion-label>
        </ion-item>
        <ion-item *ngIf="relatedDiseasesData.length===0">

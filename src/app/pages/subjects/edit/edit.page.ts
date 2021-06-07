@@ -28,6 +28,8 @@ import { LabelsService } from 'src/app/services/labels.service';
 import { ImageTestsService } from 'src/app/services/image-tests.service';
 import { DiseasesService } from 'src/app/services/diseases.service';
 import { SymptomsService } from 'src/app/services/symptoms.service';
+import { SubjectImageTestsService } from "src/app/services/subject-image-tests.service";
+import * as moment from "moment";
 
 @Component({
   selector: "app-edit",
@@ -195,6 +197,8 @@ export class EditPage implements OnInit, OnDestroy {
 
   originalImageTests: any;
 
+  imageTestsList = [];
+
   constructor(
     private activatedRoute: ActivatedRoute,
     private alertController: AlertController,
@@ -213,7 +217,8 @@ export class EditPage implements OnInit, OnDestroy {
     private labelsService: LabelsService,
     private imageTestsService: ImageTestsService,
     private diseasesService: DiseasesService,
-    private symptomsService: SymptomsService
+    private symptomsService: SymptomsService,
+    private subjectImageTestsService: SubjectImageTestsService
   ) { }
 
   ngOnInit() {
@@ -223,6 +228,7 @@ export class EditPage implements OnInit, OnDestroy {
     this.getLabels();
     this.getDiseases();
     this.getSignsAndSypmtoms();
+
   }
 
   ionViewDidEnter() {
@@ -304,34 +310,35 @@ export class EditPage implements OnInit, OnDestroy {
           this.currentDiseases = history.diseases;
         }
         if (history.signsAndSymptoms) {
-          console.log(history.signsAndSymptoms);
-
           this.currentSignsAndSymptoms = history.signsAndSymptoms;
         }
       }
-      if (data.imageTests) {
-        this.imageTests = data.imageTests.sort((a, b) => {
-          return b.date - a.date;
-        });
-        this.originalImageTests = data.imageTests.sort((a, b) => {
-          return b.date - a.date;
-        });
-        console.log(this.imageTests);
 
-        let iterator = 0;
-        for await (const element of this.imageTests) {
-          this.imageTestsService.getImageTestData(element.imageTestId).then(data => {
-            console.log(data.data());
+      // Carga de pruebas de imagen
+      this.getSubjectImageTests();
 
-            this.imageTests[iterator].relatedCategories = data.data().relatedCategories || [];
-            this.imageTests[iterator].relatedLabels = data.data().relatedLabels || [];
-            iterator = iterator + 1;
-          })
-        }
-        console.log(this.imageTests);
-
-      }
     });
+  }
+
+  async getSubjectImageTests() {
+    this.imageTestsList = await this.imageTestsService.getImageTestsData();
+    this.imageTestsList = this.imageTestsList.map(element => element = element.data());
+
+    this.imageTests = await this.subjectImageTestsService.getAllDataBySubject(this.subject.id);
+    this.imageTests = this.imageTests.map(element => element = element.data());
+
+    for await (const it of this.imageTests) {
+      const prueba = this.imageTestsList.filter(element => element.id === it.imageTestId);
+      it.name = prueba[0].name;
+
+      it.relatedCategories = prueba[0].relatedCategories;
+      it.relatedLabels = prueba[0].relatedLabels;
+    }
+
+    console.log(this.imageTests);
+
+    this.imageTests = this.imageTests.sort((a, b) => +new Date(b.date) - +new Date(a.date));
+    this.originalImageTests = this.imageTests.sort((a, b) => +new Date(b.date) - +new Date(a.date));
   }
 
   segmentChanged(event: any) {
@@ -439,7 +446,7 @@ export class EditPage implements OnInit, OnDestroy {
 
   async filterCategories() {
     if (this.selectedCategoriesIds.length !== 0) {
-      console.log(this.selectedCategories);
+      // console.log(this.selectedCategories);
 
       const newTests = [];
       // Miro en qué indices están los elementos que coinciden con la categoría
@@ -461,7 +468,7 @@ export class EditPage implements OnInit, OnDestroy {
 
   async filterLabels() {
     if (this.selectedLabelsIds.length !== 0) {
-      console.log(this.selectedCategories);
+      //console.log(this.selectedCategories);
 
       const newTests = [];
       // Miro en qué indices están los elementos que coinciden con la categoría
@@ -672,7 +679,27 @@ export class EditPage implements OnInit, OnDestroy {
           text: "Aceptar",
           handler: () => {
             this.imageTests.splice(index, 1);
-            this.subjectsService
+
+            this.subjectImageTestsService.delete(this.imageTests[index].id).then(() => {
+              if (this.imageTests.length === 0) {
+                this.subjectsService.updateSubject(this.id, {
+                  hasImageAnalysis: false,
+                });
+              }
+              this.toastService.show(
+                "success",
+                "Prueba de imagen eliminada con éxito"
+              );
+              console.log(this.imageTests);
+            })
+              .catch(() => {
+                this.toastService.show(
+                  "danger",
+                  "Error al eliminar la prueba de imagen"
+                );
+              });
+
+            /*this.subjectsService
               .updateSubject(this.id, {
                 imageTests: this.imageTests,
               })
@@ -692,7 +719,7 @@ export class EditPage implements OnInit, OnDestroy {
                   "danger",
                   "Error al eliminar la prueba de imagen"
                 );
-              });
+              });*/
           },
         },
       ],
@@ -730,14 +757,14 @@ export class EditPage implements OnInit, OnDestroy {
   }
 
   onQuerySignsAndSymptoms(query: string) {
-    console.log(query);
+    //console.log(query);
     this.querySignsAndSymptomsList = this.signsAndSymptoms.filter(element => this.removeAccents(element.name.trim().toLowerCase()).includes(this.removeAccents(query.trim().toLowerCase())));
     console.log(this.querySignsAndSymptomsList);
   }
 
   addDisease(disease: any) {
     this.currentDiseases.push({ id: disease.id, name: disease.name });
-    console.log(this.currentDiseases);
+    //console.log(this.currentDiseases);
 
     this.queryDiseaseList = [];
     this.queryDisease = null;
@@ -920,12 +947,11 @@ export class EditPage implements OnInit, OnDestroy {
     return await modal.present();
   }
 
-  async showImageTest(testId: string, index: number) {
+  async showImageTest(testId: string) {
     const modal = await this.modalController.create({
       component: EditImageStudyPage,
       componentProps: {
-        id: this.id,
-        index,
+        id: testId
       },
       cssClass: "my-custom-modal-css",
       backdropDismiss: false,

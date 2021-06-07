@@ -22,6 +22,7 @@ import { SymptomsService } from 'src/app/services/symptoms.service';
 import { LanguageService } from 'src/app/services/language.service';
 import { SubjectsService } from 'src/app/services/subjects.service';
 import * as moment from 'moment';
+import { element } from "protractor";
 
 @Component({
   selector: "app-edit",
@@ -114,12 +115,11 @@ export class EditPage implements OnInit, OnDestroy {
         this.relatedLabels = disease.relatedLabels || [];
         this.relatedCategories = disease.relatedCategories || [];
         this.currentSignsAndSymptoms = disease.signsAndSymptoms || [];
-        // this.getBiomarkersValues();
+        this.getBiomarkers();
       });
     this.getCategories();
     this.getLabels();
     this.getSignsAndSypmtoms();
-
   }
 
   ionViewDidEnter() {
@@ -137,6 +137,21 @@ export class EditPage implements OnInit, OnDestroy {
       }
     );
 
+  }
+
+  async getBiomarkers() {
+    const imageTestsElements = (await this.imageTestsElementsService.getImageTestElementsData()).docs.map(element => element.data());
+    console.log(imageTestsElements);
+
+    const resultBiomarkers = [];
+    for await (const diseaseBiomarker of this.disease.imageBiomarkers) {
+      const result = imageTestsElements.filter(element => element.id === diseaseBiomarker.id);
+      if (result.length > 0) {
+        resultBiomarkers.push(result[0]);
+        diseaseBiomarker.name = result[0].name;
+        diseaseBiomarker.optiosn = result[0].options;
+      }
+    }
   }
 
   async getCategories() {
@@ -359,40 +374,67 @@ export class EditPage implements OnInit, OnDestroy {
 
   /* MODIFICACIONES */
 
-  algoritmo() {
-    // Necesito saber de alguna manera que los options de los elements actuales son los correctos y si no actualizarlos
-    // Una vez garantizada la integridad de los datos de los biomarcadores realizar la criba de información repetida y fusiones de elementos
-    // Nota: estaría bien probar con un subconjunto primero por adelantar y luego con la totalidad.
+  async algoritmo() {
+    // Se cogen los imageTests
 
+    console.log(this.disease.imageTests, "imagetest originales");
+    console.log(this.disease.imageBiomarkers, "imagebiomarkers");
+
+    // Se mira si el campo test coincide con el nombre con alguno de los elementos de prueba de imagen
+
+    const imageTestsElements = (await this.imageTestsElementsService.getImageTestElementsData()).docs.map(element => element.data());
+    const imageTestsElementsNames = imageTestsElements.map(element => element = this.removeAccents(element.name.trim().toLowerCase()));
+    console.log(imageTestsElements);
+
+    for await (const test of this.disease.imageTests) {
+      if (imageTestsElementsNames.includes(this.removeAccents(test.test.trim().toLowerCase()))) {
+        console.log("se encuentra", test.test);
+
+      } else {
+        console.log("no se encuentra", test.test);
+      }
+    }
+
+    // Si coincide se mete la info en formato imageBiomarkers
   }
 
-  migrateImageBiomarkers() {
+  async migrateImageBiomarkers() {
 
     const diseasesResult = [];
 
+    // Cogo la totalidad de los elementos de pruebas de imagen
     this.imageTestsElements$ = this.imageTestsElementsService.getImageTestElements();
-
     this.imageTestsElementsSub = this.imageTestsElements$.subscribe(imageTestsElements => {
 
+      // Se mapea los elementos para que solo contengan el nombre
       const filteredBiomarkers = imageTestsElements.map(element => element.name);
 
+      // Se coge la totalidad de las enfermedades
       this.diseasesService.getDiseasesData().then(async diseases => {
 
+        // Se meten los resultados en un array
         const diseasesList = [];
 
         for await (const element of diseases.docs) {
           diseasesList.push(element.data());
         }
 
+        // Se recorren las enfermedades
+
         for await (const disease of diseasesList) {
 
+          // Si la enfermedad tienen imageTests (es decir, biomarcadores antiguos)
           if (disease.imageTests) {
+            // Se mapean por el nombre del test (que debe de ser el mismo que el nombre del elemento de prueba)
             const filteredImageTests = disease.imageTests.map(element => element.test);
 
             console.log(disease.imageTests);
             console.log(filteredImageTests);
 
+            // Se recorren los valores antiguos
             filteredImageTests.forEach(imageTest => {
+
+              // Si entre las pruebas de imagen se encuentra
               if (filteredBiomarkers.includes(imageTest)) {
                 const index = imageTestsElements.findIndex(element => element.name === imageTest);
                 if (!disease.imageBiomarkers) {

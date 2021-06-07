@@ -1,9 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { LoadingController } from '@ionic/angular';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ImageTestsElementsService } from 'src/app/services/image-tests-elements.service';
-import { ImageTestsService } from 'src/app/services/image-tests.service';
-
 @Component({
   selector: 'app-image-tests-elements',
   templateUrl: './image-tests-elements.page.html',
@@ -16,12 +14,13 @@ export class ImageTestsElementsPage implements OnInit, OnDestroy {
 
   queryImageTestsElements: any;
 
-  constructor(private imageTestsService: ImageTestsService, private imageTestsElementsService: ImageTestsElementsService, public loadingController: LoadingController) { }
+  loading: any;
+
+  constructor(
+    private imageTestsElementsService: ImageTestsElementsService,
+    public loadingController: LoadingController) { }
 
   ngOnInit() {
-  }
-
-  ionViewDidEnter() {
     this.queryImageTestsElements = null;
     this.presentLoading();
     this.imageTestsElementsSub = this.imageTestsElementsService.getImageTestElements().subscribe((data) => {
@@ -34,7 +33,22 @@ export class ImageTestsElementsPage implements OnInit, OnDestroy {
       this.imageTestsElements = this.imageTestsElements.sort((a, b) => this.removeAccents(a.name).localeCompare(this.removeAccents(b.name)))
       console.log(this.imageTestsElements);
       this.loadingController.dismiss();
+      this.duplicates();
     });
+  }
+
+  duplicates() {
+    const elementos = [];
+    const repetidos = [];
+    for (let index = 0; index < this.imageTestsElements.length; index++) {
+      if (!elementos.includes(this.imageTestsElements[index].name)) {
+        elementos.push(this.imageTestsElements[index].name)
+      } else if (!repetidos.includes(this.imageTestsElements[index].name)) {
+        repetidos.push(this.imageTestsElements[index].name)
+      }
+    }
+    console.log(elementos, "elems");
+    console.log(repetidos, "rep");
   }
 
   onSearchChange(query: string) {
@@ -55,15 +69,16 @@ export class ImageTestsElementsPage implements OnInit, OnDestroy {
   }
 
   async presentLoading() {
-    const loading = await this.loadingController.create({
+    this.loading = await this.loadingController.create({
       message: 'Cargando...'
     });
-    await loading.present();
+    await this.loading.present();
   }
 
-
   ngOnDestroy(): void {
-    this.imageTestsElementsSub.unsubscribe();
+    if (this.imageTestsElementsSub) {
+      this.imageTestsElementsSub.unsubscribe();
+    }
   }
 
 }

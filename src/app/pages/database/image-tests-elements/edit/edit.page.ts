@@ -117,6 +117,9 @@ export class EditPage implements OnInit, OnDestroy {
     "z"
   ];
 
+  imageTestsElements: any;
+  imageTests: any;
+
   constructor(
     private imageTestsService: ImageTestsService,
     private imageTestsElementsService: ImageTestsElementsService,
@@ -133,6 +136,131 @@ export class EditPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadElement();
+  }
+
+  async updateRelatedDiseases() {
+    this.imageTestsElements = (await this.imageTestsElementsService.getImageTestElementsData()).docs
+      .map(element => element = element.data());
+
+    let contador = 0;
+    for await (const imageTestElement of this.imageTestsElements) {
+      const filtered2 = this.diseases.filter(disease => {
+        if (disease.imageBiomarkers) {
+          return disease.imageBiomarkers.find(biomarker => biomarker.id === imageTestElement.id)
+        }
+      });
+
+      const relatedDiseases = filtered2.map(element => element = element.id)
+      await this.imageTestsElementsService.updateImageTestElement(imageTestElement.id, { relatedDiseases: relatedDiseases })
+      console.log(relatedDiseases, imageTestElement.name, contador);
+      contador = contador + 1;
+    }
+  }
+
+  async fusionRepeated() {
+    // COGER LOS ELEMENTOS REPETIDOS QUE SON SEAN ÉL MISMO
+    const repeatedImageTestsElements = (await this.imageTestsElementsService.getImageTestElementsData()).docs.map(element => element = element.data()).filter(element => (element.name.trim().toLowerCase() === this.name.trim().toLowerCase()) && (element.id !== this.id));
+    console.log(repeatedImageTestsElements, "REPETIDOS");
+    // BORRAR LA RELACIÓN EXISTENTE DE LAS ENFERMEDADES Y PRUEBAS IMPLICADAS CON LOS ELEMENTOS QUE ESTABAN REPETIDOS (¿YA SE HACE AL ELIMINAR?)
+
+    repeatedImageTestsElements.forEach(imageTestElement => {
+      // ENFERMEDADES
+      const relatedDiseasesData = [];
+      console.log(imageTestElement, "el eelemento de prueba que va a quedar obsoleto y eliminarse");
+
+      imageTestElement.relatedDiseases.forEach(async element => {
+        const diseaseToInclude = this.diseases.find(disease => disease.id === element)
+        console.log(diseaseToInclude, "enfermedad relacionada que experimenta el cambio");
+
+        if (!this.relatedDiseases.includes(diseaseToInclude.id)) {
+          relatedDiseasesData.push(diseaseToInclude);
+          this.relatedDiseases.push(diseaseToInclude.id);
+
+          console.log(diseaseToInclude.imageBiomarkers, "antes de eliminarse el repetido");
+          console.log(diseaseToInclude.imageBiomarkers.filter(element => element.id !== imageTestElement.id), "después de eliminarse el repetido");
+
+          // Quito de la enfermedad el que va a eliminarse y pongo el que hay cargado
+          const index = diseaseToInclude.imageBiomarkers.findIndex(element => element.id == imageTestElement.id);
+          diseaseToInclude.imageBiomarkers[index] = { id: this.id, name: this.name, options: this.options, order: 0, values: [] };
+
+          console.log(diseaseToInclude.imageBiomarkers, "resultado final incluyendo el nuevo");
+
+
+          this.diseasesService.updateDisease(diseaseToInclude.id, diseaseToInclude)
+            .then(() => {
+              console.log("exito en enfermedad", diseaseToInclude.name);
+            })
+            .catch(error => console.error(error, diseaseToInclude.name)
+            );
+
+        }
+      });
+
+      console.log(relatedDiseasesData, imageTestElement.name, "relatedDiseasesData");
+
+      // TESTS
+      const relatedTestsData = [];
+      imageTestElement.relatedTests.forEach(async element => {
+        const testToInclude = this.imageTests.find(test => test.id === element)
+        console.log(testToInclude, "test relacionado que experimenta el cambio");
+
+        if (!this.relatedTests.includes(testToInclude.id)) {
+          relatedTestsData.push(testToInclude);
+          this.relatedTests.push(testToInclude.id);
+
+          console.log(testToInclude.elements, "antes de eliminarse el repetido");
+          console.log(testToInclude.elements.filter(element => element.id !== imageTestElement.id), "después de eliminarse el repetido");
+
+          // Quito del test el que va a eliminarse y pongo el que hay cargado
+          const index = testToInclude.elements.findIndex(element => element.id == imageTestElement.id);
+          testToInclude.elements[index] = { id: this.id, name: this.name, order: testToInclude.elements.length + 1 }
+
+          console.log(testToInclude.elements, "resultado final incluyendo el nuevo");
+
+          this.imageTestsService.updateImageTest(testToInclude.id, { elements: testToInclude.elements })
+            .then(() => {
+              console.log("exito en test", testToInclude.name);
+            })
+            .catch(error => console.error(error, testToInclude.name)
+            );
+        }
+
+      });
+
+      console.log(relatedTestsData, imageTestElement.name, "relatedTestsData");
+
+      this.options = [...this.options, ...imageTestElement.options];
+      this.positiveOptions = [...this.positiveOptions, ...imageTestElement.positiveOptions];
+
+      // HACERLOS ÚNICOS
+      this.options = this.options.filter((value, index, self) => {
+        return self.indexOf(value) === index;
+      });
+
+      this.positiveOptions = this.positiveOptions.filter((value, index, self) => {
+        return self.indexOf(value) === index;
+      });
+    });
+
+    // LO QUE TENGO QUE HACER AHORA ES QUE SE VEAN LAS PRUEBAS DE LOS DUPLICADOS POR CONSOLA
+    // enfermedades
+
+    // tests
+    console.log(this.relatedTests);
+    console.log(this.relatedDiseases);
+
+    await this.loadRelatedTests();
+    await this.loadRelatedDiseases();
+
+    console.log(this.relatedTestsData);
+    console.log(this.relatedDiseasesData);
+
+
+    // RELACIONAR LAS ENFERMEDADES Y PRUEBAS DE IMAGEN DE LOS REPETIDOS CON EL ELEMENTO PRINCIPAL EN LA MISMA POSICIÓN DONDE ESTABA EL OTRO
+    // ENFERMEDADES
+    // PRUEBAS
+
+    // ELIMINAR LOS IMAGE TESTELEMENTS REPETIDOS QUE NO APORTAN YA NADA
   }
 
   loadElement() {
@@ -187,15 +315,22 @@ export class EditPage implements OnInit, OnDestroy {
   }
 
   async loadRelatedTests() {
-    let result;
-    this.relatedTests.forEach(async element => {
-      result = await this.imageTestsService.getImageTestData(element);
-      this.relatedTestsData.push(result.data());
+    const imageTests = await this.imageTestsService.getImageTestsData();
+    this.imageTests = imageTests.map(element => element.data());
+
+    this.relatedTests.forEach(element => {
+      const testToInclude = this.imageTests.find(test => test.id === element)
+
+      const relatedTestsDataIds = this.relatedTestsData.map(element => element = element.id);
+      if (!relatedTestsDataIds.includes(testToInclude.id)) {
+        this.relatedTestsData.push(testToInclude);
+      }
+
     });
   }
 
   async loadRelatedDiseases() {
-    let result;
+    /*let result;
     this.relatedDiseases.forEach(async element => {
       result = await this.diseasesService.getDiseaseData(element);
       this.relatedDiseasesData.push(result.data());
@@ -208,12 +343,29 @@ export class EditPage implements OnInit, OnDestroy {
       if (disease.imageBiomarkers) {
         return disease.imageBiomarkers.find(biomarker => biomarker.id === this.id)
       }
-
     });
 
     this.relatedDiseasesData = filtered2.map(element => element = { id: element.id, name: element.name })
-    console.log(this.relatedDiseases);
+    this.relatedDiseases = this.relatedDiseasesData;
+    console.log(this.relatedDiseasesData);
+    */
 
+    const enfermedades = await this.diseasesService.getDiseasesData();
+    this.diseases = enfermedades.docs.map(element => element.data());
+
+    this.relatedDiseases.forEach(element => {
+      const diseaseToInclude = this.diseases.find(disease => disease.id === element)
+
+      const relatedDiseasesIds = this.relatedDiseasesData.map(element => element = element.id);
+      console.log(relatedDiseasesIds);
+
+      if (!relatedDiseasesIds.includes(diseaseToInclude.id)) {
+        console.log("entro");
+
+        this.relatedDiseasesData.push(diseaseToInclude);
+      }
+
+    });
   }
 
   addOption(value: string) {
@@ -438,11 +590,11 @@ export class EditPage implements OnInit, OnDestroy {
                 .getDownloadURL()
                 .subscribe(data => {
                   this.temporaryImages[index] = data;
-                  resolve();
+                  resolve(null);
                 });
             })
         } else {
-          resolve();
+          resolve(null);
         }
       }))
     }
@@ -472,7 +624,7 @@ export class EditPage implements OnInit, OnDestroy {
     const alert = await this.alertController.create({
       header: "¿Estás seguro?",
       message:
-        "Pulse aceptar para eliminar el elemento de prueba de imagen. Se eliminará también de todas las pruebas de imagen relacionadas.",
+        "Pulse aceptar para eliminar el elemento de prueba de imagen. Se eliminará también de todas las pruebas de imagen relacionadas y enfermedades.",
       buttons: [
         {
           text: "Cancelar",
@@ -487,7 +639,7 @@ export class EditPage implements OnInit, OnDestroy {
             for await (const relatedTest of this.relatedTests) {
               this.imageTestsService.getImageTestData(relatedTest).then(data => {
                 const elements = data.data().elements;
-                const indexForDelete = elements.findIndex(element => element.id === relatedTest);
+                const indexForDelete = elements.findIndex(element => element.id === this.id);
                 elements.splice(indexForDelete, 1);
                 this.imageTestsService.updateImageTest(relatedTest, {
                   elements: elements

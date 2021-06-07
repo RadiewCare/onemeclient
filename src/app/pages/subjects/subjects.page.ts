@@ -77,7 +77,7 @@ export class SubjectsPage implements OnInit, OnDestroy {
     });
   }
 
-  getSubjects(): Promise<any> {
+  getSubjects(): Promise<void> {
     this.querySubjects = null;
     this.subjects$ = this.subjectsService.getSubjectByDoctor(this.userData.id);
     return new Promise((resolve) => {
@@ -175,7 +175,7 @@ export class SubjectsPage implements OnInit, OnDestroy {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
-  onDateFilterChange(fechaInicial: string, fechaFinal: string): Promise<any> {
+  onDateFilterChange(fechaInicial: string, fechaFinal: string): Promise<void> {
     if (fechaInicial && fechaFinal) {
       return new Promise((resolve) => {
         this.subjects = this.subjects.filter((subject) => {
@@ -195,7 +195,7 @@ export class SubjectsPage implements OnInit, OnDestroy {
     }
   }
 
-  onCentroChange(centros: string): Promise<any> {
+  onCentroChange(centros: string): Promise<void> {
     if (centros && centros.length === 0) {
       return new Promise(resolve => {
         resolve();
