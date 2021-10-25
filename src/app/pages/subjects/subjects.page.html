@@ -3,8 +3,11 @@
     <ion-buttons slot="start" class="ion-hide-lg-up">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title *ngIf="lang.isSpanish()">Pacientes</ion-title>
-    <ion-title *ngIf="!lang.isSpanish()">Patients</ion-title>
+    <ion-buttons *ngIf="id" slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Pacientes {{ doctorData?.name ? 'de ' + doctorData?.name : ""}}</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">{{ doctorData?.name ? doctorData?.name + " " : ""}}Patients</ion-title>
     <ion-buttons slot="end">
       <ion-button [routerLink]="['./create']" title="Nuevo sujeto">
         <ion-icon slot="start" name="add"></ion-icon>
@@ -20,11 +23,9 @@
     <!-- Filtros y búsquedas -->
     <ion-row>
       <ion-col size="12" class="ion-padding-top">
-        <ion-searchbar
-          class="ion-no-padding"
+        <ion-searchbar class="ion-no-padding"
           [placeholder]="lang.isSpanish()? 'Buscar por identificador' : 'Search by identifier'"
-          (ionChange)="onSearchChange($event.detail.value)"
-        >
+          (ionChange)="onSearchChange($event.detail.value)">
         </ion-searchbar>
       </ion-col>
     </ion-row>
@@ -32,12 +33,8 @@
       <ion-col size="6" class="ion-padding-top">
         <ion-item>
           <ion-label>Ordenar por fecha de creación</ion-label>
-          <ion-select
-            placeholder="Seleccione orden"
-            okText="Aceptar"
-            cancelText="Cancelar"
-            (ionChange)="filterSubjects()" [(ngModel)]="currentOrder"
-          >
+          <ion-select placeholder="Seleccione orden" okText="Aceptar" cancelText="Cancelar"
+            (ionChange)="filterSubjects()" [(ngModel)]="currentOrder">
             <ion-select-option value="asc">Ascendente</ion-select-option>
             <ion-select-option value="desc">Descendente</ion-select-option>
           </ion-select>
@@ -47,19 +44,10 @@
       <ion-col size="6" class="ion-padding-top">
         <ion-item>
           <ion-label>Centro referente</ion-label>
-          <ion-select
-            placeholder="Seleccione centro referente"
-            okText="Aceptar"
-            cancelText="Cancelar"
-            (ionChange)="filterSubjects()"
-            multiple = "true"
-            [(ngModel)]="currentCentros"
-          >
-            <ion-select-option
-              *ngFor="let centro of centrosReferentes"
-              [value]="centro"
-              >{{ centro }}</ion-select-option
-            >
+          <ion-select placeholder="Seleccione centro referente" okText="Aceptar" cancelText="Cancelar"
+            (ionChange)="filterSubjects()" multiple="true" [(ngModel)]="currentCentros">
+            <ion-select-option *ngFor="let centro of centrosReferentes" [value]="centro">{{ centro }}
+            </ion-select-option>
           </ion-select>
         </ion-item>
       </ion-col>
@@ -67,23 +55,24 @@
       <ion-col size="6" class="ion-padding-top">
         <ion-item>
           <ion-label>Fecha inicial</ion-label>
-            <ion-datetime display-format="DD/MM/YYYY" doneText="Aceptar" [(ngModel)]="initialDate"
-            cancelText="Cancelar" (ionChange)="filterSubjects()"></ion-datetime>
+          <ion-datetime display-format="DD/MM/YYYY" doneText="Aceptar" [(ngModel)]="initialDate" cancelText="Cancelar"
+            (ionChange)="filterSubjects()"></ion-datetime>
         </ion-item>
       </ion-col>
 
       <ion-col size="6" class="ion-padding-top">
         <ion-item>
           <ion-label>Fecha final</ion-label>
-            <ion-datetime display-format="DD/MM/YYYY" doneText="Aceptar" [(ngModel)]="finalDate"
-            cancelText="Cancelar" (ionChange)="filterSubjects()"></ion-datetime>
+          <ion-datetime display-format="DD/MM/YYYY" doneText="Aceptar" [(ngModel)]="finalDate" cancelText="Cancelar"
+            (ionChange)="filterSubjects()"></ion-datetime>
         </ion-item>
       </ion-col>
 
       <ion-col size="6" class="ion-padding-top">
         <ion-item>
           <ion-label postiion="floating">Intervalo temporal</ion-label>
-          <ion-select value="always" multiple="false" placeholder="Seleccione intervalo" (ionChange)="filterSubjects()" cancelText="Cancelar" okText="Aceptar" [(ngModel)]="filterInterval">
+          <ion-select value="always" multiple="false" placeholder="Seleccione intervalo" (ionChange)="filterSubjects()"
+            cancelText="Cancelar" okText="Aceptar" [(ngModel)]="filterInterval">
             <ion-select-option value="always">Desde siempre</ion-select-option>
             <ion-select-option value="1week">Hace una semana</ion-select-option>
             <ion-select-option value="2weeks">Hace dos semanas</ion-select-option>
@@ -96,12 +85,19 @@
       </ion-col>
 
       <ion-col size="6" class="ion-padding-top">
-          <ion-button (click)="resetFilters()" expand="block">
-            Reiniciar filtro
-          </ion-button>
+        <ion-item lines="full">
+          <ion-label>Mostrar solo compartidos</ion-label>
+          <ion-checkbox slot="start" [(ngModel)]="showShared" style="margin: 0; margin-right: 1rem;"></ion-checkbox>
+        </ion-item>
       </ion-col>
 
       <ion-col size="12" class="ion-padding-top">
+        <ion-button (click)="resetFilters()" expand="block">
+          Reiniciar filtro
+        </ion-button>
+      </ion-col>
+
+      <ion-col size="12" class="ion-padding-top" *ngIf="!showShared">
         <ng-container *ngIf="!querySubjects; else elseTemplate">
 
           <ion-list lines="full" class="ion-no-padding">
@@ -112,46 +108,29 @@
           </ion-list>
 
           <ion-virtual-scroll [items]="subjects">
-            <ion-item *virtualItem="let subject" style="cursor: pointer;"
-            [routerLink]="['/subjects/edit/'+ subject.id]" lines="full">
-            <ion-label>
-              {{ subject.identifier }}
-            </ion-label>
-            <ion-icon
-              slot="end"
-              name="body"
-              [color]="(subject.history) ? 'primary' : 'medium'"
-              [title]="(subject.history && lang.isSpanish()) ? 'Tiene datos fenotípicos': 'No tiene datos fenotípicos'"
-            >
-            </ion-icon>
-            <ion-icon
-              slot="end"
-              name="finger-print"
-              [color]="(subject.hasGeneticAnalysis) ? 'primary' : 'medium'"
-              [title]="(subject.hasGeneticAnalysis && lang.isSpanish()) ? 'Tiene datos genéticos': 'No tiene datos genéticos'"
-            >
-            </ion-icon>
-            <ion-icon
-            slot="end"
-            name="male-female"
-            [color]="(subject.hasReproductionTests) ? 'primary' : 'medium'"
-            [title]="(subject.hasReproductionTests && lang.isSpanish()) ? 'Tiene datos de reproducción': 'No tiene datos de reproducción'"
-          >
-          </ion-icon>
-            <ion-icon
-              slot="end"
-              name="eyedrop"
-              [color]="(subject.hasClinicAnalysis) ? 'primary' : 'medium'"
-              [title]="(subject.hasClinicAnalysis && lang.isSpanish()) ? 'Tiene datos analíticos': 'No tiene datos analíticos'"
-            >
-            </ion-icon>
-            <ion-icon
-              slot="end"
-              name="images"
-              [color]="(subject.hasImageAnalysis) ? 'primary' : 'medium'"
-              [title]="(subject.hasImageAnalysis && lang.isSpanish()) ? 'Tiene pruebas de imagen': 'No tiene pruebas de imagen'"
-            >
-            </ion-icon>
+            <ion-item *virtualItem="let subject" style="cursor: pointer;" [routerLink]="['/subjects/edit/'+ subject.id]"
+              lines="full">
+              <ion-label *ngIf="this.id && doctorData.isAdmin">
+                {{ subject.id}}
+              </ion-label>
+              <ion-label *ngIf="!this.id">
+                {{ subject.identifier}}
+              </ion-label>
+              <ion-icon slot="end" name="body" [color]="(subject.history) ? 'primary' : 'medium'"
+                [title]="(subject.history && lang.isSpanish()) ? 'Tiene datos fenotípicos': 'No tiene datos fenotípicos'">
+              </ion-icon>
+              <ion-icon slot="end" name="finger-print" [color]="(subject.hasGeneticAnalysis) ? 'primary' : 'medium'"
+                [title]="(subject.hasGeneticAnalysis && lang.isSpanish()) ? 'Tiene datos genéticos': 'No tiene datos genéticos'">
+              </ion-icon>
+              <ion-icon slot="end" name="male-female" [color]="(subject.hasReproductionTests) ? 'primary' : 'medium'"
+                [title]="(subject.hasReproductionTests && lang.isSpanish()) ? 'Tiene datos de reproducción': 'No tiene datos de reproducción'">
+              </ion-icon>
+              <ion-icon slot="end" name="eyedrop" [color]="(subject.hasClinicAnalysis) ? 'primary' : 'medium'"
+                [title]="(subject.hasClinicAnalysis && lang.isSpanish()) ? 'Tiene datos analíticos': 'No tiene datos analíticos'">
+              </ion-icon>
+              <ion-icon slot="end" name="images" [color]="(subject.hasImageAnalysis) ? 'primary' : 'medium'"
+                [title]="(subject.hasImageAnalysis && lang.isSpanish()) ? 'Tiene pruebas de imagen': 'No tiene pruebas de imagen'">
+              </ion-icon>
             </ion-item>
           </ion-virtual-scroll>
 
@@ -164,54 +143,33 @@
               <ion-label *ngIf="!lang.isSpanish()">MY PATIENTS</ion-label>
             </ion-list-header>
           </ion-list>
-            <ion-virtual-scroll [items]="querySubjects">
-              <ion-item
-              *virtualItem="let subject"
-              style="cursor: pointer;"
-              [routerLink]="['/subjects/edit/'+ subject.id]"
-              lines="full"
-            >
-              <ion-label>
-                {{ subject.identifier }}
+          <ion-virtual-scroll [items]="querySubjects">
+            <ion-item *virtualItem="let subject" style="cursor: pointer;" [routerLink]="['/subjects/edit/'+ subject.id]"
+              lines="full">
+              <ion-label *ngIf="this.id && doctorData.isAdmin">
+                {{ subject.id}}
               </ion-label>
-              <ion-icon
-                slot="end"
-                name="body"
-                [color]="(subject.history) ? 'primary' : 'medium'"
-                [title]="(subject.history && lang.isSpanish()) ? 'Tiene datos fenotípicos': 'No tiene datos fenotípicos'"
-              >
+              <ion-label *ngIf="!this.id">
+                {{ subject.identifier}}
+              </ion-label>
+              <ion-icon slot="end" name="body" [color]="(subject.history) ? 'primary' : 'medium'"
+                [title]="(subject.history && lang.isSpanish()) ? 'Tiene datos fenotípicos': 'No tiene datos fenotípicos'">
               </ion-icon>
-              <ion-icon
-                slot="end"
-                name="finger-print"
-                [color]="(subject.hasGeneticAnalysis) ? 'primary' : 'medium'"
-                [title]="(subject.hasGeneticAnalysis && lang.isSpanish()) ? 'Tiene datos genéticos': 'No tiene datos genéticos'"
-              >
+              <ion-icon slot="end" name="finger-print" [color]="(subject.hasGeneticAnalysis) ? 'primary' : 'medium'"
+                [title]="(subject.hasGeneticAnalysis && lang.isSpanish()) ? 'Tiene datos genéticos': 'No tiene datos genéticos'">
               </ion-icon>
-              <ion-icon
-              slot="end"
-              name="male-female"
-              [color]="(subject.hasReproductionTests) ? 'primary' : 'medium'"
-              [title]="(subject.hasReproductionTests && lang.isSpanish()) ? 'Tiene datos de reproducción': 'No tiene datos de reproducción'"
-            >
-            </ion-icon>
-              <ion-icon
-                slot="end"
-                name="eyedrop"
-                [color]="(subject.hasClinicAnalysis) ? 'primary' : 'medium'"
-                [title]="(subject.hasClinicAnalysis && lang.isSpanish()) ? 'Tiene datos analíticos': 'No tiene datos analíticos'"
-              >
+              <ion-icon slot="end" name="male-female" [color]="(subject.hasReproductionTests) ? 'primary' : 'medium'"
+                [title]="(subject.hasReproductionTests && lang.isSpanish()) ? 'Tiene datos de reproducción': 'No tiene datos de reproducción'">
               </ion-icon>
-              <ion-icon
-                slot="end"
-                name="images"
-                [color]="(subject.hasImageAnalysis) ? 'primary' : 'medium'"
-                [title]="(subject.hasImageAnalysis && lang.isSpanish()) ? 'Tiene pruebas de imagen': 'No tiene pruebas de imagen'"
-              >
+              <ion-icon slot="end" name="eyedrop" [color]="(subject.hasClinicAnalysis) ? 'primary' : 'medium'"
+                [title]="(subject.hasClinicAnalysis && lang.isSpanish()) ? 'Tiene datos analíticos': 'No tiene datos analíticos'">
+              </ion-icon>
+              <ion-icon slot="end" name="images" [color]="(subject.hasImageAnalysis) ? 'primary' : 'medium'"
+                [title]="(subject.hasImageAnalysis && lang.isSpanish()) ? 'Tiene pruebas de imagen': 'No tiene pruebas de imagen'">
               </ion-icon>
             </ion-item>
-            </ion-virtual-scroll>
-            
+          </ion-virtual-scroll>
+
           <ion-item *ngIf="querySubjects?.length===0" lines="none">
             <ion-label>Ningún resultado</ion-label>
           </ion-item>
@@ -220,57 +178,45 @@
 
       <ion-col
         *ngIf="(sharedSubjectsPhenotypic && sharedSubjectsPhenotypic.length>0) || (sharedSubjectsAnalytic && sharedSubjectsAnalytic.length>0)|| (sharedSubjectsGenetic && sharedSubjectsGenetic.length>0)||(sharedSubjectsImage && sharedSubjectsImage.length>0)"
-        size="12"
-        class="ion-padding-top"
-      >
+        size="12" class="ion-padding-top">
         <ion-list class="ion-no-padding">
           <ion-list-header color="primary">
-            <ion-label *ngIf="lang.isSpanish()"
-              >PACIENTES COMPARTIDOS CONTIGO</ion-label
-            >
-            <ion-label *ngIf="!lang.isSpanish()"
-              >SHARED PATIENTS WITH YOU</ion-label
-            >
+            <ion-label *ngIf="lang.isSpanish()">PACIENTES COMPARTIDOS CONTIGO</ion-label>
+            <ion-label *ngIf="!lang.isSpanish()">SHARED PATIENTS WITH YOU</ion-label>
           </ion-list-header>
           <ng-container *ngFor="let subject of sharedSubjectsData">
-            <ion-item *ngIf="subject"
-            lines="full"
-            [routerLink]="['/subjects/edit/'+ subject.id]"
-          >
-            <ion-label>{{subject.identifier}}</ion-label>
-            <ion-icon
-              slot="end"
-              name="body"
-              [color]="(subject.history) ? 'primary' : 'medium'"
-              [title]="(subject.history && lang.isSpanish()) ? 'Tiene datos fenotípicos': 'No tiene datos fenotípicos'"
-            >
-            </ion-icon>
-            <ion-icon
-              slot="end"
-              name="finger-print"
-              [color]="(subject.hasGeneticAnalysis) ? 'primary' : 'medium'"
-              [title]="(subject.hasGeneticAnalysis && lang.isSpanish()) ? 'Tiene datos genéticos': 'No tiene datos genéticos'"
-            >
-            </ion-icon>
-            <ion-icon
-              slot="end"
-              name="eyedrop"
-              [color]="(subject.hasClinicAnalysis) ? 'primary' : 'medium'"
-              [title]="(subject.hasClinicAnalysis && lang.isSpanish()) ? 'Tiene datos analíticos': 'No tiene datos analíticos'"
-            >
-            </ion-icon>
-            <ion-icon
-              slot="end"
-              name="images"
-              [color]="(subject.hasImageAnalysis) ? 'primary' : 'medium'"
-              [title]="(subject.hasImageAnalysis && lang.isSpanish()) ? 'Tiene pruebas de imagen': 'No tiene pruebas de imagen'"
-            >
-            </ion-icon>
-          </ion-item>
+            <ion-item *ngIf="subject" lines="full" [routerLink]="['/subjects/edit/'+ subject.id]">
+              <ion-label *ngIf="this.id && doctorData.isAdmin">
+                {{ subject.id}}
+              </ion-label>
+              <ion-label *ngIf="!this.id">
+                {{ subject.identifier}}
+              </ion-label>
+              <ion-icon slot="end" name="body" [color]="(subject.history) ? 'primary' : 'medium'"
+                [title]="(subject.history && lang.isSpanish()) ? 'Tiene datos fenotípicos': 'No tiene datos fenotípicos'">
+              </ion-icon>
+              <ion-icon slot="end" name="finger-print" [color]="(subject.hasGeneticAnalysis) ? 'primary' : 'medium'"
+                [title]="(subject.hasGeneticAnalysis && lang.isSpanish()) ? 'Tiene datos genéticos': 'No tiene datos genéticos'">
+              </ion-icon>
+              <ion-icon slot="end" name="eyedrop" [color]="(subject.hasClinicAnalysis) ? 'primary' : 'medium'"
+                [title]="(subject.hasClinicAnalysis && lang.isSpanish()) ? 'Tiene datos analíticos': 'No tiene datos analíticos'">
+              </ion-icon>
+              <ion-icon slot="end" name="images" [color]="(subject.hasImageAnalysis) ? 'primary' : 'medium'"
+                [title]="(subject.hasImageAnalysis && lang.isSpanish()) ? 'Tiene pruebas de imagen': 'No tiene pruebas de imagen'">
+              </ion-icon>
+            </ion-item>
           </ng-container>
-          
         </ion-list>
       </ion-col>
+
+      <ion-col size="12" *ngIf="(sharedSubjectsPhenotypic && sharedSubjectsPhenotypic.length == 0) &&
+      (sharedSubjectsAnalytic && sharedSubjectsAnalytic.length == 0) &&
+      (sharedSubjectsReproduction && sharedSubjectsReproduction.length == 0) &&
+      (sharedSubjectsGenetic && sharedSubjectsGenetic.length == 0) &&
+      (sharedSubjectsImage && sharedSubjectsImage.length == 0)" class="ion-text-center ion-margin">
+        Sin sujetos compartidos
+      </ion-col>
+
     </ion-row>
   </ion-grid>
 </ion-content>

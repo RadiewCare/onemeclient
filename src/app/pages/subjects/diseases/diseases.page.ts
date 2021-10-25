@@ -1059,6 +1059,8 @@ export class DiseasesPage implements OnInit, OnDestroy {
 
       this.subjectTestsSub = this.subjectImageTestsService.getAllDataBySubjectObservable(this.subject.id).subscribe(async data => {
         this.imageTests = data;
+        console.log(this.imageTests, "PRUEBAS ANTES DEL FILTRO");
+
         let allTests = data;
 
         for await (const it of this.imageTests) {
@@ -1077,12 +1079,12 @@ export class DiseasesPage implements OnInit, OnDestroy {
           it.relatedLabels = prueba[0].relatedLabels || [];
         }
 
-        this.imageTests = this.imageTests.filter(test => {
+        /*this.imageTests = this.imageTests.filter(test => {
           if (test.relatedCategories) {
             return !test.relatedCategories.map(element => element = element.name).includes("Fertilidad");
           }
           else return -1
-        });
+        });*/
 
         console.log(this.imageTests, "Pruebas de imagen del sujeto");
 

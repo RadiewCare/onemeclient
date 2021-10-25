@@ -69,12 +69,13 @@ export class AddAnalysisElementPage implements OnInit {
       this.clinicAnalysis.elements = [];
     }
 
-    this.currentAnalysisData.forEach(element => {
+    for await (const element of this.currentAnalysisData) {
       this.clinicAnalysis.elements.push({ id: element.id, name: element.name, order: this.clinicAnalysis.elements.length })
-    });
+    }
 
     console.log(this.clinicAnalysis);
 
+    this.clinicAnalysis.elements = [... new Set(this.clinicAnalysis.elements)];
 
     // Primero hay que actualizar el clinicAnalysis y si se hace bien actualizar las referencias 
 

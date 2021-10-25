@@ -22,7 +22,7 @@ import { SymptomsService } from 'src/app/services/symptoms.service';
 import { LanguageService } from 'src/app/services/language.service';
 import { SubjectsService } from 'src/app/services/subjects.service';
 import * as moment from 'moment';
-import { element } from "protractor";
+import { HpoService } from "src/app/services/hpo.service";
 
 @Component({
   selector: "app-edit",
@@ -77,6 +77,20 @@ export class EditPage implements OnInit, OnDestroy {
   querySignsAndSymptoms: string;
   querySignsAndSymptomsList = [];
 
+  // IDS de la enfermedad en otros sistemas
+
+  hpoId: string;
+  omimId: string;
+  orphaId: string;
+
+  // Genes 
+  currentGenes = [];
+  genes = [];
+  queryGenes = [];
+  queryGenesList = [];
+  genesIds = [];
+  hpoData: any;
+
   constructor(
     private diseasesService: DiseasesService,
     private clinicAnalysisElementsService: ClinicAnalysisElementsService,
@@ -92,7 +106,8 @@ export class EditPage implements OnInit, OnDestroy {
     private labelsService: LabelsService,
     private symptomsService: SymptomsService,
     private subjectsService: SubjectsService,
-    public lang: LanguageService
+    public lang: LanguageService,
+    private hpoService: HpoService
   ) {
     this.id = this.activatedRoute.snapshot.paramMap.get("id");
   }
@@ -116,6 +131,12 @@ export class EditPage implements OnInit, OnDestroy {
         this.relatedLabels = disease.relatedLabels || [];
         this.relatedCategories = disease.relatedCategories || [];
         this.currentSignsAndSymptoms = disease.signsAndSymptoms || [];
+        this.currentGenes = disease.genes || [];
+        this.genesIds = disease.genesIds || [];
+        this.hpoData = disease.hpoData || null;
+        this.hpoId = disease.hpoId || null;
+        this.omimId = disease.omimId || null;
+        this.orphaId = disease.orphaId || null;
         this.getBiomarkers();
       });
     this.getCategories();
@@ -391,6 +412,52 @@ export class EditPage implements OnInit, OnDestroy {
     this.labelsService.update(label.id, {
       relatedDiseases: firebase.firestore.FieldValue.arrayRemove(this.id)
     })
+  }
+
+  async onQueryGenes(query: string) {
+    this.queryGenesList = (await this.hpoService.search(query)).genes;
+    console.log(this.queryGenesList);
+  }
+
+  addGene(gene: any) {
+    this.currentGenes.push({ id: gene.entrezGeneId, name: gene.entrezGeneSymbol });
+    this.genesIds.push(gene.entrezGeneId);
+    this.queryGenesList = [];
+    this.queryGenes = null;
+  }
+
+  deleteGene(index: any) {
+    this.currentGenes.splice(index, 1);
+    this.genesIds.splice(index, 1);
+  }
+
+  async syncIds() {
+    let disease;
+
+    if (this.hpoId) {
+      disease = await this.hpoService.term(`HP:${this.hpoId}`);
+    }
+    if (this.omimId) {
+      disease = await this.hpoService.disease(`OMIM:${this.omimId}`);
+    }
+    if (this.orphaId) {
+      disease = await this.hpoService.disease(`ORPHA:${this.orphaId}`);
+    }
+
+    if (disease) {
+      this.hpoData = disease;
+      this.currentGenes = disease.geneAssoc.map(element => {
+        return {
+          id: element.entrezGeneId,
+          name: element.entrezGeneSymbol
+        }
+      })
+
+      console.log(disease);
+    } else {
+      this.toastService.show("danger", "No hay datos relacionados en HPO");
+    }
+
   }
 
   /* MODIFICACIONES */
@@ -697,7 +764,13 @@ export class EditPage implements OnInit, OnDestroy {
         isHereditary: this.isHereditary,
         hereditaryPonderation: this.hereditaryPonderation,
         signsAndSymptoms: this.currentSignsAndSymptoms,
-        updatedAt: moment().format()
+        updatedAt: moment().format(),
+        genes: this.currentGenes,
+        genesIds: this.genesIds,
+        hpoId: this.hpoId || null,
+        omimId: this.omimId || null,
+        orphaId: this.orphaId || null,
+        hpoData: this.hpoData || null
       }
 
       console.log(data);

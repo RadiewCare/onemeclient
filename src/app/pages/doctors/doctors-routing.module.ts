@@ -9,7 +9,7 @@ const routes: Routes = [
     component: DoctorsPage
   },
   {
-    path: "create",
+    path: "create/:id",
     loadChildren: () =>
       import("./create/create.module").then((m) => m.CreatePageModule)
   },
@@ -20,7 +20,7 @@ const routes: Routes = [
   },
   {
     path: 'invitation',
-    loadChildren: () => import('./invitation/invitation.module').then( m => m.InvitationPageModule)
+    loadChildren: () => import('./invitation/invitation.module').then(m => m.InvitationPageModule)
   }
 ];
 
@@ -28,4 +28,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class DoctorsPageRoutingModule {}
+export class DoctorsPageRoutingModule { }

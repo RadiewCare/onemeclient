@@ -43,8 +43,7 @@
       <ion-col size="12">
         <ion-item lines="none">
           <ion-label position="floating">Tipo de campo</ion-label>
-          <ion-select placeholder="Seleccione tipo de campo" [(ngModel)]="type" cancelText="Cancelar"
-            okText="Aceptar">
+          <ion-select placeholder="Seleccione tipo de campo" [(ngModel)]="type" cancelText="Cancelar" okText="Aceptar">
             <ion-select-option value="text">Texto</ion-select-option>
             <ion-select-option value="binary">Binario</ion-select-option>
             <ion-select-option value="multiple">Múltiples opciones</ion-select-option>
@@ -86,6 +85,11 @@
           <ion-input type="number" placeholder="Máximo" [(ngModel)]="max"></ion-input>
         </ion-item>
       </ion-col>
+      <ion-col size="12" *ngIf="type === 'multiple' && options.length>0" class="ion-margin-top">
+        <ion-item color="primary">
+          <ion-label>Configuración de biomarcadores (añadir y eliminar)</ion-label>
+        </ion-item>
+      </ion-col>
       <ion-col size="12" *ngIf="type === 'multiple'">
         <ion-item lines="none">
           <ion-label position="floating">Opciones</ion-label>
@@ -100,10 +104,19 @@
         </ion-button>
       </ion-col>
       <ion-col size="12" *ngIf="type === 'multiple'">
-        <ion-chip *ngFor="let option of options" lines="none" [color]="positiveOptions.includes(option)? 'danger' : 'dark'">
-          <ion-label>{{ option }}</ion-label>
-          <ion-icon name="close" (click)="removeOption(option)"></ion-icon>
-        </ion-chip>
+        <ion-reorder-group (ionItemReorder)="doReorder($event)" disabled="false">
+          <ion-item *ngFor="let option of options" lines="full">
+            <ion-reorder slot="start"></ion-reorder>
+            <ion-label [color]="positiveOptions.includes(option)? 'danger' : 'dark'">
+              {{option}}
+            </ion-label>
+            <ion-buttons slot="end">
+              <ion-button (click)="removeOption(option)" color="danger">
+                <ion-icon slot="icon-only" name="close"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-item>
+        </ion-reorder-group>
       </ion-col>
       <ion-col size="12" *ngIf="type === 'multiple' && options.length>0">
         <ion-item lines="none">
@@ -117,14 +130,13 @@
       <ion-col size="12" *ngIf="type === 'multiple' && options.length>0">
         <ion-item lines="none">
           <ion-label position="floating">Opción por defecto</ion-label>
-          <ion-select placeholder="Seleccione campo por defecto"
-            [value]="defaultOption" cancelText="Cancelar" [(ngModel)]="defaultOption">
+          <ion-select placeholder="Seleccione campo por defecto" [value]="defaultOption" cancelText="Cancelar"
+            [(ngModel)]="defaultOption">
             <ion-select-option *ngFor="let option of options" [value]="option">{{option}}</ion-select-option>
           </ion-select>
           <ion-buttons slot="end">
             <ion-button (click)="cleanDefaultOption()" color="danger">
-              <ion-icon slot="start" name="trash"></ion-icon>
-              Eliminar
+              <ion-icon slot="icon-only" name="refresh"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-item>
@@ -150,18 +162,20 @@
       </ion-col>
 
       <ng-container *ngIf="isIllustrated">
-        <ion-col size="12 "size-md="4" *ngFor="let option of options; let i=index">
+        <ion-col size="12 " size-md="4" *ngFor="let option of options; let i=index">
 
           <ion-card class="ion-no-margin">
             <ion-card-header>
-              <ion-img [src]="images[i]?images[i]:'https://fakeimg.pl/300/?text=Imagen'" (click)="showImage(images[i])" style="cursor: pointer;"></ion-img>
+              <ion-img [src]="images[i]?images[i]:'https://fakeimg.pl/300/?text=Imagen'" (click)="showImage(images[i])"
+                style="cursor: pointer;"></ion-img>
               <ion-card-title>{{option}}</ion-card-title>
             </ion-card-header>
             <ion-card-content class="ion-no-padding">
               <ion-item lines="none">
                 <ion-input type="file" (change)="loadImage($event.target.files, i)"></ion-input>
               </ion-item>
-              <ion-button (click)="deleteImage(i)" color="danger" expand="block" class="ion-margin" *ngIf="images[i]!==null">
+              <ion-button (click)="deleteImage(i)" color="danger" expand="block" class="ion-margin"
+                *ngIf="images[i]!==null">
                 <ion-icon slot="icon-only" name="trash"></ion-icon>
               </ion-button>
             </ion-card-content>
@@ -173,15 +187,16 @@
 
     <ion-row *ngIf="relatedTestsData">
       <ion-col size="12" class="ion-margin-top">
-       <ion-item color="primary">
-         <ion-label>Pruebas de imagen relacionadas</ion-label>
-       </ion-item>
-       <ion-item *ngFor="let test of relatedTestsData" [routerLink]="['/database/image-tests/edit', test.id]" lines="none">
-         <ion-label>{{test.name}}</ion-label>
-       </ion-item>
-       <ion-item *ngIf="relatedTestsData.length===0">
-        <ion-label>Ningún test relacionado</ion-label>
-      </ion-item>
+        <ion-item color="primary">
+          <ion-label>Pruebas de imagen relacionadas</ion-label>
+        </ion-item>
+        <ion-item *ngFor="let test of relatedTestsData" [routerLink]="['/database/image-tests/edit', test.id]"
+          lines="none">
+          <ion-label>{{test.name}}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="relatedTestsData.length===0">
+          <ion-label>Ningún test relacionado</ion-label>
+        </ion-item>
       </ion-col>
     </ion-row>
 
@@ -190,12 +205,13 @@
         <ion-item color="primary">
           <ion-label>Enfermedades relacionadas</ion-label>
         </ion-item>
-       <ion-item *ngFor="let disease of relatedDiseasesData" [routerLink]="['/database/diseases/edit', disease.id]" lines="full">
-         <ion-label>{{disease.name}}</ion-label>
-       </ion-item>
-       <ion-item *ngIf="relatedDiseasesData.length===0">
-         <ion-label>Ninguna enfermedad relacionada</ion-label>
-       </ion-item>
+        <ion-item *ngFor="let disease of relatedDiseasesData" [routerLink]="['/database/diseases/edit', disease.id]"
+          lines="full">
+          <ion-label>{{disease.name}}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="relatedDiseasesData.length===0">
+          <ion-label>Ninguna enfermedad relacionada</ion-label>
+        </ion-item>
       </ion-col>
     </ion-row>
 

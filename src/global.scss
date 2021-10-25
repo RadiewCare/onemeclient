@@ -134,3 +134,24 @@ ion-card {
   min-width: 300px;
   max-width: 1024px;
 }
+
+.ag-theme-alpine .ag-icon {
+  color: white !important;
+  background: #024171 !important;
+  font-size: 24px !important;
+  padding: 5px 3px !important;
+  border-radius: 50% !important;
+}
+
+.ag-theme-alpine .ag-paging-panel .ag-paging-row-summary-panel {
+  color: white !important;
+  background: #024171 !important;
+  padding: 5px 3px !important;
+}
+
+.ag-theme-alpine .ag-layout-auto-height .ag-center-cols-clipper,
+.ag-theme-alpine .ag-layout-auto-height .ag-center-cols-container,
+.ag-theme-alpine .ag-layout-print .ag-center-cols-clipper,
+.ag-theme-alpine .ag-layout-print .ag-center-cols-container {
+  min-height: 400px;
+}

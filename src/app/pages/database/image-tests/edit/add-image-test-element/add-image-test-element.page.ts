@@ -67,13 +67,12 @@ export class AddImageTestElementPage implements OnInit, OnDestroy {
   async save() {
 
     if (this.imageTest.elements) {
-      const imageTestElementsIds = this.imageTest.elements.map((element) => element.id);
 
       for await (const element of this.currentImageTestData) {
-        if (!imageTestElementsIds.includes(element.id)) {
-          this.imageTest.elements.push({ id: element.id, name: element.name, order: this.imageTest.elements.length });
-        }
+        this.imageTest.elements.push({ id: element.id, name: element.name, order: this.imageTest.elements.length });
       }
+
+      this.imageTest.elements = [... new Set(this.imageTest.elements)];
 
     } else {
       this.imageTest.elements = [];

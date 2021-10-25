@@ -49,6 +49,12 @@ export class SubjectsService {
       });
   }
 
+  getSubjectsByDoctorLimit(id: string): Observable<any> {
+    return this.db
+      .collection("subjects", ref => ref.where("mainDoctor", "==", id).orderBy('createdAt', 'desc').limit(50))
+      .valueChanges()
+  }
+
   /**
    * Devuelve un sujeto como observable
    * @param subjectId Identificador del sujeto
@@ -75,6 +81,14 @@ export class SubjectsService {
         ref.where("mainDoctor", "==", doctorId).orderBy("identifier", "asc")
       )
       .valueChanges();
+  }
+
+  /**
+ * Devuelve los sujetos de un doctor como promesa
+ * @param subjectId Identificador del sujeto
+ */
+  getSubjectsByDoctorData(doctorId: string): Promise<any> {
+    return this.db.firestore.collection(`subjects`).where("mainDoctor", "==", doctorId).orderBy("identifier", "asc").get();
   }
 
   /**

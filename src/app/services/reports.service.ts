@@ -450,7 +450,7 @@ export class ReportsService {
     xhr.send();
   }
 
-  async exportImageTest(imageTest: any, subjectData: any, mainDoctor: string) {
+  async exportImageTest(imageTest: any, subjectData: any, mainDoctor: string, clinic: string, asociadas: boolean) {
     await this.getDiseases();
     console.log(imageTest);
 
@@ -496,8 +496,10 @@ export class ReportsService {
     // Fecha de la prueba
     this.doc.text("Fecha de la prueba: " + moment(imageTest.date).format("DD/MM/YYYY"), this.x, this.y);
     this.y = this.y + 10;
-    // Doctor
-    this.doc.text("Clínica: " + mainDoctor, this.x, this.y);
+    // Clínica y Doctor
+    this.doc.text("Clínica: " + clinic, this.x, this.y);
+    this.y = this.y + 10;
+    this.doc.text("Doctor: " + mainDoctor, this.x, this.y);
     this.y = this.y + 20;
 
     // RENDERIZADO DE VALORES
@@ -616,24 +618,26 @@ export class ReportsService {
       return 0;
     });
 
-    this.doc.addPage();
-    this.x = 40;
-    this.y = 40;
+    if (asociadas) {
+      this.doc.addPage();
+      this.x = 40;
+      this.y = 40;
 
-    await this.doc.text("ENFERMEDADES ASOCIADAS", this.x, this.y);
-    this.y = this.y + 20;
+      await this.doc.text("ENFERMEDADES ASOCIADAS", this.x, this.y);
+      this.y = this.y + 20;
 
-    for await (const disease of result) {
-      if (disease.name.length > 0) {
-        if (this.y > this.pageHeight - 40) {
-          this.renderDelimiter();
+      for await (const disease of result) {
+        if (disease.name.length > 0) {
+          if (this.y > this.pageHeight - 40) {
+            this.renderDelimiter();
+          }
+
+          this.doc.setFont("helvetica", "normal");
+          this.doc.setTextColor(0, 0, 0);
+          // Nombre
+          await this.doc.text(disease.name, this.x, this.y);
+          this.y = this.y + 10;
         }
-
-        this.doc.setFont("helvetica", "normal");
-        this.doc.setTextColor(0, 0, 0);
-        // Nombre
-        await this.doc.text(disease.name, this.x, this.y);
-        this.y = this.y + 10;
       }
     }
 

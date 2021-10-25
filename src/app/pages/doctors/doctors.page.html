@@ -3,19 +3,13 @@
     <ion-buttons slot="start" class="ion-hide-lg-up">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title *ngIf="this.lang.isSpanish()">Clínicas</ion-title>
-    <ion-title *ngIf="!this.lang.isSpanish()">Clinics</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="openDoctorInvitation()" disabled>
-        <ion-icon slot="start" name="send"></ion-icon>
-        <ion-label>Invitar doctor</ion-label>
-      </ion-button>
-    </ion-buttons>
+    <ion-title *ngIf="this.lang.isSpanish()">Doctores</ion-title>
+    <ion-title *ngIf="!this.lang.isSpanish()">Doctors</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-grid fixed *ngIf="userData?.isAdmin">
+  <ion-grid fixed>
     <!-- Filtros y búsquedas -->
     <ion-row>
       <ion-col size="12" class="ion-padding-top">
@@ -25,47 +19,46 @@
         </ion-searchbar>
       </ion-col>
     </ion-row>
+    <ion-row *ngIf="doctorData?.isOwner">
+      <ion-col size="12" class="ion-text-center">
+        <ion-item>
+          <ion-label>Invitar doctor a la clínica</ion-label>
+          <ion-input type="email" placeholder="Introduzca email del doctor" [(ngModel)]="invitationEmail"></ion-input>
+          <ion-buttons slot="end">
+            <ion-button (click)="sendDoctorInvitation()" color="primary">
+              <ion-icon slot="start" name="send"></ion-icon>
+              Enviar email
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+        Url de registro de un doctor: <b>{{ invitationUrl }}</b>
+      </ion-col>
+    </ion-row>
     <ion-row>
       <ng-container *ngIf="!queryDoctors; else elseTemplate">
         <ion-col size="12" class="ion-padding-top">
           <ion-item *ngFor="let doctor of doctors" lines="full" [routerLink]="['/doctors/edit/', doctor.id]"
             style="cursor: pointer">
             <ion-label>{{ doctor.name }}</ion-label>
-            <ion-badge *ngIf="doctor.isAdmin && this.lang.isSpanish()" color="primary" mode="ios" slot="end">
+            <ion-badge *ngIf="doctor.isOwner && this.lang.isSpanish()" color="primary" mode="ios" slot="end">
               Administrador
             </ion-badge>
-            <ion-badge *ngIf="doctor.isCollaborator && this.lang.isSpanish()" color="secondary" mode="ios"
-              slot="end">
-              Colaborador
-            </ion-badge>
-            <ion-badge *ngIf="doctor.isAdmin && !this.lang.isSpanish()" color="primary" mode="ios" slot="end">
+            <ion-badge *ngIf="doctor.isOwner && !this.lang.isSpanish()" color="primary" mode="ios" slot="end">
               Admin
-            </ion-badge>
-            <ion-badge *ngIf="doctor.isCollaborator && !this.lang.isSpanish()" color="secondary" mode="ios"
-              slot="end">
-              Collaborator
             </ion-badge>
           </ion-item>
         </ion-col>
       </ng-container>
       <ng-template #elseTemplate>
         <ion-col size="12" class="ion-padding-top">
-          <ion-item *ngFor="let doctor of queryDoctors" lines="full"
-            [routerLink]="['/doctors/edit/', doctor.id]" style="cursor: pointer">
+          <ion-item *ngFor="let doctor of queryDoctors" lines="full" [routerLink]="['/doctors/edit/', doctor.id]"
+            style="cursor: pointer">
             <ion-label>{{ doctor.name }}</ion-label>
-            <ion-badge *ngIf="doctor.isAdmin && lang.isSpanish()" color="primary" mode="ios" slot="end">
+            <ion-badge *ngIf="doctor.isOwner && lang.isSpanish()" color="primary" mode="ios" slot="end">
               Administrador
             </ion-badge>
-            <ion-badge *ngIf="doctor.isCollaborator && lang.isSpanish()" color="secondary" mode="ios"
-              slot="end">
-              Colaborador
-            </ion-badge>
-            <ion-badge *ngIf="doctor.isAdmin && !lang.isSpanish()" color="primary" mode="ios" slot="end">
+            <ion-badge *ngIf="doctor.isOwner && !lang.isSpanish()" color="primary" mode="ios" slot="end">
               Admin
-            </ion-badge>
-            <ion-badge *ngIf="doctor.isCollaborator && !lang.isSpanish()" color="secondary" mode="ios"
-              slot="end">
-              Collaborator
             </ion-badge>
           </ion-item>
         </ion-col>

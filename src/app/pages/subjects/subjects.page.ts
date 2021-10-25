@@ -5,9 +5,10 @@ import { AuthService } from "src/app/services/auth.service";
 import { DoctorsService } from "src/app/services/doctors.service";
 import { SubjectsService } from "src/app/services/subjects.service";
 import * as moment from "moment";
-import { resolve } from "dns";
 import { SubjectImageTestsService } from "src/app/services/subject-image-tests.service";
 import { ReproductionTestsService } from "src/app/services/reproduction-tests.service";
+import { ActivatedRoute } from "@angular/router";
+import { LoadingController } from "@ionic/angular";
 
 @Component({
   selector: "app-subjects",
@@ -24,14 +25,18 @@ export class SubjectsPage implements OnInit, OnDestroy {
   subjects$: Observable<any>;
   subjectsSub: Subscription;
 
+  showShared: false;
+
   sharedSubjectsAnalytic: string[];
   sharedSubjectsGenetic: string[];
   sharedSubjectsImage: string[];
   sharedSubjectsPhenotypic: string[];
+  sharedSubjectsReproduction: string[];
 
   sharedSubjects = [];
 
   sharedSubjectsData = [];
+  originalSharedSubjectsData = [];
 
   centrosReferentes = [];
 
@@ -61,33 +66,76 @@ export class SubjectsPage implements OnInit, OnDestroy {
   aYearAgo: any;
   fiveYearsAgo: any;
 
+  id: string;
+
+  doctorName: string;
+
+  doctorData: any;
+
+  isSameClinic = false;
+
   constructor(
     private subjectsService: SubjectsService,
     private doctorsService: DoctorsService,
     private subjectImageTestsService: SubjectImageTestsService,
     private reproductionTestsService: ReproductionTestsService,
     public lang: LanguageService,
-    private auth: AuthService
+    private auth: AuthService,
+    private activatedRoute: ActivatedRoute,
+    private loadingController: LoadingController
   ) { }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.presentLoading();
+  }
 
-  ionViewDidEnter() {
-    this.userSub = this.auth.user$.subscribe((data) => {
-      this.userData = data;
-      this.getSubjects().then(() => {
+  async ionViewDidEnter() {
+
+    if (this.activatedRoute.snapshot.params.id) {
+      console.log("LÓGICA DESDE ADMINISTRADOR");
+
+      this.id = this.activatedRoute.snapshot.params.id;
+
+      this.userSub = this.auth.user$.subscribe(async (data) => {
+        this.userData = data;
+        const userDoctor = (await this.doctorsService.getDoctorData(this.userData.id)).data();
+        this.doctorData = (await this.doctorsService.getDoctorData(this.id)).data();
+        this.isSameClinic = this.doctorData.clinic === userDoctor.clinic;
+        console.log(this.userData);
+        console.log(this.doctorData);
+        console.log(userDoctor);
+
+        await this.getSubjectsFromDoctorId();
+
+        this.loadingController.dismiss();
+
         this.sortDateDesc();
         this.getCentrosReferentes();
-        // this.updateImageAnalysisExistence();
-        // this.updateReproductionTestsExistence();
       });
-      this.getDoctorData();
-    });
+    } else {
+      console.log("LÓGICA NORMAL");
+
+      this.userSub = this.auth.user$.subscribe(async (data) => {
+        this.userData = data;
+        this.doctorData = (await this.doctorsService.getDoctorData(this.userData.id)).data();
+        console.log(this.userData);
+        console.log(this.doctorData);
+
+        this.getSubjects().then(() => {
+          this.sortDateDesc();
+          this.getCentrosReferentes();
+          this.loadingController.dismiss();
+        });
+        this.getDoctorData();
+      });
+    }
     // this.updateReproductionTestsExistence();
     this.getCurrentDate();
   }
 
   getCurrentDate() {
+    console.log("getCurrentDate");
+
     this.currentDate = moment().format();
     this.aWeekAgo = moment().subtract(7, 'days').format();
     this.twoWeeksAgo = moment().subtract(15, 'days').format();
@@ -99,19 +147,61 @@ export class SubjectsPage implements OnInit, OnDestroy {
   }
 
   getDoctorData() {
+    console.log("getDoctorData");
+
     this.doctorsService.getDoctorData(this.userData.id).then((data) => {
       this.sharedSubjectsPhenotypic =
         data.data().sharedSubjectsPhenotypic || [];
       this.sharedSubjectsGenetic = data.data().sharedSubjectsGenetic || [];
       this.sharedSubjectsAnalytic = data.data().sharedSubjectsAnalytic || [];
       this.sharedSubjectsImage = data.data().sharedSubjectsImage || [];
+      this.sharedSubjectsReproduction = data.data().sharedSubjectsReproduction || [];
       this.getSharedSubjects();
     });
   }
 
-  getSubjects(): Promise<void> {
+  getSubjectsWithLimit(): Promise<void> {
     this.querySubjects = null;
+    this.subjects$ = this.subjectsService.getSubjectsByDoctorLimit(this.userData.id);
+    return new Promise((resolve) => {
+      this.subjectsSub = this.subjects$.subscribe((subjects) => {
+        this.subjects = subjects;
+        this.originalSubjects = subjects;
+        resolve(subjects);
+      });
+    });
+  }
+
+  async getSubjects(): Promise<void> {
+    console.log("getSubjects");
+
+    this.querySubjects = null;
+    this.subjects = (await this.subjectsService.getSubjectsByDoctorData(this.userData.id)).docs.map(element => element.data());
+    this.originalSubjects = [...this.subjects];
+
+    console.log(this.subjects);
+    console.log(this.subjects.length, "TAMAÑO DE LOS SUJETOS");
+
+    /*
     this.subjects$ = this.subjectsService.getSubjectByDoctor(this.userData.id);
+    return new Promise(async(resolve) => {
+      this.subjects = await this.subjectsService.getSubjectsByDoctorData(this.userData.id);
+      
+      this.subjectsSub = this.subjects$.subscribe((subjects) => {
+        this.subjects = subjects;
+        this.originalSubjects = subjects;
+        resolve(subjects);
+      });
+      
+    });
+    */
+  }
+
+  getSubjectsFromDoctorId(): Promise<void> {
+    console.log("getSubjectsFromDoctorId");
+
+    this.querySubjects = null;
+    this.subjects$ = this.subjectsService.getSubjectByDoctor(this.id);
     return new Promise((resolve) => {
       this.subjectsSub = this.subjects$.subscribe((subjects) => {
         this.subjects = subjects;
@@ -144,20 +234,11 @@ export class SubjectsPage implements OnInit, OnDestroy {
         })
       })
     })
-
-    /*
-      const sujetos = data.docs.map(el => el = el.data());
-    const sujetosConReproduccion = sujetos.filter(suj => suj.isReproductionTest === true);
-    console.log(sujetosConReproduccion);
-    sujetosConReproduccion.forEach(element => {
-      this.subjectsService.updateSubject(element.id, {
-        hasReproductionTests: true;
-      })
-    });
-    */
   }
 
   sortAlphanumeric() {
+    console.log("sortAlphanumeric");
+
     var reA = /[^a-zA-Z]/g;
     var reN = /[^0-9]/g;
 
@@ -189,6 +270,8 @@ export class SubjectsPage implements OnInit, OnDestroy {
   }
 
   sortDateAsc() {
+    console.log("sortDateAsc");
+
     this.subjects = this.subjects.sort((a, b) => {
       return <any>new Date(a.createdAt) - <any>new Date(b.createdAt);
     });
@@ -198,6 +281,7 @@ export class SubjectsPage implements OnInit, OnDestroy {
   }
 
   sortDateDesc() {
+    console.log("sortDateDesc");
     this.subjects = this.subjects.sort((a, b) => {
       return <any>new Date(b.createdAt) - <any>new Date(a.createdAt);
     });
@@ -213,41 +297,39 @@ export class SubjectsPage implements OnInit, OnDestroy {
         element.history.centroReferente &&
         !this.centrosReferentes.includes(element.history.centroReferente)
       ) {
-        console.log(element.history.centroReferente);
         this.centrosReferentes.push(element.history.centroReferente);
       }
     }
     this.centrosReferentes.sort();
-    console.log(this.centrosReferentes);
-
   }
 
   async getSharedSubjects() {
     this.sharedSubjects = await this.sharedSubjectsAnalytic
-      .concat(this.sharedSubjectsGenetic)
-      .concat(this.sharedSubjectsPhenotypic)
-      .concat(this.sharedSubjectsImage)
-      .filter((item, pos, self) => {
-        return self.indexOf(item) === pos;
-      });
+      .concat(this.sharedSubjectsGenetic, this.sharedSubjectsPhenotypic, this.sharedSubjectsImage, this.sharedSubjectsReproduction)
+
+    this.sharedSubjects = [... new Set(this.sharedSubjects)];
 
     for await (const sub of this.sharedSubjects) {
       await this.subjectsService.getSubjectData(sub).then((userData) => {
         this.sharedSubjectsData.push(userData.data());
       });
     }
-    console.log(this.sharedSubjectsData);
 
+    this.originalSharedSubjectsData = [... this.sharedSubjectsData];
   }
 
   onSearchChange(query: string): void {
     this.currentQuery = query;
     if (query.length > 0) {
-      this.querySubjects = this.subjects.filter((report) =>
-        this.removeAccents(report.identifier.toLowerCase()).includes(this.removeAccents(query.toLowerCase()))
+      this.querySubjects = this.subjects.filter((subject) =>
+        this.removeAccents(subject.identifier.toLowerCase()).includes(this.removeAccents(query.toLowerCase()))
+      );
+      this.sharedSubjectsData = this.sharedSubjectsData.filter((sharedSubject) =>
+        this.removeAccents(sharedSubject.identifier.toLowerCase()).includes(this.removeAccents(query.toLowerCase()))
       );
     } else {
       this.querySubjects = null;
+      this.sharedSubjectsData = this.originalSharedSubjectsData;
     }
   }
 
@@ -375,6 +457,13 @@ export class SubjectsPage implements OnInit, OnDestroy {
 
   async resetFilters() {
     this.subjects = this.originalSubjects;
+  }
+
+  async presentLoading() {
+    const loading = await this.loadingController.create({
+      message: 'Cargando...'
+    });
+    await loading.present();
   }
 
 

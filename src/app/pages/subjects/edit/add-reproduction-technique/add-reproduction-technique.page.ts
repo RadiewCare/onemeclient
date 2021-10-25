@@ -12,6 +12,9 @@ import { AngularFirestore } from '@angular/fire/firestore';
 import { SubjectImageTestsService } from "src/app/services/subject-image-tests.service";
 import { ReproductionTestsService } from "src/app/services/reproduction-tests.service";
 import { GalleryPage } from "../gallery/gallery.page";
+import { ActivityService } from "src/app/services/activity.service";
+import { AuthService } from "src/app/services/auth.service";
+import { DoctorsService } from "src/app/services/doctors.service";
 
 @Component({
   selector: 'app-add-reproduction-technique',
@@ -165,6 +168,12 @@ export class AddReproductionTechniquePage implements OnInit, OnDestroy {
     }
   }
 
+  // Doctor
+  user$: any;
+  userData: any;
+  userSub: Subscription;
+  doctorSub: Subscription;
+
   // B, VU, VV, R, V, RV, C, P, RU, U, leftOvary, rightOvary, UT, ufl,
   // IM, SS, SM, otheruf
   constructor(
@@ -175,7 +184,10 @@ export class AddReproductionTechniquePage implements OnInit, OnDestroy {
     private toastService: ToastService,
     private imageTestsElementsService: ImageTestsElementsService,
     private db: AngularFirestore,
-    private reproductionTestsService: ReproductionTestsService
+    private reproductionTestsService: ReproductionTestsService,
+    private activityService: ActivityService,
+    private auth: AuthService,
+    private doctorService: DoctorsService,
   ) { }
 
   ngOnInit() {
@@ -386,9 +398,31 @@ export class AddReproductionTechniquePage implements OnInit, OnDestroy {
         console.log(data);
         this.reproductionTestsService.create(data).then(() => {
           this.updateReproductionFlag();
-          this.toastService.show("success", "Prueba de imagen creada con éxito");
+          this.user$ = this.auth.user$;
+
+          this.userSub = this.user$.subscribe(async (data) => {
+            const doctor = (await this.doctorService.getDoctorData(data.id)).data();
+            console.log(doctor);
+
+            const activity = {
+              action: "create",
+              doctor: doctor.name,
+              doctorId: doctor.id,
+              clinicId: doctor.clinic,
+              subject: this.subject.identifier,
+              subjectId: this.subject.id,
+              createdAt: moment().format(),
+              target: "reproductionTest",
+              description: this.currentImageTest.name,
+            }
+            await this.activityService.create(activity);
+            this.dismissModal().then(() => {
+              this.toastService.show("success", "Prueba de reproducción creada con éxito");
+            });
+          })
+
         }).catch(error => {
-          this.toastService.show("danger", "Error al crear la prueba de imagen: " + error);
+          this.toastService.show("danger", "Error al crear la prueba de reproducción: " + error);
         });
       }
 
@@ -625,10 +659,29 @@ export class AddReproductionTechniquePage implements OnInit, OnDestroy {
       })
       .then(async () => {
         this.updateReproductionFlag();
-        this.toastService.show(
-          "success",
-          "Prueba de reproducción creada con éxito"
-        );
+
+        this.user$ = this.auth.user$;
+
+        this.userSub = this.user$.subscribe(async (data) => {
+          const doctor = (await this.doctorService.getDoctorData(data.id)).data();
+          console.log(doctor);
+
+          const activity = {
+            action: "create",
+            doctor: doctor.name,
+            doctorId: doctor.id,
+            clinicId: doctor.clinic,
+            subject: this.subject.identifier,
+            subjectId: this.subject.id,
+            createdAt: moment().format(),
+            target: "reproductionTest",
+            description: "Endometriosis",
+          }
+          await this.activityService.create(activity);
+          this.dismissModal().then(() => {
+            this.toastService.show("success", "Prueba de reproducción creada con éxito");
+          });
+        })
       })
       .catch(async (error) => {
         console.log(error);
@@ -1076,6 +1129,9 @@ export class AddReproductionTechniquePage implements OnInit, OnDestroy {
     }
     if (this.subjectSub) {
       this.subjectSub.unsubscribe();
+    }
+    if (this.userSub) {
+      this.userSub.unsubscribe();
     }
   }
 

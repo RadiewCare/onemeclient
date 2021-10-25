@@ -8,6 +8,9 @@ import { AnalyticStudiesService } from "src/app/services/analytic-studies.servic
 import { SubjectsService } from "src/app/services/subjects.service";
 import { ClinicAnalysisService } from "src/app/services/clinic-analysis.service";
 import * as moment from "moment";
+import { ActivityService } from "src/app/services/activity.service";
+import { AuthService } from "src/app/services/auth.service";
+import { DoctorsService } from "src/app/services/doctors.service";
 
 @Component({
   selector: "app-add-analytic-study",
@@ -35,6 +38,13 @@ export class AddAnalyticStudyPage implements OnInit, OnDestroy {
   analysisElements: any;
   currentAnalysis: any;
 
+
+  // Doctor
+  user$: any;
+  userData: any;
+  userSub: Subscription;
+  doctorSub: Subscription;
+
   constructor(
     private usersService: SubjectsService,
     private analyticStudiesService: AnalyticStudiesService,
@@ -42,7 +52,10 @@ export class AddAnalyticStudyPage implements OnInit, OnDestroy {
     private clinicAnalysisService: ClinicAnalysisService,
     private clinicAnalysisElementsService: ClinicAnalysisElementsService,
     public lang: LanguageService,
-    private toastsService: ToastService
+    private toastsService: ToastService,
+    private activityService: ActivityService,
+    private auth: AuthService,
+    private doctorService: DoctorsService,
   ) { }
 
   ngOnInit() { }
@@ -231,9 +244,28 @@ export class AddAnalyticStudyPage implements OnInit, OnDestroy {
     console.log(data);
 
     this.analyticStudiesService.createAnalysisStudy(this.id, data).then(() => {
-      this.dismissModal().then(() => {
-        this.toastsService.show("success", "Análisis creado con éxito");
-      });
+      this.user$ = this.auth.user$;
+
+      this.userSub = this.user$.subscribe(async (data) => {
+        const doctor = (await this.doctorService.getDoctorData(data.id)).data();
+        console.log(doctor);
+
+        const activity = {
+          action: "create",
+          doctor: doctor.name,
+          doctorId: doctor.id,
+          clinicId: doctor.clinic,
+          subject: this.subject.identifier,
+          subjectId: this.subject.id,
+          createdAt: moment().format(),
+          target: "clinicAnalysis",
+          description: this.currentAnalysis.name,
+        }
+        await this.activityService.create(activity);
+        this.dismissModal().then(() => {
+          this.toastsService.show("success", "Análisis creado con éxito");
+        });
+      })
     });
   }
 
@@ -244,6 +276,9 @@ export class AddAnalyticStudyPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.clinicAnalysisSub) {
       this.clinicAnalysisSub.unsubscribe();
+    }
+    if (this.userSub) {
+      this.userSub.unsubscribe();
     }
   }
 }

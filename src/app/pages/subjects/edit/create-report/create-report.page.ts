@@ -13,6 +13,9 @@ export class CreateReportPage implements OnInit {
   @Input() imageTest: any;
   @Input() subject: any;
   @Input() doctor: any;
+  @Input() clinic: any;
+
+  asociadas = false;
 
   constructor(public lang: LanguageService, private modalController: ModalController, private reportsService: ReportsService) { }
 
@@ -20,17 +23,17 @@ export class CreateReportPage implements OnInit {
   }
 
   createFullReport() {
-    this.reportsService.exportImageTest(this.imageTest, this.subject, this.doctor);
+    this.reportsService.exportImageTest(this.imageTest, this.subject, this.doctor, this.clinic, this.asociadas);
   }
 
   createFullReportWithoutEmptyFields() {
     this.imageTest.values = this.imageTest.values.filter(element => element.value);
-    this.reportsService.exportImageTest(this.imageTest, this.subject, this.doctor);
+    this.reportsService.exportImageTest(this.imageTest, this.subject, this.doctor, this.clinic, this.asociadas);
   }
 
   createPositivesReport() {
     this.imageTest.values = this.imageTest.values.filter(element => element.status === "positive");
-    this.reportsService.exportImageTest(this.imageTest, this.subject, this.doctor);
+    this.reportsService.exportImageTest(this.imageTest, this.subject, this.doctor, this.clinic, this.asociadas);
   }
 
   async dismissModal(): Promise<any> {

@@ -4,6 +4,7 @@ import { AuthService } from "./services/auth.service";
 import { LanguageService } from "./services/language.service";
 import { PopoverController, AlertController, MenuController } from "@ionic/angular";
 import { NotificationsPage } from "./components/notifications/notifications.page";
+import { DoctorsService } from "./services/doctors.service";
 
 @Component({
   selector: "app-root",
@@ -25,135 +26,59 @@ export class AppComponent implements OnInit, OnDestroy {
   public appPages = [
     {
       title: "Panel de control",
+      titleEng: "Dashboard",
       url: "/dashboard",
-      icon: "analytics",
+      icon: "easel",
       disabled: false,
-      admin: false
+      role: "doctor"
     },
     {
       title: "Pacientes",
+      titleEng: "Patients",
       url: "/subjects",
       icon: "person",
       disabled: false,
-      admin: false
+      role: "doctor"
+    },
+    {
+      title: "Doctores",
+      titleEng: "Doctors",
+      url: "/doctors",
+      icon: "people",
+      disabled: false,
+      role: "clinic-admin"
+    },
+    {
+      title: "Registro de actividad",
+      titleEng: "Activity Log",
+      url: "/activity",
+      icon: "list",
+      disabled: false,
+      role: "clinic-admin"
     },
     {
       title: "Clínicas",
-      url: "/doctors",
-      icon: "people",
+      titleEng: "Clinics",
+      url: "/clinics",
+      icon: "medical",
       disabled: false,
-      admin: true
+      role: "admin"
     },
     {
       title: "Base de datos",
+      titleEng: "Database",
       url: "/database",
       icon: "folder",
       disabled: false,
-      admin: true
+      role: "admin"
     },
     {
       title: "Estadísticas",
+      titleEng: "Statisitics",
       url: "/statistics",
       icon: "pie-chart",
       disabled: false,
-      admin: true
-    }
-  ];
-
-  public appPagesOriginal = [
-    {
-      title: "Panel de control",
-      url: "/dashboard",
-      icon: "analytics",
-      disabled: false,
-      admin: false
-    },
-    {
-      title: "Pacientes",
-      url: "/subjects",
-      icon: "person",
-      disabled: false,
-      admin: false
-    },
-    {
-      title: "Clínicas",
-      url: "/doctors",
-      icon: "people",
-      disabled: false,
-      admin: true
-    },
-    {
-      title: "Informes",
-      url: "/reports",
-      icon: "document",
-      disabled: false,
-      admin: false
-    },
-    {
-      title: "Tablas",
-      url: "/tables",
-      icon: "grid",
-      disabled: false,
-      admin: false
-    },
-    {
-      title: "Plantillas",
-      url: "/templates",
-      icon: "create",
-      disabled: false,
-      admin: false
-    },
-    {
-      title: "Base de datos",
-      url: "/database",
-      icon: "folder",
-      disabled: false,
-      admin: true
-    },
-    {
-      title: "Estadísticas",
-      url: "/statistics",
-      icon: "pie-chart",
-      disabled: false,
-      admin: true
-    }
-  ];
-
-  public appPagesEng = [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: "analytics",
-      disabled: false,
-      admin: false
-    },
-    {
-      title: "Subjects",
-      url: "/subjects",
-      icon: "person",
-      disabled: false,
-      admin: false
-    },
-    {
-      title: "Doctors",
-      url: "/doctors",
-      icon: "people",
-      disabled: false,
-      admin: true
-    },
-    {
-      title: "Database",
-      url: "/database",
-      icon: "folder",
-      disabled: false,
-      admin: true
-    },
-    {
-      title: "Statistics",
-      url: "/statistics",
-      icon: "pie-chart",
-      disabled: false,
-      admin: true
+      role: "admin"
     }
   ];
 
@@ -162,14 +87,20 @@ export class AppComponent implements OnInit, OnDestroy {
     public lang: LanguageService,
     private popoverController: PopoverController,
     private alertController: AlertController,
-    private menuController: MenuController
+    private doctorService: DoctorsService
   ) { }
 
   ngOnInit() {
     this.user$ = this.auth.user$;
 
-    this.userSub = this.user$.subscribe((data) => {
+    this.userSub = this.user$.subscribe(async (data) => {
       this.userData = data;
+      console.log(this.userData);
+
+      this.doctorData = (await this.doctorService.getDoctorData(data.id)).data();
+      console.log(this.doctorData);
+
+      this.appPages[3].url = `/activity/${this.doctorData.clinic}`;
     });
   }
 

@@ -1,9 +1,10 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, Input, OnInit } from "@angular/core";
 import { ToastService } from "src/app/services/toast.service";
-import { Router } from "@angular/router";
-import { Observable } from "rxjs";
+import { ActivatedRoute, Router } from "@angular/router";
 import { UsersService } from "src/app/services/users.service";
 import { LanguageService } from "src/app/services/language.service";
+import { DoctorsService } from "src/app/services/doctors.service";
+import { AuthService } from "src/app/services/auth.service";
 
 @Component({
   selector: "app-create",
@@ -11,49 +12,66 @@ import { LanguageService } from "src/app/services/language.service";
   styleUrls: ["./create.page.scss"]
 })
 export class CreatePage implements OnInit {
-  users: Observable<any>;
-  selectedUserId: any;
+  clinic: string;
   name: string;
-  collaborator = false;
-  admin = false;
+  email: string;
+  password: string;
+
+  testEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
   constructor(
-    private doctorsService: UsersService,
-    private usersService: UsersService,
+    private doctorsService: DoctorsService,
     private toastService: ToastService,
     public lang: LanguageService,
-    private router: Router
-  ) {}
+    private authService: AuthService,
+    private router: Router,
+    private activatedRoute: ActivatedRoute
+  ) { }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.clinic = this.activatedRoute.snapshot.paramMap.get("id");
+  }
 
   ionViewDidEnter() {
-    this.users = this.usersService.getUsers();
+
+  }
+
+  isValid() {
+    return this.name !== undefined && this.name !== null && this.name.trim().length > 0 && this.testEmail.test(this.email.trim().toLowerCase());
   }
 
   async save(): Promise<any> {
-    const data = {
-      isDoctor: true,
-      isCollaborator: this.collaborator,
-      isAdmin: this.admin,
-      name: this.name || null,
-      sharedSubjectsPhenotypic: [],
-      sharedSubjectsGenetic: [],
-      sharedSubjectsAnalytic: [],
-      sharedSubjectsImage: []
-    };
-    this.doctorsService
-      .updateUser(this.selectedUserId, data)
-      .then(() => {
-        this.router.navigate(["/doctors"]).then(() => {
-          this.toastService.show("success", "Doctor creado con éxito");
-        });
-      })
-      .catch((error) => {
+    if (this.isValid()) {
+      const data = {
+        clinic: this.clinic,
+        isDoctor: true,
+        isOwner: false,
+        name: this.name.trim() || null,
+        sharedSubjectsPhenotypic: [],
+        sharedSubjectsGenetic: [],
+        sharedSubjectsAnalytic: [],
+        sharedSubjectsImage: []
+      };
+      this.authService.emailSignUp(this.email.trim().toLowerCase(), this.password.trim()).then(() => {
+        this.doctorsService
+          .createDoctor(data)
+          .then(() => {
+            this.router.navigate(["/doctors"]).then(() => {
+              this.toastService.show("success", "Doctor creado con éxito");
+            });
+          })
+          .catch((error) => {
+            this.toastService.show(
+              "danger",
+              "Error: No se ha podido crear el doctor" + error
+            );
+          });
+      }).catch((error) => {
         this.toastService.show(
           "danger",
           "Error: No se ha podido crear el doctor" + error
         );
-      });
+      })
+    }
   }
 }

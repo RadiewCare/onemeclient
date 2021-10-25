@@ -6,6 +6,7 @@ import { AlertController } from "@ionic/angular";
 import { LanguageService } from "src/app/services/language.service";
 import { DoctorsService } from "src/app/services/doctors.service";
 import { UsersService } from "src/app/services/users.service";
+import { SubjectsService } from "src/app/services/subjects.service";
 
 @Component({
   selector: "app-edit",
@@ -20,15 +21,20 @@ export class EditPage implements OnInit, OnDestroy {
   doctor: Observable<any>;
   doctorSub: Subscription;
 
+  doctorData: any;
+
   id: string;
   name: string;
   email: string;
   admin: boolean;
 
+  isOwner: boolean;
+
   sharedSubjectsAnalytic: string[];
   sharedSubjectsGenetic: string[];
   sharedSubjectsImage: string[];
   sharedSubjectsPhenotypic: string[];
+  sharedSubjectsReproduction: string[];
 
   sharedSubjects = [];
   sharedSubjectsData = [];
@@ -40,25 +46,33 @@ export class EditPage implements OnInit, OnDestroy {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private alertController: AlertController,
+    private subjectsService: SubjectsService,
     public lang: LanguageService
   ) {
     this.id = this.activatedRoute.snapshot.paramMap.get("id");
   }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   ionViewDidEnter() {
     this.doctor = this.doctorsService.getDoctor(this.id);
     this.doctorSub = this.doctor.subscribe((doctorData) => {
+      this.doctorData = doctorData;
+
       this.user = this.usersService.getUser(doctorData.id);
+
       this.userSub = this.user.subscribe((userData) => {
         this.email = userData.email;
         this.userId = userData.id;
       });
+
       this.name = doctorData.name;
       this.admin = doctorData.isAdmin;
+      this.isOwner = doctorData.isOwner;
+
       this.sharedSubjectsAnalytic = doctorData.sharedSubjectsAnalytic;
       this.sharedSubjectsGenetic = doctorData.sharedSubjectsGenetic;
+      this.sharedSubjectsReproduction = doctorData.sharedSubjectsReproduction;
       this.sharedSubjectsImage = doctorData.sharedSubjectsImage;
       this.sharedSubjectsPhenotypic = doctorData.sharedSubjectsPhenotypic;
 
@@ -66,13 +80,14 @@ export class EditPage implements OnInit, OnDestroy {
         this.sharedSubjects = this.sharedSubjectsAnalytic
           .concat(this.sharedSubjectsGenetic)
           .concat(this.sharedSubjectsPhenotypic)
-          .concat(this.sharedSubjectsPhenotypic)
+          .concat(this.sharedSubjectsReproduction)
+          .concat(this.sharedSubjectsImage)
           .filter(function (item, pos, self) {
             return self.indexOf(item) === pos;
           });
 
         this.sharedSubjects.forEach((id) => {
-          this.doctorsService.getDoctorData(id).then((userData) => {
+          this.subjectsService.getSubjectData(id).then((userData) => {
             this.sharedSubjectsData.push(userData.data());
           });
         });
@@ -85,16 +100,20 @@ export class EditPage implements OnInit, OnDestroy {
       this.sharedSubjects = this.sharedSubjectsAnalytic
         .concat(this.sharedSubjectsGenetic)
         .concat(this.sharedSubjectsPhenotypic)
-        .concat(this.sharedSubjectsPhenotypic)
+        .concat(this.sharedSubjectsReproduction)
+        .concat(this.sharedSubjectsImage)
         .filter(function (item, pos, self) {
           return self.indexOf(item) === pos;
         });
       this.sharedSubjectsData = [];
       this.sharedSubjects.forEach((id) => {
-        this.doctorsService.getDoctorData(id).then((userData) => {
+        this.subjectsService.getSubjectData(id).then((userData) => {
           this.sharedSubjectsData.push(userData.data());
         });
       });
+      this.toastService.show("success", "Acceso revocado con éxito");
+    }).catch((error) => {
+      this.toastService.show("danger", "Error al revocar el acceso");
     });
   }
 
@@ -108,13 +127,15 @@ export class EditPage implements OnInit, OnDestroy {
       sharedSubjectsAnalytic: this.sharedSubjectsAnalytic,
       sharedSubjectsGenetic: this.sharedSubjectsGenetic,
       sharedSubjectsImage: this.sharedSubjectsImage,
-      sharedSubjectsPhenotypic: this.sharedSubjectsPhenotypic
+      sharedSubjectsPhenotypic: this.sharedSubjectsPhenotypic,
+      sharedSubjectsReproduction: this.sharedSubjectsReproduction
     };
     if (this.admin) {
       data.sharedSubjectsAnalytic = [];
       data.sharedSubjectsGenetic = [];
       data.sharedSubjectsImage = [];
       data.sharedSubjectsPhenotypic = [];
+      data.sharedSubjectsReproduction = [];
     }
     // Actualizamos doctor
     this.doctorsService
@@ -144,7 +165,7 @@ export class EditPage implements OnInit, OnDestroy {
           text: "Cancelar",
           role: "cancel",
           cssClass: "secondary",
-          handler: (blah) => {}
+          handler: (blah) => { }
         },
         {
           text: "Aceptar",

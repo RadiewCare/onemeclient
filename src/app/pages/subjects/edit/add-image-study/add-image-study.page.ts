@@ -13,6 +13,9 @@ import { SubjectImageTestsService } from "src/app/services/subject-image-tests.s
 import { GalleryPage } from "../gallery/gallery.page";
 import { AddImagePage } from "../add-image/add-image.page";
 import { AddImageCreatePage } from "../add-image-create/add-image-create.page";
+import { AuthService } from "src/app/services/auth.service";
+import { ActivityService } from "src/app/services/activity.service";
+import { DoctorsService } from "src/app/services/doctors.service";
 
 @Component({
   selector: "app-add-image-study",
@@ -166,6 +169,12 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
     }
   }
 
+  // Doctor
+  user$: any;
+  userData: any;
+  userSub: Subscription;
+  doctorSub: Subscription;
+
   // B, VU, VV, R, V, RV, C, P, RU, U, leftOvary, rightOvary, UT, ufl,
   // IM, SS, SM, otheruf
 
@@ -178,7 +187,10 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
     private toastService: ToastService,
     private imageTestsElementsService: ImageTestsElementsService,
     private db: AngularFirestore,
-    private subjectImageTestsService: SubjectImageTestsService
+    private subjectImageTestsService: SubjectImageTestsService,
+    private auth: AuthService,
+    private activityService: ActivityService,
+    private doctorsService: DoctorsService
   ) { }
 
   ngOnInit() {
@@ -369,6 +381,8 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
                 format: "new"
               });
 
+
+
               this.toastService.show("success", "Prueba de imagen creada con éxito");
             }).catch(() => {
               this.toastService.show("danger", "Error al crear la prueba de imagen");
@@ -410,7 +424,30 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
 
 
         this.subjectImageTestsService.create(data).then(() => {
-          this.toastService.show("success", "Prueba de imagen creada con éxito");
+          this.user$ = this.auth.user$;
+
+          this.userSub = this.user$.subscribe(async (data) => {
+            const doctor = (await this.doctorsService.getDoctorData(data.id)).data();
+            console.log(doctor);
+
+            const activity = {
+              action: "create",
+              doctor: doctor.name,
+              doctorId: doctor.id,
+              clinicId: doctor.clinic,
+              subject: this.subject.identifier,
+              subjectId: this.subject.id,
+              createdAt: moment().format(),
+              target: "imageTest",
+              description: this.currentImageTest.name,
+            }
+            await this.activityService.create(activity);
+
+            this.dismissModal().then(() => {
+              this.toastService.show("success", "Prueba de imagen creada con éxito");
+            });
+          })
+
         }).catch(error => {
           this.toastService.show("danger", "Error al crear la prueba de imagen: " + error);
         });
@@ -1093,6 +1130,9 @@ export class AddImageStudyPage implements OnInit, OnDestroy {
     }
     if (this.subjectSub) {
       this.subjectSub.unsubscribe();
+    }
+    if (this.userSub) {
+      this.userSub.unsubscribe();
     }
   }
 }

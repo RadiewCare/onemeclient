@@ -5,7 +5,7 @@ import { ToastController } from "@ionic/angular";
   providedIn: "root"
 })
 export class ToastService {
-  constructor(private toastController: ToastController) {}
+  constructor(private toastController: ToastController) { }
 
   /**
    * Muestra un mensaje como toast
@@ -16,8 +16,19 @@ export class ToastService {
     const toast = await this.toastController.create({
       message,
       color: type,
-      duration: 3000
     });
+
+    if (type === "danger") {
+      toast.buttons = [{
+        text: 'Cerrar',
+        role: 'cancel',
+        handler: () => {
+        }
+      }]
+    } else {
+      toast.duration = 2000;
+    }
+
     toast.present();
   }
 }

@@ -50,7 +50,7 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: "register",
+    path: "register/:id",
     loadChildren: () =>
       import("./pages/register/register.module").then(
         (m) => m.RegisterPageModule
@@ -79,6 +79,14 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: "subjects/:id",
+    loadChildren: () =>
+      import("./pages/subjects/subjects.module").then(
+        (m) => m.SubjectsPageModule
+      ),
+    canActivate: [AuthGuard]
+  },
+  {
     path: "tables",
     loadChildren: () =>
       import("./pages/tables/tables.module").then((m) => m.TablesPageModule),
@@ -98,6 +106,14 @@ const routes: Routes = [
       import("./components/notifications/notifications.module").then(
         (m) => m.NotificationsPageModule
       )
+  },
+  {
+    path: 'clinics',
+    loadChildren: () => import('./pages/clinics/clinics.module').then(m => m.ClinicsPageModule)
+  },
+  {
+    path: 'activity/:id',
+    loadChildren: () => import('./pages/activity/activity.module').then(m => m.ActivityPageModule)
   }
 ];
 

@@ -1,0 +1,76 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Editar clínica</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/clinics"></ion-back-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()">
+        <ion-icon slot="start" name="save"></ion-icon>
+        Guardar
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12" class="ion-margin-top">
+        <ion-item>
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input [(ngModel)]="name" placeholder="Introduzca nombre de la clínica"></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="12" class="ion-text-center">
+        Url de registro para el administrador de la clínica: <b>{{ invitationUrl }}</b>
+      </ion-col>
+    </ion-row>
+
+    <!-- Filtros y búsquedas -->
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item color="primary" class="ion-margin-bottom">
+          <ion-label>Doctores</ion-label>
+        </ion-item>
+        <ion-searchbar class="ion-no-padding"
+          [placeholder]="this.lang.isSpanish()? 'Buscar por nombre' : 'Search by name'"
+          (ionChange)="onSearchChange($event.detail.value)">
+        </ion-searchbar>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ng-container *ngIf="!queryDoctors; else elseTemplate">
+        <ion-col size="12" class="ion-padding-top">
+          <ion-item *ngFor="let doctor of doctors" lines="full" [routerLink]="['/doctors/edit/', doctor.id]"
+            style="cursor: pointer">
+            <ion-label>{{ doctor.name }}</ion-label>
+            <ion-badge *ngIf="doctor.isOwner && this.lang.isSpanish()" color="primary" mode="ios" slot="end">
+              Administrador
+            </ion-badge>
+            <ion-badge *ngIf="doctor.isOwner && !this.lang.isSpanish()" color="primary" mode="ios" slot="end">
+              Admin
+            </ion-badge>
+          </ion-item>
+        </ion-col>
+      </ng-container>
+      <ng-template #elseTemplate>
+        <ion-col size="12" class="ion-padding-top">
+          <ion-item *ngFor="let doctor of queryDoctors" lines="full" [routerLink]="['/doctors/edit/', doctor.id]"
+            style="cursor: pointer">
+            <ion-label>{{ doctor.name }}</ion-label>
+            <ion-badge *ngIf="doctor.isOwner && lang.isSpanish()" color="primary" mode="ios" slot="end">
+              Administrador
+            </ion-badge>
+            <ion-badge *ngIf="doctor.isOwner && !lang.isSpanish()" color="primary" mode="ios" slot="end">
+              Admin
+            </ion-badge>
+          </ion-item>
+        </ion-col>
+      </ng-template>
+    </ion-row>
+  </ion-grid>
+</ion-content>

@@ -103,6 +103,7 @@ export class AuthService {
         isCollaborator: true,
         sharedSubjectsAnalytic: [],
         sharedSubjectsGenetic: [],
+        sharedSubjectsReproduction: [],
         sharedSubjectsImage: [],
         sharedSubjectsPhenotypic: []
       };

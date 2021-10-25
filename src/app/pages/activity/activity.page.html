@@ -1,0 +1,66 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ lang.isSpanish() ? "Registro de actividad" : "Activity log" }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <!--  
+      <ion-col size="6" class="ion-padding-top">
+        <ion-item>
+          <ion-label>Fecha inicial</ion-label>
+          <ion-datetime display-format="DD/MM/YYYY" doneText="Aceptar" [(ngModel)]="initialDate" cancelText="Cancelar"
+            (ionChange)="filterSubjects()"></ion-datetime>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="6" class="ion-padding-top">
+        <ion-item>
+          <ion-label>Fecha final</ion-label>
+          <ion-datetime display-format="DD/MM/YYYY" doneText="Aceptar" [(ngModel)]="finalDate" cancelText="Cancelar"
+            (ionChange)="filterSubjects()"></ion-datetime>
+        </ion-item>
+      </ion-col>
+      -->
+      <ion-col size="12" class="ion-padding-vertical">
+        <ion-virtual-scroll [items]="logs">
+          <ion-item *virtualItem="let activity" lines="full" [routerLink]="['/subjects/edit', activity.subjectId]">
+            <ion-label *ngIf="lang.isSpanish()">
+              <b>{{ activity.doctor }}</b> ha
+              {{ activity.action === "create" ? "creado" : "" }}
+              {{ activity.action === "edit" ? "editado" : "" }}
+              {{ activity.action === "delete" ? "eliminado" : "" }}
+              <i style="color: var(--ion-color-primary)">
+                {{ activity.target === "reproductionTest" ? "la técnica de reproducción" : "" }}
+                {{ activity.target === "imageTest" ? "la prueba de imagen" : "" }}
+                {{ activity.target === "clinicAnalysis" ? "el análisis clínico" : "" }}
+                {{ activity.target === "subject" ? "el paciente" : "" }}
+              </i>
+              <b>{{ activity.description ? activity.description : "" }}</b>
+              {{ activity.target !== "subject" ? "al paciente " + activity.subject : activity.subject }}
+            </ion-label>
+            <ion-label *ngIf="!lang.isSpanish()">
+              <b>{{ activity.doctor }}</b> has
+              {{ activity.action === "create" ? "created" : "" }}
+              {{ activity.action === "edit" ? "edited" : "" }}
+              {{ activity.action === "delete" ? "deleted" : "" }}
+              <i>
+                {{ activity.target === "reproductionTest" ? "a reproduction test" : "" }}
+                {{ activity.target === "imageTest" ? "an image test" : "" }}
+                {{ activity.target === "clinicAnalysis" ? "a clinic analysis" : "" }}
+                {{ activity.target === "subject" ? "subject" : "" }}
+              </i>
+              <b>{{ activity.description ? activity.description : "" }}</b>
+              {{ activity.target !== "subject" ? "to patient " + activity.subject : activity.subject }}
+            </ion-label>
+            <ion-text slot="end">
+              {{ activity.createdAt | date: 'dd/MM/yy - HH:mm'}}
+            </ion-text>
+          </ion-item>
+        </ion-virtual-scroll>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

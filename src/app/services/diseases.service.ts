@@ -54,6 +54,16 @@ export class DiseasesService {
       .orderBy("name").get();
   }
 
+
+  async getByGene(geneId: number) {
+    console.log(geneId);
+
+    return await this.db.firestore
+      .collection(`diseases`)
+      .where('genesIds', "array-contains", geneId)
+      .orderBy("name").get();
+  }
+
   getDisease(id: string): Observable<any> {
     return this.db.doc(`diseases/${id}`).valueChanges();
   }

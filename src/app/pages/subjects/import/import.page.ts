@@ -22,14 +22,17 @@ export class ImportPage implements OnInit {
   csvAnalyticData: any;
   csvImageData: any;
   csvEmbryologyData: any;
+  csvEurofinsData: any;
 
   doneMessagePhenotypic: string;
   doneMessageGenetic: string;
+  doneMessageEurofins: string;
   doneMessageAnalytic: string;
   doneMessageImage: string;
   doneMessageEmbryology: string;
   errorMessagePhenotypic: string;
   errorMessageGenetic: string;
+  errorMessageEurofins: string;
   errorMessageAnalytic: string;
   errorMessageImage: string;
   errorMessageEmbryology: string;
@@ -92,6 +95,7 @@ export class ImportPage implements OnInit {
   }
 
   async loadGeneticData(event: any) {
+
     const csvFile = event.target.files[0];
 
     const csvOptions = {
@@ -102,20 +106,59 @@ export class ImportPage implements OnInit {
         if (results.errors.length > 0) {
           this.doneMessageGenetic = null;
           this.errorMessageGenetic = JSON.stringify(results.errors);
+          this.loadingController.dismiss();
         } else {
           this.errorMessageGenetic = null;
-          this.doneMessageGenetic = "Procesado correctamente";
+          this.doneMessageGenetic = "Archivo procesado correctamente, importe cuando quiera";
           this.csvGeneticData = results.data;
           console.log(this.csvGeneticData);
+          this.loadingController.dismiss();
         }
       }
     };
 
     if (event.target.files[0].name.split(".").pop() === "csv") {
+      const loading = await this.loadingController.create({ message: "Leyendo csv de datos genéticos" });
+      await loading.present();
       this.papa.parse(csvFile, csvOptions);
       console.log("es csv");
     } else {
       this.errorMessageGenetic = "No es un archivo .csv";
+    }
+  }
+
+  async loadEurofinsData(event: any) {
+
+    const csvFile = event.target.files[0];
+
+    const csvOptions = {
+      header: true,
+      dynamicTyping: true,
+      skipEmptyLines: true,
+      complete: (results: any, file: any) => {
+        if (results.errors.length > 0) {
+          console.log(results.errors);
+
+          this.doneMessageEurofins = null;
+          this.errorMessageEurofins = JSON.stringify(results.errors);
+          this.loadingController.dismiss();
+        } else {
+          this.errorMessageEurofins = null;
+          this.doneMessageEurofins = "Archivo procesado correctamente, importe cuando quiera";
+          this.csvEurofinsData = results.data;
+          console.log(this.csvEurofinsData);
+          this.loadingController.dismiss();
+        }
+      }
+    };
+
+    if (event.target.files[0].name.split(".").pop() === "csv") {
+      const loading = await this.loadingController.create({ message: "Leyendo csv de datos genéticos Eurofins / Thermofisher" });
+      await loading.present();
+      this.papa.parse(csvFile, csvOptions);
+      console.log("es csv");
+    } else {
+      this.errorMessageEurofins = "No es un archivo .csv";
     }
   }
 
@@ -135,6 +178,19 @@ export class ImportPage implements OnInit {
           this.errorMessageAnalytic = null;
           this.doneMessageAnalytic = "Procesado correctamente";
           this.csvAnalyticData = results.data;
+
+          this.csvAnalyticData.forEach(element => {
+            if (typeof element.RESULTADO === "string" && element.RESULTADO[element.RESULTADO.length - 1] === ",") {
+              element.RESULTADO.splice(element.RESULTADO.length - 1, 1);
+            }
+            if (!element.RESULTADO ||
+              element.RESULTADO === "Positivo" ||
+              element.RESULTADO === "Negativo" ||
+              element.RESULTADO === "Indeterminado"
+            ) {
+              this.csvAnalyticData.splice(this.csvAnalyticData.indexOf(element), 1);
+            }
+          });
           console.log(this.csvAnalyticData);
         }
       }
@@ -210,6 +266,7 @@ export class ImportPage implements OnInit {
     if (this.csvGeneticData) {
       console.log("Loading");
 
+      /* VERSIÓN ANTIGUA
       await this.geneticDataService
         .importGeneticData(this.id, this.csvGeneticData)
         .then(async () => {
@@ -244,6 +301,41 @@ export class ImportPage implements OnInit {
                 });
               }
             });
+        })
+        .catch((error) => {
+          this.toastService.show("danger", error);
+        });
+      */
+      await this.geneticDataService
+        .importGeneticDataGenome(this.id, this.csvGeneticData)
+        .then(async () => {
+          /*
+          this.subjectsService.updateSubject(this.id, {
+            hasGeneticAnalysis: true
+          }).then(() => {
+            this.toastService.show(
+              "success",
+              "Datos genéticos importados con éxito"
+            );
+            this.subjectsService.updateSubject(this.id, {
+              geneticDataFileName: this.filename
+            })
+          }).catch((error) => {
+            this.toastService.show(
+              "danger",
+              "Fallo al actualizar la existencia de análisis genético en el sujeto: " + error
+            );
+          });*/
+        })
+        .catch((error) => {
+          this.toastService.show("danger", error);
+        });
+    }
+    if (this.csvEurofinsData) {
+      await this.geneticDataService
+        .importGeneticDataEurofins(this.id, this.csvEurofinsData)
+        .then(async () => {
+          this.toastService.show("success", "Importado con éxito")
         })
         .catch((error) => {
           this.toastService.show("danger", error);

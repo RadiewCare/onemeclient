@@ -1,0 +1,4 @@
+dbSNP RS ID;Alleles;Chromosome;Physical Position;Position End;Ref Allele;Alt Allele;Ordered Alleles;Extended RSID;super_module;clinvar_variantid;clinvar_mim;clinvar_omim_phenotype;clinvar_traits;clinvar_gene;clinvar_clin_sig;clinvar_hgvs_c;clinvar_hgvs_g;clinvar_reviewstatus;nhgri_traits
+rs10466213;C/G;10;121336954;121336954;C;G;C // G;rs10466213;---;---;---;---;---;---;---;---;---;---;---
+rs10770943;C/G;12;23048418;23048418;C;G;C // G;rs10770943;---;---;---;---;---;---;---;---;---;---;---
+rs10827221;G/G;10;33256536;33256536;G;C;C // G;rs10827221;---;---;---;---;---;---;---;---;---;---;Response to paliperidone in schizophrenia (negative Marder score)

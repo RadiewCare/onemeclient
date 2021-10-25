@@ -171,6 +171,13 @@ export class EditPage implements OnInit, OnDestroy {
     this.positiveOptions = values;
   }
 
+  doReorder(ev: any) {
+    const item = this.options.splice(ev.detail.from, 1)[0];
+    this.options.splice(ev.detail.to, 0, item);
+    ev.detail.complete();
+    console.log(this.options);
+  }
+
   loadImage(files: any, index: any) {
     const file = files[0];
     this.files[index] = file;

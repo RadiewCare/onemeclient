@@ -9,7 +9,7 @@ import { AuthService } from "./auth.service";
   providedIn: "root"
 })
 export class DoctorsService {
-  constructor(private db: AngularFirestore, private auth: AuthService) {}
+  constructor(private db: AngularFirestore, private auth: AuthService) { }
 
   /**
    * Devuelve todos los doctores como observable
@@ -35,6 +35,36 @@ export class DoctorsService {
     } else {
     }
     return this.db.firestore.collection(`doctors`).get();
+  }
+
+  /**
+   * Devuelve todos los doctores de una clínica como observable
+   * @param clinic Id de la clínica
+   * @param order Orden de los datos devueltos (opcional)
+  */
+  getDoctorsByClinic(clinic: string, order?: string): Observable<any> {
+    if (order) {
+      return this.db
+        .collection(`doctors`, (ref) => ref.where("clinic", "==", clinic).orderBy(order))
+        .valueChanges();
+    } else {
+      console.log(clinic);
+
+      return this.db.collection(`doctors`, (ref) => ref.where("clinic", "==", clinic)).valueChanges();
+    }
+  }
+
+  /**
+   * Devuelve todos los doctores de una clínica como observable
+   * @param clinic Id de la clínica
+   * @param order Orden de los datos devueltos (opcional)
+  */
+  getDoctorsByClinicData(clinic: string, order?: string): Promise<any> {
+    if (order) {
+      return this.db.firestore.collection(`doctors`).where("clinic", "==", clinic).orderBy(order).get();
+    } else {
+      return this.db.firestore.collection(`doctors`).where("clinic", "==", clinic).get();
+    }
   }
 
   /**
@@ -150,60 +180,10 @@ export class DoctorsService {
    */
   async deleteDoctor(doctorId) {
     // TO DO: Eliminar dependencias
-    // Las dependencias afectadas son sujetos y todo lo que cuelgue del doctor (informes,tablas y plantillas)
-    // En sujeto hay que comprobar los sujetos cuyo main doctor es este doctor y poner como maindoctor a Fernando
+    // Las dependencias afectadas son sujetos
+    // En sujeto hay que comprobar los sujetos cuyo main doctor es este doctor y poner como maindoctor al administrador de la clínica
 
-    const promise1 = new Promise((resolve) => {
-      this.db.firestore
-        .collection(`doctors/${doctorId}/reports`)
-        .get()
-        .then((data) => {
-          if (data.docs.length > 0) {
-            data.docs.forEach((element) => {
-              this.db
-                .doc(`doctors/${doctorId}/reports/${element.data().id}`)
-                .delete();
-            });
-          }
-          resolve();
-        });
-    });
-
-    const promise2 = new Promise((resolve) => {
-      this.db.firestore
-        .collection(`doctors/${doctorId}/tables`)
-        .get()
-        .then((data) => {
-          if (data.docs.length > 0) {
-            data.docs.forEach((element) => {
-              this.db
-                .doc(`doctors/${doctorId}/tables/${element.data().id}`)
-                .delete();
-            });
-          }
-          resolve();
-        });
-    });
-
-    const promise3 = new Promise((resolve) => {
-      this.db.firestore
-        .collection(`doctors/${doctorId}/templates`)
-        .get()
-        .then((data) => {
-          if (data.docs.length > 0) {
-            data.docs.forEach((element) => {
-              this.db
-                .doc(`doctors/${doctorId}/templates/${element.data().id}`)
-                .delete();
-            });
-          }
-          resolve();
-        });
-    });
-
-    Promise.all([promise1, promise2, promise3]).then(() => {
-      this.db.doc(`doctors/${doctorId}`).delete();
-    });
+    this.db.doc(`doctors/${doctorId}`).delete();
   }
 
   /**
@@ -228,6 +208,13 @@ export class DoctorsService {
       case "genetic":
         return this.db.doc(`doctors/${doctorId}`).update({
           sharedSubjectsGenetic: firebase.firestore.FieldValue.arrayUnion({
+            subjectId
+          })
+        });
+
+      case "reproduction":
+        return this.db.doc(`doctors/${doctorId}`).update({
+          sharedSubjectsReproduction: firebase.firestore.FieldValue.arrayUnion({
             subjectId
           })
         });
@@ -275,6 +262,12 @@ export class DoctorsService {
             subjectId
           )
         });
+      case "reproduction":
+        return this.db.doc(`doctors/${doctorId}`).update({
+          sharedSubjectsReproduction: firebase.firestore.FieldValue.arrayRemove(
+            subjectId
+          )
+        });
       case "analytic":
         return this.db.doc(`doctors/${doctorId}`).update({
           sharedSubjectsAnalytic: firebase.firestore.FieldValue.arrayRemove(
@@ -309,6 +302,9 @@ export class DoctorsService {
       sharedSubjectsGenetic: firebase.firestore.FieldValue.arrayUnion(
         subjectId
       ),
+      sharedSubjectsReproduction: firebase.firestore.FieldValue.arrayUnion(
+        subjectId
+      ),
       sharedSubjectsAnalytic: firebase.firestore.FieldValue.arrayUnion(
         subjectId
       ),
@@ -330,6 +326,9 @@ export class DoctorsService {
         subjectId
       ),
       sharedSubjectsGenetic: firebase.firestore.FieldValue.arrayRemove(
+        subjectId
+      ),
+      sharedSubjectsReproduction: firebase.firestore.FieldValue.arrayRemove(
         subjectId
       ),
       sharedSubjectsAnalytic: firebase.firestore.FieldValue.arrayRemove(

@@ -3,7 +3,7 @@ import { MenuController, LoadingController } from "@ionic/angular";
 import { ToastService } from "src/app/services/toast.service";
 import { DoctorsService } from "src/app/services/doctors.service";
 import { kMaxLength } from 'buffer';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 @Component({
   selector: "app-register",
   templateUrl: "./register.page.html",
@@ -15,14 +15,21 @@ export class RegisterPage implements OnInit {
   password = "";
   password2 = "";
   language = "esp";
+  clinic = "";
+  isOwner = false;
   constructor(
     private loadingController: LoadingController,
     private toastService: ToastService,
     private menuController: MenuController,
     private doctorsService: DoctorsService,
     private router: Router,
-  ) {}
+    private activatedRoute: ActivatedRoute
+  ) { }
   ngOnInit() {
+    this.clinic = this.activatedRoute.snapshot.paramMap.get("id");
+    this.isOwner = this.activatedRoute.snapshot.queryParamMap.get("isOwner") === "true";
+    console.log(this.isOwner);
+
     // Esconde el menú lateral
     this.menuController.get().then((menu: HTMLIonMenuElement) => {
       menu.disabled = true;
@@ -39,7 +46,7 @@ export class RegisterPage implements OnInit {
       loading.present();
       this.doctorsService
         .registerDoctor(
-          { name: this.name, language: this.language },
+          { name: this.name, language: this.language, clinic: this.clinic, isOwner: this.isOwner },
           this.email,
           this.password
         )
