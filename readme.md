@@ -7,11 +7,12 @@ One-Me:
 1. Install node
 2. Install Angular `npm i -g @angular/cli`
 3. Install Ionic `npm i -g @ionic/cli`
+4. Clone repository [https://github.com/BraunMarketing/one-me](https://github.com/BraunMarketing/one-me)
 4. Move to the project folder
 5. `npm install`
 
 API:
-1. Move to "functions" folder
+1. Move to "functions" folder inside One-Me project
 2. `npm install`
 
 ## Deploy One-Me on production server
