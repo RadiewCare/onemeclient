@@ -42,20 +42,6 @@ const createSubjectDataValidation = {
   }),
 }
 
-/*
-Para poner en createSubjectDataValidation
-  signsAndSymptoms: Joi.array().items(Joi.object({
-    accessionNumber: Joi.number(),
-    date: Joi.string(),
-    id: Joi.string(),
-    name: Joi.string()
-  })),
-  diseases: Joi.array().items(Joi.object({
-    id: Joi.string(),
-    name: Joi.string()
-  }))
-*/
-
 /**
  * MIDDLEWARE DE AUTORIZACIÓN
  */
@@ -255,6 +241,48 @@ app.get("/getImageTestById", (request, response) => { // OK
     .then((data: any) => {
       const imageTest = data.data();
       response.send({ "imageTest": imageTest });
+    }).catch(error => {
+      response.status(500).send(error)
+    })
+});
+
+app.get("/getImageTestByIdWithValues", (request, response) => { // OK
+  admin.firestore().collection(`imageTestElements`).get()
+    .then((data) => {
+      let imageTestElements: FirebaseFirestore.DocumentData[] = [];
+      imageTestElements = data.docs.map(element => element.data());
+
+      admin.firestore().doc(`imageTests/${request.query.id}`).get()
+        .then(async (imData: any) => {
+          const imageTest = imData.data();
+
+          for await (const itElement of imageTest.elements) {
+            const found = imageTestElements.filter(element => element.id === itElement.id);
+
+            if (found.length > 0) {
+              const selected = found[0];
+              itElement.defaultInput = selected.defaultInput;
+              itElement.defaultOption = selected.defaultOption;
+              itElement.falseInput = selected.falseInput;
+              itElement.images = selected.images;
+              itElement.isIllustrated = selected.isIllustrated;
+              itElement.max = selected.max;
+              itElement.min = selected.min;
+              itElement.options = selected.options;
+              itElement.positiveOptions = selected.positiveOptions;
+              itElement.relatedDiseases = selected.relatedDiseases;
+              itElement.relatedTests = selected.relatedTests;
+              itElement.trueInput = selected.trueInput;
+              itElement.type = selected.type;
+              itElement.unit = selected.unit;
+              itElement.updatedAt = selected.updatedAt;
+            }
+          }
+          response.send({ "imageTest": imageTest });
+        }).catch(error => {
+          response.status(500).send(error)
+        })
+
     }).catch(error => {
       response.status(500).send(error)
     })
@@ -620,89 +648,6 @@ app.get("/getAssisstantReportsBySubjectId", (request, response) => { // OK
   })
 });
 
-app.post("/createGeneticReport", async (request, response) => { // OK
-  request.body.createdAt = moment().format();
-  console.log("create genetic");
-  response.send({ "create": "ok" });
-
-  /*
-  for await (const element of request.body.data) {
-    axios.post('https://couchdb.radiewcare-apps.es/genetic-data/',
-      {
-        "subjectId": element.subjectId,
-        "#Reported": element["#Reported"],
-        "ALoFT": element.ALoFT,
-        "Affected Exon": element.body["Affected Exon"],
-        "Alt": element.Alt,
-        "Chr": element.Chr,
-        "ClinVar Clinical Significance": element["ClinVar Clinical Significance"],
-        "ClinVar Disease": element["ClinVar Disease"],
-        "Comment": element.Comment,
-        "Coordinate": element.Coordinate,
-        "DEOGEN2": element["DEOGEN2"],
-        "DG Prediction": element["DG Prediction"],
-        "Exons Number": element["Exons Number"],
-        "FATHMM": element["FATHMM"],
-        "FATHMM-MKL": element["FATHMM-MKL"],
-        "FATHMM-XF": element["FATHMM-XF"],
-        "Gene": element.Gene,
-        "Global review": element["Global review"],
-        "HPO Term": element["HPO Term"],
-        "ID dbSNP": element["ID dbSNP"],
-        "LRT": element["LRT"],
-        "MIM Number": element["MIM Number"],
-        "Max Allele Freq": element["Max Allele Freq"],
-        "Max Allele Freq Origin": element["Max Allele Freq Origin"],
-        "Meta-LR": element["Meta-LR"],
-        "Meta-SVM": element["Meta-SVM"],
-        "Mutation Assesor": element["Mutation Assesor"],
-        "Mutation Taster": element["Mutation Taster"],
-        "OMIM Inheritance": element["OMIM Inheritance"],
-        "OMIM Phenotype": element["OMIM Phenotype"],
-        "PFAM Domain": element["PFAM Domain"],
-        "PanelApp - Disease Group": element["PanelApp - Disease Group"],
-        "PanelApp - Relevant Disorders": element["PanelApp - Relevant Disorders"],
-        "Prediction": element["Prediction"],
-        "Protein Effect": element["Protein Effect"],
-        "Provean": element["Provean"],
-        "Ref": element["Ref"],
-        "RefSeq ID": element["RefSeq ID"],
-        "Region": element["Region"],
-        "SIFT": element["SIFT"],
-        "SIFT 4G": element["SIFT 4G"],
-        "Sample category": element["Sample category"],
-        "Variant Type": element["Variant Type"],
-        "Zygosity": element["Zygosity"],
-        "c.Hgvs": element["c.Hgvs"],
-        "p.Hgvs": element["p.Hgvs"]
-      },
-      {
-        auth: {
-          username: "api",
-          password: "API_care2020"
-        }
-      })
-  }
-
-  admin.firestore()
-    .collection("notifications")
-    .add({
-      subjectId: request.body.subjectId,
-      mainDoctor: request.body.mainDoctor
-    })
-    .then((doc) => {
-      admin.firestore().doc(`notifications/${doc.id}`).update({ id: doc.id })
-        .then((success) => {
-          response.send({ "create": "ok", "id": doc.id });
-        }).catch(() => {
-          response.status(500).send({ error: "No se ha podido crear" })
-        });
-    }).catch(() => {
-      response.status(500).send({ error: "No se ha podido crear" })
-    });
-    */
-});
-
 app.post("/createNotification", (request, response) => { // OK
   request.body.createdAt = moment().format();
   admin.firestore()
@@ -723,8 +668,36 @@ app.post("/createNotification", (request, response) => { // OK
 /**
  * ASISTENTE DE DIAGNÓSTICO
  */
+
+app.get("/createAssistantReport", async (request, response) => {
+  const result = {
+    subjectId: request.query.id,
+    diseases: [],
+    confirmedDiseases: [],
+    date: moment().format(),
+    signsAndSymptoms: [],
+    imageBiomarkers: [],
+    reproductionBiomarkers: [],
+    analyticBiomarkers: [],
+  }
+  admin.firestore()
+    .collection("assistantReports")
+    .add(result)
+    .then((doc) => {
+      admin.firestore().doc(`assistantReports/${doc.id}/`).update({ id: doc.id })
+        .then((success) => {
+          response.send({ "create": "ok", "report": result, "reportId": doc.id });
+        }).catch((error) => {
+          response.status(500).send({ message: "No se ha podido crear el informe, inténtelo de nuevo", error: error })
+        });
+    }).catch((error) => {
+      response.status(500).send({ message: "No se ha podido crear el informe, inténtelo de nuevo", error: error })
+    });
+})
+
 /*
-app.get("/createAssistantReport", (request, response) => { // OK
+
+app.get("/createAssistantReportTest", async (request, response) => { // OK
   console.log(request.body);
 
   let id = request.query.id;
@@ -738,41 +711,14 @@ app.get("/createAssistantReport", (request, response) => { // OK
   let signsAndSymptoms = <any>[];
   let clinicAnalysis: any;
   let imageTestsElements: any;
-
-  let subjectDiseases = <any>[];
-  let originalDiseases = <any>[];
-  let diseasesList = <any>[];
-  let exclusion = false;
-  let selectedReport: any;
-  let analyticStudy: any;
-  let subjectAnaliticStudies = <any>[];
-  let assistantReports: any;
-  let combinedTests = <any>[];
-
-  // FERTILIDAD
-  let embryos: any;
-
-  // ESTUDIO DE IMAGEN
   let imageTests: any;
-
-  // ¿FILTROS? 
-  let queryLabel: string;
-  let queryCategory: string;
-  let categories = <any>[];
-  let labels = <any>[];
-  let suggestedCategories: any;
-  let suggestedLabels: any;
-  let relatedCategories: any;
-  let relatedLabels: any;
-  let selectedCategories = <any>[];
-  let selectedLabels = <any>[];
-  let selectedCategoriesIds = <any>[];
-  let selectedLabelsIds = <any>[];
-  let originalImageTests: any;
-  let originalReproductionTests: any;
-  let imageTestsList = <any>[];
   let reproductionTests = <any>[];
-  let excludedTests = <any>[];
+
+  // Diagnosis
+
+
+  let originalDiseases = <any>[];
+  let subjectAnaliticStudies = <any>[];
 
   // BIOMARCADORES
 
@@ -780,10 +726,7 @@ app.get("/createAssistantReport", (request, response) => { // OK
   let analyticBiomarkers = <any>[];
   let reproductionBiomarkers = <any>[];
   let confirmedDiseases = <any>[];
-  let confirmedDiseasesList = <any>[];
   let excludedDiseases = <any>[];
-  let excludedDiseaesList = <any>[];
-  let isAdmin = false;
 
   // Lógica de diagnóstico
 
@@ -797,22 +740,676 @@ app.get("/createAssistantReport", (request, response) => { // OK
     })
 
   // 2. Coger colecciones de la base de datos
-  // Categorías
-  // Etiquetas 
   // Signos y síntomas
+  admin.firestore().collection(`symptoms`).get()
+    .then((dataSymptoms) => {
+      dataSymptoms.docs.forEach(element => {
+        signsAndSymptoms.push(element.data());
+      })
+    }).catch(error => {
+      response.status(500).send(error);
+    })
   // Enfermedades
+  admin.firestore().collection(`diseases`).get()
+    .then((dataDiseases) => {
+      dataDiseases.docs.forEach(element => {
+        diseases.push(element.data());
+        originalDiseases.push(element.data())
+      })
+    }).catch(error => {
+      response.status(500).send(error);
+    })
   // Elementos de prueba de imagen
+  admin.firestore().collection(`imageTestElements`).get()
+    .then((dataImageTestElements) => {
+      dataImageTestElements.docs.forEach(element => {
+        imageTestsElements.push(element.data());
+      })
+    }).catch(error => {
+      response.status(500).send(error);
+    })
   // Elementos de analítica
+  admin.firestore().collection(`clinicAnalysisElements`).get()
+    .then((dataClinicAnalysisElements) => {
+      dataClinicAnalysisElements.docs.forEach(element => {
+        clinicAnalysisElements.push(element.data());
+      })
+    }).catch(error => {
+      response.status(500).send(error);
+    })
   // 3. Coger datos del sujeto
   // subjectImageTests
+  admin.firestore().collection(`subjectImageTests`).where("subjectId", "==", id).get()
+    .then((dataSubjectImageTests) => {
+      dataSubjectImageTests.docs.forEach(element => {
+        imageTests.push(element.data());
+      })
+    }).catch(error => {
+      response.status(500).send(error);
+    })
   // reproductionTests
+  admin.firestore().collection(`reproductionTests`).where("subjectId", "==", id).get()
+    .then((dataReproductionTests) => {
+      dataReproductionTests.docs.forEach(element => {
+        reproductionTests.push(element.data());
+      })
+    }).catch(error => {
+      response.status(500).send(error);
+    })
   // analyticStudy
+  admin.firestore().collection(`subjects/${id}/analysisStudies`).get()
+    .then((dataClinicAnalysis) => {
+      dataClinicAnalysis.docs.forEach(element => {
+        clinicAnalysis.push(element.data());
+      })
+    }).catch(error => {
+      response.status(500).send(error);
+    })
 
-  // Guardado
+  // 3. Diagnóstico
 
+  // Recopilación de biomarcadores positivos
+
+  for await (const analysis of subjectAnaliticStudies) {
+    analysis.values.forEach((element: any) => {
+      if (element.status === "high" || element.status === "low") {
+        analyticBiomarkers.push(element)
+      }
+    });
+  }
+
+  for await (const test of imageTests) {
+    if (test.status === "positive") {
+      test.values.forEach((element: any) => {
+        if (element.status === "positive") {
+          imageBiomarkers.push(element);
+        }
+      });
+    }
+  }
+
+  for await (const test of reproductionTests) {
+    if (test.status === "positive") {
+      test.values.forEach((element: any) => {
+        if (element.status === "positive") {
+          reproductionBiomarkers.push({
+            id: element.id,
+            name: test.name,
+            status: element.status,
+            value: element.value
+          });
+        }
+      });
+    }
+  }
+
+  // Recopilación de enfermdades relacionadas
+
+  // ANÁLISIS
+  let analysisDiseases = <any>[];
+  let analysisDiseasesWithoutFrecuencies = <any>[];
+  let relatedAnalysisBiomarkerFoundDiseases = <any>[];
+  let relatedAnalysisBiomarkerFoundDiseasesWithValues = <any>[];
+
+  for await (const biomarker of analyticBiomarkers) {
+
+    let biomarkerFound = false;
+
+    if (biomarker.format && biomarker.format == 'actualpacs') { // ANÁLISIS DESDE ACTUALPACS
+      originalDiseases.forEach((disease: any) => {
+        if (disease.analysisElements) {
+          disease.analysisElements.forEach((biom: any) => {
+            if (biom.id === biomarker.id) {
+              let isRelevant = false;
+              let ponderation = 0;
+
+              // TRATAMIENTO NORMAL DEL ELEMENTO EN UNA ENFERMEDAD PERO SIN VALORES
+              biomarkerFound = true;
+
+              if (biom.condition) {
+                ponderation = parseInt(biom.condition);
+              }
+
+              if (biom.relevancy) {
+                if (biom.relevancy == "both" && (biomarker.status == "high" || biomarker.status == "low")) {
+                  isRelevant = true;
+                } else if (biom.relevancy == "superior" && biomarker.status == "high") {
+                  isRelevant = true;
+                } else if (biom.relevancy == "inferior" && biomarker.status == "low") {
+                  isRelevant = true;
+                }
+              }
+
+              if (ponderation == 5 && isRelevant) {
+                console.log("PONDERACIÓN", ponderation);
+                if (!confirmedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                  confirmedDiseases.push({ disease: disease.id, name: disease.name, value: biomarker.status, ponderation: ponderation });
+                } else {
+                  confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value = confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value + "," + biomarker.status;
+                }
+
+                if (!relatedAnalysisBiomarkerFoundDiseasesWithValues.some((element: any) => element.disease == disease.id && element.value == element && element.ponderation == ponderation)) {
+                  relatedAnalysisBiomarkerFoundDiseases.push(disease.id);
+                  relatedAnalysisBiomarkerFoundDiseasesWithValues.push({ disease: disease.id, value: biomarker.status, ponderation: ponderation, testName: biomarker.name });
+                }
+
+              }
+
+              if (ponderation > 1 && ponderation < 5 && isRelevant) {
+                console.log("PONDERACIÓN", ponderation);
+
+                if (!relatedAnalysisBiomarkerFoundDiseasesWithValues.some((element: any) => element.disease == disease.id && element.value == element && element.ponderation == ponderation)) {
+                  relatedAnalysisBiomarkerFoundDiseases.push(disease.id);
+                  relatedAnalysisBiomarkerFoundDiseasesWithValues.push({ disease: disease.id, value: biomarker.status, ponderation: ponderation, testName: biomarker.name });
+                }
+              }
+
+              if (ponderation == 1 && isRelevant) {
+                console.log("PONDERACIÓN", ponderation);
+                if (!excludedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                  excludedDiseases.push({ disease: disease.id, name: disease.name, testName: biomarker.name });
+                }
+              }
+
+            }
+          });
+        }
+      })
+    } else { // ANÁLISIS DESDE ONE-ME
+      originalDiseases.forEach((disease: any) => {
+        if (disease.analysisElements) {
+          disease.analysisElements.forEach((biom: any) => {
+            if (biom.id === biomarker.id) {
+              let isRelevant = false;
+              let ponderation = 0;
+
+              if (biom.ranges.length > 0) {
+                // TO DO: TRATAR LOS RANGOS PERSONALIZADOS
+                console.log("ENTRO CON RANGOS EN: ", biom);
+
+                biomarkerFound = true;
+
+                if (biom.condition) {
+                  ponderation = parseInt(biom.condition);
+                }
+
+                biom.ranges.forEach((range: any) => {
+                  if (range.relevancy) {
+                    if (range.relevancy == "both" && (biomarker.value <= range.LIM_INF || biomarker.value >= range.LIM_SUP)) {
+                      isRelevant = true;
+                    } else if (range.relevancy == "superior" && biomarker.value >= range.LIM_SUP) {
+                      isRelevant = true;
+                    } else if (range.relevancy == "inferior" && biomarker.value <= range.LIM_INF) {
+                      isRelevant = true;
+                    }
+
+                    if (ponderation == 5 && isRelevant) {
+                      console.log("PONDERACIÓN", ponderation);
+                      if (!confirmedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                        confirmedDiseases.push({ disease: disease.id, name: disease.name, value: biomarker.value, ponderation: ponderation });
+                      } else {
+                        confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value = confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value + "," + biomarker.value;
+                      }
+
+                      if (!relatedAnalysisBiomarkerFoundDiseasesWithValues.some((element: any) => element.disease == disease.id && element.value == element && element.ponderation == ponderation)) {
+                        relatedAnalysisBiomarkerFoundDiseases.push(disease.id);
+                        relatedAnalysisBiomarkerFoundDiseasesWithValues.push({ disease: disease.id, value: biomarker.value, ponderation: ponderation, testName: biomarker.name });
+                      }
+
+                    }
+
+                    if (ponderation > 1 && ponderation < 5 && isRelevant) {
+                      console.log("PONDERACIÓN", ponderation);
+
+                      if (!relatedAnalysisBiomarkerFoundDiseasesWithValues.some((element: any) => element.disease == disease.id && element.value == element && element.ponderation == ponderation)) {
+                        relatedAnalysisBiomarkerFoundDiseases.push(disease.id);
+                        relatedAnalysisBiomarkerFoundDiseasesWithValues.push({ disease: disease.id, value: biomarker.value, ponderation: ponderation, testName: biomarker.name });
+                      }
+                    }
+
+                    if (ponderation == 1 && isRelevant) {
+                      console.log("PONDERACIÓN", ponderation);
+                      if (!excludedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                        excludedDiseases.push({ disease: disease.id, name: disease.name, testName: biomarker.name });
+                      }
+                    }
+                  }
+
+                });
+
+
+              } else { // TRATAMIENTO NORMAL DEL ELEMENTO EN UNA ENFERMEDAD
+                biomarkerFound = true;
+
+                if (biom.condition) {
+                  ponderation = parseInt(biom.condition);
+                }
+
+                if (biom.relevancy) {
+                  if (biom.relevancy == "both" && (biomarker.status == "high" || biomarker.status == "low")) {
+                    isRelevant = true;
+                  } else if (biom.relevancy == "superior" && biomarker.status == "high") {
+                    isRelevant = true;
+                  } else if (biom.relevancy == "inferior" && biomarker.status == "low") {
+                    isRelevant = true;
+                  }
+                }
+
+                if (ponderation == 5 && isRelevant) {
+                  console.log("PONDERACIÓN", ponderation);
+                  if (!confirmedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                    confirmedDiseases.push({ disease: disease.id, name: disease.name, value: biomarker.value, ponderation: ponderation });
+                  } else {
+                    confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value = confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value + "," + biomarker.value;
+                  }
+
+                  if (!relatedAnalysisBiomarkerFoundDiseasesWithValues.some((element: any) => element.disease == disease.id && element.value == element && element.ponderation == ponderation)) {
+                    relatedAnalysisBiomarkerFoundDiseases.push(disease.id);
+                    relatedAnalysisBiomarkerFoundDiseasesWithValues.push({ disease: disease.id, value: biomarker.value, ponderation: ponderation, testName: biomarker.name });
+                  }
+
+                }
+
+                if (ponderation > 1 && ponderation < 5 && isRelevant) {
+                  console.log("PONDERACIÓN", ponderation);
+
+                  if (!relatedAnalysisBiomarkerFoundDiseasesWithValues.some((element: any) => element.disease == disease.id && element.value == element && element.ponderation == ponderation)) {
+                    relatedAnalysisBiomarkerFoundDiseases.push(disease.id);
+                    relatedAnalysisBiomarkerFoundDiseasesWithValues.push({ disease: disease.id, value: biomarker.value, ponderation: ponderation, testName: biomarker.name });
+                  }
+                }
+
+                if (ponderation == 1 && isRelevant) {
+                  console.log("PONDERACIÓN", ponderation);
+                  if (!excludedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                    excludedDiseases.push({ disease: disease.id, name: disease.name, testName: biomarker.name });
+                  }
+                }
+              }
+            }
+          });
+        }
+      })
+    }
+
+    if (biomarkerFound) {
+      analysisDiseases = analysisDiseases.concat(relatedAnalysisBiomarkerFoundDiseases);
+      relatedAnalysisBiomarkerFoundDiseases = [...new Set([...analysisDiseases, ...relatedAnalysisBiomarkerFoundDiseases])]
+      analysisDiseasesWithoutFrecuencies = [...new Set([...analysisDiseases, ...relatedAnalysisBiomarkerFoundDiseases])]
+    }
+
+    console.log(analysisDiseasesWithoutFrecuencies);
+
+
+  }
+
+
+  // IMAGEN
+  let imageDiseases = <any>[];
+  let imageDiseasesWithoutFrecuencies = <any>[];
+  let relatedBiomarkerFoundDiseases = <any>[];
+  let relatedBiomarkerFoundDiseasesWithValues = <any>[];
+
+  for await (const biomarker of imageBiomarkers) {
+
+    let biomarkerFound = false;
+
+    // si biomarkerFound tengo que buscar en las enfermedades para ver qué elements son y comparar el value
+
+    originalDiseases.forEach((disease: any) => {
+      if (disease.imageBiomarkers) {
+        disease.imageBiomarkers.forEach((biom: any) => {
+          if (biom.id === biomarker.id) {
+            biomarker.value.forEach((element: any) => {
+              if (biom.values.includes(element)) {
+                const index = biom.values.findIndex((el: any) => el === element);
+
+                console.log("ENCONTRADO", element);
+
+                biomarkerFound = true;
+
+                if (biom.conditions) {
+                  const ponderation = biom.conditions[index];
+
+                  if (ponderation == 5) {
+                    if (!confirmedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                      confirmedDiseases.push({ disease: disease.id, name: disease.name, value: element, ponderation: ponderation });
+                    } else {
+                      confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value = confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value + "," + element;
+                    }
+
+                    if (!relatedBiomarkerFoundDiseasesWithValues.some((el: any) => el.disease == disease.id && el.value == element && el.ponderation == ponderation)) {
+                      relatedBiomarkerFoundDiseases.push(disease.id);
+                      relatedBiomarkerFoundDiseasesWithValues.push({ disease: disease.id, value: element, ponderation: ponderation, testName: biomarker.name });
+                    }
+
+                  }
+
+                  if (ponderation > 1 && ponderation < 5) {
+                    if (!relatedBiomarkerFoundDiseasesWithValues.some((el: any) => el.disease == disease.id && el.value == element && el.ponderation == ponderation)) {
+                      relatedBiomarkerFoundDiseases.push(disease.id);
+                      relatedBiomarkerFoundDiseasesWithValues.push({ disease: disease.id, value: element, ponderation: ponderation, testName: biomarker.name });
+                    }
+                  }
+
+                  if (ponderation == 1) {
+                    if (!excludedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                      excludedDiseases.push({ disease: disease.id, name: disease.name, testName: biomarker.name });
+                    }
+                  }
+                }
+              }
+            })
+          }
+        });
+      }
+    })
+
+    if (biomarkerFound) {
+      imageDiseases = imageDiseases.concat(relatedBiomarkerFoundDiseases);
+      relatedBiomarkerFoundDiseases = [...new Set([...imageDiseases, ...relatedBiomarkerFoundDiseases])]
+      imageDiseasesWithoutFrecuencies = [...new Set([...imageDiseases, ...relatedBiomarkerFoundDiseases])]
+    }
+
+    console.log(imageDiseasesWithoutFrecuencies);
+
+
+  }
+
+  // REPRODUCCION
+  let reproductionDiseases = <any>[];
+  let reproductionDiseasesWithoutFrecuencies = <any>[];
+  let relatedReproBiomarkerFoundDiseases = <any>[];
+  let relatedReproBiomarkerFoundDiseasesWithValues = <any>[];
+
+  for await (const biomarker of reproductionBiomarkers) {
+    console.log(biomarker, "biomarcador de imagen para evaluar enfermedades");
+
+    const biomarkerData = imageTestsElements.find((element: any) => element.id === biomarker.id);
+    console.log(biomarkerData, "datos del biomarcador");
+
+    let biomarkerFound = false;
+
+    // si biomarkerFound tengo que buscar en las enfermedades para ver qué elements son y comparar el value
+
+    originalDiseases.forEach((disease: any) => {
+      if (disease.imageBiomarkers) {
+        disease.imageBiomarkers.forEach((biom: any) => {
+          if (biom.id === biomarker.id) {
+            console.log(biom.id, biomarker.id);
+            console.log(biomarker);
+
+            if (typeof biomarker.value == "string" || typeof biomarker.value == "number") {
+              if (biom.values.includes(biomarker.value)) {
+                console.log("SE ENCUENTRA EL VALOR", biomarker.value);
+                const index = biom.values.findIndex((el: any) => el === biomarker.value);
+                biomarkerFound = true;
+
+                if (biom.conditions) {
+                  const ponderation = biom.conditions[index];
+
+                  if (ponderation == 5) {
+                    if (!confirmedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                      confirmedDiseases.push({ disease: disease.id, name: disease.name, value: biomarker.value, ponderation: ponderation });
+                    } else {
+                      confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value = confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value + "," + biomarker.value;
+                    }
+                    if (!relatedReproBiomarkerFoundDiseasesWithValues.some((element: any) => element.disease == disease.id && element.value == element && element.ponderation == ponderation)) {
+                      relatedReproBiomarkerFoundDiseases.push(disease.id);
+                      relatedReproBiomarkerFoundDiseasesWithValues.push({ disease: disease.id, value: biomarker.value, ponderation: ponderation, testName: biomarker.name });
+                    }
+                  }
+
+                  if (ponderation > 1 && ponderation < 5) {
+                    if (!relatedReproBiomarkerFoundDiseasesWithValues.some((element: any) => element.disease == disease.id && element.value == element && element.ponderation == ponderation)) {
+                      relatedReproBiomarkerFoundDiseases.push(disease.id);
+                      relatedReproBiomarkerFoundDiseasesWithValues.push({ disease: disease.id, value: biomarker.value, ponderation: ponderation, testName: biomarker.name });
+                    }
+                  }
+
+                  if (ponderation == 1) {
+                    if (!excludedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                      excludedDiseases.push({ disease: disease.id, name: disease.name });
+                    }
+                  }
+                }
+
+              }
+            } else {
+              biomarker.value.forEach((element: any) => {
+                console.log("VALOR DEL BIOMARCADOR DE REPRODUCCIÓN", element);
+
+                if (biom.values.includes(element)) {
+                  console.log("SE ENCUENTRA EL VALOR", element);
+                  const index = biom.values.findIndex((el: any) => el === element);
+                  biomarkerFound = true;
+
+                  if (biom.conditions) {
+                    const ponderation = biom.conditions[index];
+
+                    if (ponderation == 5) {
+                      if (!confirmedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                        confirmedDiseases.push({ disease: disease.id, name: disease.name, value: element, ponderation: ponderation });
+                      } else {
+                        confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value = confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value + "," + element;
+                      }
+                      if (!relatedReproBiomarkerFoundDiseasesWithValues.some((el: any) => el.disease == disease.id && el.value == element && el.ponderation == ponderation)) {
+                        relatedReproBiomarkerFoundDiseases.push(disease.id);
+                        relatedReproBiomarkerFoundDiseasesWithValues.push({ disease: disease.id, value: element, ponderation: ponderation, testName: biomarker.name });
+                      }
+                    }
+
+                    if (ponderation > 1 && ponderation < 5) {
+                      if (!relatedReproBiomarkerFoundDiseasesWithValues.some((el: any) => el.disease == disease.id && el.value == element && el.ponderation == ponderation)) {
+                        relatedReproBiomarkerFoundDiseases.push(disease.id);
+                        relatedReproBiomarkerFoundDiseasesWithValues.push({ disease: disease.id, value: element, ponderation: ponderation, testName: biomarker.name });
+                      }
+                    }
+
+                    if (ponderation == 1) {
+                      if (!excludedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                        excludedDiseases.push({ disease: disease.id, name: disease.name });
+                      }
+                    }
+                  }
+
+                }
+              })
+            }
+
+
+          }
+        });
+      }
+    })
+
+    if (biomarkerFound) {
+      reproductionDiseases = reproductionDiseases.concat(relatedReproBiomarkerFoundDiseases);
+      relatedBiomarkerFoundDiseases = [...new Set([...reproductionDiseases, ...relatedReproBiomarkerFoundDiseases])]
+      reproductionDiseasesWithoutFrecuencies = [...new Set([...reproductionDiseases, ...relatedReproBiomarkerFoundDiseases])]
+    }
+  }
+  console.log(reproductionDiseases, "bruto de de enfermedades relacionadas con los biomarcadores positivos de reproduccion");
+
+
+  console.log(reproductionDiseasesWithoutFrecuencies, "total de enfermedades relacionadas con los biomarcadores positivos de reproducción");
+
+  // SIGNOS Y SÍNTOMAS
+  let signsDiseases = <any>[];
+  let signsDiseasesWithoutFrecuencies = <any>[];
+  let relatedSignsFoundDiseases = <any>[];
+  let relatedSignsFoundDiseasesWithValues = <any>[];
+
+  if (history && history.signsAndSymptoms) {
+    for await (const sign of history.signsAndSymptoms) {
+
+      let biomarkerFound = false;
+
+      originalDiseases.forEach((disease: any) => {
+        if (disease.signsAndSymptoms) {
+          disease.signsAndSymptoms.forEach((biom: any) => {
+            if (biom.id === sign.id) {
+              let ponderation = 0;
+
+              biomarkerFound = true;
+              if (biom.condition) {
+                ponderation = biom.condition;
+              }
+
+              if (biom.ponderation) {
+                ponderation = biom.ponderation;
+              }
+
+              if (ponderation == 5) {
+                if (!confirmedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                  confirmedDiseases.push({ disease: disease.id, name: disease.name, value: sign.name, ponderation: ponderation });
+                } else {
+                  confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value = confirmedDiseases.filter((el: any) => el.disease === disease.id)[0].value + "," + sign.name;
+                }
+
+                if (!relatedSignsFoundDiseasesWithValues.some((element: any) => element.disease == disease.id && element.value == element && element.ponderation == ponderation)) {
+                  relatedSignsFoundDiseases.push(disease.id);
+                  relatedSignsFoundDiseasesWithValues.push({ disease: disease.id, value: sign.name, ponderation: ponderation, testName: sign.name });
+                }
+
+              }
+
+              if (ponderation > 1 && ponderation < 5) {
+                if (!relatedSignsFoundDiseasesWithValues.some((element: any) => element.disease == disease.id && element.value == element && element.ponderation == ponderation)) {
+                  relatedSignsFoundDiseases.push(disease.id);
+                  relatedSignsFoundDiseasesWithValues.push({ disease: disease.id, value: sign.name, ponderation: ponderation, testName: sign.name });
+                }
+              }
+
+              if (ponderation == 1) {
+                if (!excludedDiseases.map((el: any) => el = el.disease).includes(disease.id)) {
+                  excludedDiseases.push({ disease: disease.id, name: disease.name, testName: sign.name });
+                }
+              }
+
+            }
+          });
+        }
+      })
+
+      if (biomarkerFound) {
+        signsDiseases = signsDiseases.concat(relatedSignsFoundDiseases);
+        relatedSignsFoundDiseases = [...new Set([...signsDiseases, ...relatedSignsFoundDiseases])]
+        signsDiseasesWithoutFrecuencies = [...new Set([...signsDiseases, ...relatedSignsFoundDiseases])]
+      }
+    }
+
+    console.log(signsDiseases, "bruto de de enfermedades relacionadas con los sintomas");
+    console.log(signsDiseasesWithoutFrecuencies, "total de enfermedades relacionadas con los sintomas");
+  }
+
+  // 
+
+  const diseasesAux = analysisDiseases.concat(imageDiseases).concat(signsDiseases).concat(reproductionDiseases);
+  const diseasesWithoutFrecuencies = [...new Set([...analysisDiseases, ...imageDiseases, ...signsDiseases, ...reproductionDiseases])]
+  console.log(diseasesWithoutFrecuencies, "RESULTADO FINAL");
+
+  const resultAux = <any>[];
+  diseasesWithoutFrecuencies.forEach(async dis => {
+    console.log(dis);
+
+    console.log(diseases.find((disease: any) => disease.id === dis));
+    if (diseasesAux.find((disease: any) => disease.id === dis)) {
+      const toBePushed = diseasesAux.find((disease: any) => disease.id === dis);
+      toBePushed.values = [];
+      toBePushed.ponderation = 0;
+      relatedAnalysisBiomarkerFoundDiseasesWithValues.forEach((relAna: any) => { // ANÁLISIS
+        if (relAna.disease === dis) {
+          console.log(relAna, "REL-ANA");
+          console.log(toBePushed, "DISEASE CON ANALISIS PARA VER PONDERACION");
+          if (relAna.ponderation && relAna.ponderation > 2) {
+            toBePushed.ponderation = toBePushed.ponderation + parseInt(relAna.ponderation);
+          } else if (relAna.ponderation && relAna.ponderation == 2) {
+            toBePushed.ponderation = toBePushed.ponderation - parseInt(relAna.ponderation);
+          }
+          toBePushed.values.push(`${relAna.testName}: ${relAna.value}`);
+        }
+      })
+      relatedBiomarkerFoundDiseasesWithValues.forEach((rel: any) => {
+        if (rel.disease === dis) {
+          console.log(rel, "REL-IMAGE");
+          if (rel.ponderation && rel.ponderation > 2) {
+            toBePushed.ponderation = toBePushed.ponderation + parseInt(rel.ponderation);
+          } else if (rel.ponderation && rel.ponderation == 2) {
+            toBePushed.ponderation = toBePushed.ponderation - parseInt(rel.ponderation);
+          }
+          toBePushed.values.push(`${rel.testName}: ${rel.value}`);
+        }
+      });
+      relatedReproBiomarkerFoundDiseasesWithValues.forEach((relRepro: any) => {
+        if (relRepro.disease === dis) {
+          console.log(relRepro, "REL-REPRO");
+          toBePushed.values.push(`${relRepro.testName}: ${relRepro.value}`);
+          if (relRepro.ponderation && relRepro.ponderation > 2) {
+            toBePushed.ponderation = toBePushed.ponderation + parseInt(relRepro.ponderation);
+          } else if (relRepro.ponderation && relRepro.ponderation == 2) {
+            toBePushed.ponderation = toBePushed.ponderation - parseInt(relRepro.ponderation);
+          }
+        }
+      });
+      relatedSignsFoundDiseasesWithValues.forEach((relSign: any) => {
+        if (relSign.disease === dis) {
+          console.log(relSign, "REL-SIGN");
+          console.log(toBePushed, "DISEASE CON SINTOMAS PARA VER PONDERACION");
+
+          toBePushed.values.push(`Signo o síntoma: ${relSign.value}`);
+          if (relSign.ponderation && relSign.ponderation > 2) {
+            toBePushed.ponderation = toBePushed.ponderation + parseInt(relSign.ponderation);
+          } else if (relSign.ponderation && relSign.ponderation == 2) {
+            toBePushed.ponderation = toBePushed.ponderation - parseInt(relSign.ponderation);
+          }
+        }
+      })
+
+      resultAux.push(
+        {
+          id: toBePushed.id,
+          name: toBePushed.name,
+          values: toBePushed.values || [],
+          ponderation: toBePushed.ponderation
+        }
+      );
+    }
+
+  })
+
+  for await (const dis of excludedDiseases) {
+
+    for await (const element of resultAux) {
+
+      if (element.id == dis.disease) {
+
+        const index = resultAux.findIndex((el: any) => el.id === element.id);
+
+        if (index > -1) {
+          resultAux.splice(index, 1);
+        }
+      }
+    }
+  }
+
+  for await (const element of resultAux) {
+    element.frequency = element.values.length;
+  }
+
+
+  for await (const confirmedDisease of confirmedDiseases) {
+    for await (const element of resultAux) {
+      if (element.id == confirmedDisease.disease) {
+        element.confirmedFrequency = element.confirmedFrequency ? element.confirmedFrequency + 1 : 1;
+      }
+    }
+  }
+
+  // 4. Guardado y respuesta
   const result = {
     subjectId: id,
-    diseases: diseases || [],
+    diseases: resultAux || [],
     confirmedDiseases: confirmedDiseases,
     date: moment().format(),
     signsAndSymptoms: history && history.signsAndSymptoms ? history.signsAndSymptoms : [],
@@ -824,14 +1421,14 @@ app.get("/createAssistantReport", (request, response) => { // OK
     .collection("assistantReports")
     .add(result)
     .then((doc) => {
-      admin.firestore().doc(`assistantReports/${doc.id}`).update({ id: doc.id })
+      admin.firestore().doc(`assistantReports/${doc.id}/`).update({ id: doc.id })
         .then((success) => {
-          response.send({ "create": "ok", "report": result });
-        }).catch(() => {
-          response.status(500).send({ error: "No se ha podido crear el informe, inténtelo de nuevo" })
+          response.send({ "create": "ok", "report": result, "id": doc.id });
+        }).catch((error) => {
+          response.status(500).send({ message: "No se ha podido crear el informe, inténtelo de nuevo", error: error })
         });
-    }).catch(() => {
-      response.status(500).send({ error: "No se ha podido crear el informe, inténtelo de nuevo" })
+    }).catch((error) => {
+      response.status(500).send({ message: "No se ha podido crear el informe, inténtelo de nuevo", error: error })
     });
 });
 */

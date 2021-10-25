@@ -7,7 +7,7 @@
 
     "no-namespace": true,
 
-    "no-parameter-reassignment": true,
+    "no-parameter-reassignment": false,
 
     "no-reference": true,
 
