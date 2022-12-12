@@ -23,7 +23,7 @@ export class AppComponent implements OnInit, OnDestroy {
   numberOfNotifications = 0;
 
   public selectedIndex = 0;
-  public appPages = [
+  public appPagesDoctor = [
     {
       title: "Panel de control",
       titleEng: "Dashboard",
@@ -55,7 +55,11 @@ export class AppComponent implements OnInit, OnDestroy {
       icon: "list",
       disabled: false,
       role: "clinic-admin"
-    },
+    }
+   
+  ];
+
+  public appPagesAdmin = [
     {
       title: "Clínicas",
       titleEng: "Clinics",
@@ -81,6 +85,24 @@ export class AppComponent implements OnInit, OnDestroy {
       role: "admin"
     }
   ];
+  public appPagesMining = [
+    {
+      title: "Pacientes",
+      titleEng: "Patients",
+      url: "/subjectsMining",
+      icon: "pie-chart",
+      disabled: false,
+      role: "admin"
+    },
+    {
+      title: "Pruebas de imagen",
+      titleEng: "Subjects image test",
+      url: "/subjectsImageTestsMining",
+      icon: "pie-chart",
+      disabled: false,
+      role: "admin"
+    }
+  ];
 
   constructor(
     private auth: AuthService,
@@ -100,7 +122,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.doctorData = (await this.doctorService.getDoctorData(data.id)).data();
       console.log(this.doctorData);
 
-      this.appPages[3].url = `/activity/${this.doctorData.clinic}`;
+      this.appPagesDoctor[3].url = `/activity/${this.doctorData.clinic}`;
     });
   }
 

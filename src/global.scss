@@ -26,10 +26,10 @@
 @import "~@ionic/angular/css/flex-utils.css";
 
 @import "../node_modules/ag-grid-community/src/styles/ag-grid.scss";
-@import "../node_modules/ag-grid-community/src/styles/ag-theme-material/sass/ag-theme-material-mixin.scss";
+@import "../node_modules/ag-grid-community/src/styles/ag-theme-alpine/sass/ag-theme-alpine-mixin.scss";
 
-.ag-theme-material {
-  @include ag-theme-material();
+.ag-theme-alpine {
+  @include ag-theme-alpine();
 }
 
 * {
@@ -37,7 +37,7 @@
 }
 
 ion-content {
-  --background: #e9ebee;
+  --background: #edf1f7;
 }
 
 ion-card {
@@ -135,19 +135,7 @@ ion-card {
   max-width: 1024px;
 }
 
-.ag-theme-alpine .ag-icon {
-  color: white !important;
-  background: #024171 !important;
-  font-size: 24px !important;
-  padding: 5px 3px !important;
-  border-radius: 50% !important;
-}
 
-.ag-theme-alpine .ag-paging-panel .ag-paging-row-summary-panel {
-  color: white !important;
-  background: #024171 !important;
-  padding: 5px 3px !important;
-}
 
 .ag-theme-alpine .ag-layout-auto-height .ag-center-cols-clipper,
 .ag-theme-alpine .ag-layout-auto-height .ag-center-cols-container,

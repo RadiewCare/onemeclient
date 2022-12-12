@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title *ngIf="lang.isSpanish()">Imágenes ilustrativas de los biomarcadores</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Illustrative images of biomarkers</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed padding>
+    <ion-row>
+        <ion-col size="3" *ngFor="let image of images; let i = index">
+          <ion-card>
+            <ion-card-header>
+              <ion-img [src]="image.image" style="cursor: pointer" (click)="openImage(image.image)"></ion-img>
+              <ion-card-title>{{image.index}}</ion-card-title>
+            </ion-card-header>
+          </ion-card>
+        </ion-col>
+    </ion-row>
+    <ion-row *ngIf="images.length===0">
+      <ion-col size="12" class="ion-padding">Sin imágenes ilustrativas</ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

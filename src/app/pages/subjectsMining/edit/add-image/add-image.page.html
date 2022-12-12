@@ -1,0 +1,80 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title *ngIf="lang.isSpanish()">Localización e imágenes de los biomarcadores</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Biomarkers location and images</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed padding>
+    <ion-row *ngFor="let itemValue of biomarker?.value; let i=index">
+      <ion-col size="12">
+        <ion-item color="secondary">
+          <ion-label>{{itemValue}}</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="biomarkers && biomarkers[i] && biomarkers[i].url && !biomarkers[i].image">
+        <ion-img [src]="biomarkers[i].url"></ion-img>
+      </ion-col>
+      <ion-col size="12" *ngIf="biomarkers && biomarkers[i] && biomarkers[i].image">
+        <ion-img [src]="biomarkers[i].image"></ion-img>
+      </ion-col>
+      <ion-col size="12">
+        <input type="file" (change)="loadImage(i, $event.target.files)">
+      </ion-col> 
+        <ion-col size="12">
+          <ion-item>
+            <ion-label position="floating">Número de imagen</ion-label>
+            <ion-input type="number" [placeholder]="lang.isSpanish()?'Número de imagen':'Image number'"
+              (ionChange)="addData(i, 'number', $event.detail.value)" [value]="subjectImageTest?.values[indexOfBiomarker].locations && subjectImageTest.values[indexOfBiomarker].locations[i] ? subjectImageTest.values[indexOfBiomarker].locations[i].number : null"></ion-input>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12">
+          <ion-item>
+            <ion-label position="floating">Número de secuencia</ion-label>
+            <ion-input type="number" [placeholder]="lang.isSpanish()?'Número de imagen':'Image number'"
+              (ionChange)="addData(i, 'sequence', $event.detail.value)" [value]="subjectImageTest?.values[indexOfBiomarker].locations && subjectImageTest.values[indexOfBiomarker].locations[i] ? subjectImageTest.values[indexOfBiomarker].locations[i].sequence : null"></ion-input>
+          </ion-item>
+        </ion-col>
+        <ion-col size="4">
+          <ion-item>
+            <ion-label position="floating">Coordenada X</ion-label>
+            <ion-input type="number" [placeholder]="lang.isSpanish()?'Coordenada X':'Coordinate X'"
+              (ionChange)="addData(i, 'x', $event.detail.value)" [value]="subjectImageTest.values[indexOfBiomarker].locations && subjectImageTest.values[indexOfBiomarker].locations[i] ? subjectImageTest.values[indexOfBiomarker].locations[i].x : null"></ion-input>
+          </ion-item>
+        </ion-col>
+        <ion-col size="4">
+          <ion-item>
+            <ion-label position="floating">Coordenada Y</ion-label>
+            <ion-input type="number" [placeholder]="lang.isSpanish()?'Coordenada Y':'Coordinate Y'"
+              (ionChange)="addData(i, 'y', $event.detail.value)" [value]="subjectImageTest.values[indexOfBiomarker].locations && subjectImageTest.values[indexOfBiomarker].locations[i] ? subjectImageTest.values[indexOfBiomarker].locations[i].y : null"></ion-input>
+          </ion-item>
+        </ion-col>
+        <ion-col size="4">
+          <ion-item>
+            <ion-label position="floating">Sección</ion-label>
+            <ion-input type="text" [placeholder]="lang.isSpanish()?'Sección':'Section'"
+              (ionChange)="addData(i, 'section', $event.detail.value)" [value]="subjectImageTest.values[indexOfBiomarker].locations && subjectImageTest.values[indexOfBiomarker].locations[i] ? subjectImageTest.values[indexOfBiomarker].locations[i].section : null"></ion-input>
+          </ion-item>
+        </ion-col>
+      
+    </ion-row>
+  </ion-grid>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon slot="start" name="close"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Cancelar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Cancel</ion-label>
+      </ion-button>
+      <ion-button (click)="save()" color="primary">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Aceptar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Accept</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

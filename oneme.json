@@ -1,0 +1,9 @@
+{
+  "apps" : [{
+    "name"        : "One-me",
+    "script"      : "ionic",
+    "watch"       : true,
+    "cwd"         : "/var/www/vhosts/orenyi.com/oneme.orenyi.com/one-me",
+    "args"        : "serve --external --ssl --public-host='oneme.orenyi.com'"
+  }]
+}

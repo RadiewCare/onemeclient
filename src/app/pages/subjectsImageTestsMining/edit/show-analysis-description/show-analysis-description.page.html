@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Información: {{element?.name}}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button *ngIf="isAdmin && element" [routerLink]="[ '/database/analysis-elements/edit', element.id ]" (click) = "dismissModal()">
+        <ion-icon slot="start" name="folder"></ion-icon>
+        Ver elemento en base de datos
+      </ion-button>
+      <ion-button (click)="dismissModal()">
+        <ion-icon slot="start" name="close"></ion-icon>
+        Cerrar
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+<ion-item class="ion-margin ion-padding" lines="full">
+  <ng-container *ngIf="element && element.information; else elseTemplate">
+    <ion-text style="white-space: pre-wrap">{{element.information}}</ion-text>
+  </ng-container>
+  <ng-template #elseTemplate>
+    <ion-text>No hay información disponible</ion-text>
+  </ng-template>
+</ion-item>
+</ion-content>

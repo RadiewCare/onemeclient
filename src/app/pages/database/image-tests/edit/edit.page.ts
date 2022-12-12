@@ -19,6 +19,7 @@ import { LabelsService } from 'src/app/services/labels.service';
 export class EditPage implements OnInit {
   id: string;
   name: any;
+  bibliography: any;
 
   imageTest$: Observable<any>;
   imageTest: any;
@@ -26,7 +27,7 @@ export class EditPage implements OnInit {
 
   queryLabel: string;
   queryCategory: string;
-
+ 
   categories = [];
   labels = [];
 
@@ -63,6 +64,7 @@ export class EditPage implements OnInit {
       .subscribe((imageTest) => {
         this.imageTest = imageTest;
         this.name = this.imageTest.name;
+        this.bibliography = this.imageTest.bibliography;
         this.relatedCategories = this.imageTest.relatedCategories || [];
         this.relatedLabels = this.imageTest.relatedLabels || [];
       });
@@ -262,6 +264,7 @@ export class EditPage implements OnInit {
       this.imageTestsService
         .updateImageTest(this.id, {
           name: this.name,
+          bibliography: this.bibliography,
           elements: this.imageTest.elements,
           updatedAt: moment().format()
         })

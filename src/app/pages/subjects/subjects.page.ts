@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Component, OnInit, OnDestroy, ViewChild } from "@angular/core";
+import { Router } from '@angular/router';
 import { Observable, Subscription } from "rxjs";
 import { LanguageService } from "src/app/services/language.service";
 import { AuthService } from "src/app/services/auth.service";
@@ -9,6 +10,12 @@ import { SubjectImageTestsService } from "src/app/services/subject-image-tests.s
 import { ReproductionTestsService } from "src/app/services/reproduction-tests.service";
 import { ActivatedRoute } from "@angular/router";
 import { LoadingController } from "@ionic/angular";
+import { IonInfiniteScroll, IonVirtualScroll } from "@ionic/angular";
+import { HttpClient } from '@angular/common/http';
+import { AgGridAngular } from 'ag-grid-angular';
+import { CellClickedEvent, ColDef, ColGroupDef, GridReadyEvent, GridApi } from 'ag-grid-community';
+import { IDatasource, IGetRowsParams, SetFilterValuesFuncParams } from 'ag-grid-community';
+import 'ag-grid-enterprise';
 
 @Component({
   selector: "app-subjects",
@@ -16,11 +23,16 @@ import { LoadingController } from "@ionic/angular";
   styleUrls: ["./subjects.page.scss"],
 })
 export class SubjectsPage implements OnInit, OnDestroy {
+  @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
+  @ViewChild(IonVirtualScroll) virtualScroll: IonVirtualScroll;
+  @ViewChild(AgGridAngular) agGrid!: AgGridAngular;
+
   user$: any;
   userData: any;
   userSub: Subscription;
 
   subjects: any;
+  /*subjectsStartAt: null;*/
   querySubjects: any;
   subjects$: Observable<any>;
   subjectsSub: Subscription;
@@ -73,6 +85,97 @@ export class SubjectsPage implements OnInit, OnDestroy {
   doctorData: any;
 
   isSameClinic = false;
+  frameworkComponents: any;
+
+  
+  private filterParamsCR = {
+    values: (params: SetFilterValuesFuncParams) => {
+      if (this.centrosReferentesNew != null) {
+        let centrosReferentesAux = [];
+        for (const centroReferente of this.centrosReferentesNew) {
+          centrosReferentesAux.push(centroReferente.value);
+        }
+        params.success(centrosReferentesAux);
+      } else{
+        params.success([]);
+      }
+    },
+  };
+
+  private filterParamsGR = {
+    values: (params: SetFilterValuesFuncParams) => {
+      if (this.genre != null) {
+        let genreAux = [];
+        for (const item of this.genre) {
+          genreAux.push(item.value);
+        }
+        params.success(genreAux);
+      } else{
+        params.success([]);
+      }
+    },
+  };
+  // Each Column Definition results in one Column.
+  public columnDefs: (ColDef | ColGroupDef)[] = [
+    { headerName: 'Información del paciente',
+      children: [
+        { field: 'identifier', headerName: 'Identificador', filter: 'agTextColumnFilter', filterParams: {
+          suppressAndOrCondition: true,
+          filterOptions:[
+            'contains',    
+          ],
+          
+        }},
+        { field: 'origin', filter: false, sortable: false },
+        { field: 'history.centroReferente', headerName: 'Centro Referente', filter: 'agSetColumnFilter', filterParams: this.filterParamsCR },
+        { field: 'history.genre', headerName: 'Género', filter: 'agSetColumnFilter', filterParams: this.filterParamsGR },
+        { field: 'history.age', headerName: 'Edad', filter: false}
+      ]
+    },
+    { headerName: 'Antecedentes',
+      children: [
+        
+        { field: 'hasImageAnalysis', headerName: 'Pruebas imágen', valueFormatter: this.boolFormatter, filter: false, sortable: false },
+        { field: 'history.diseases', headerName: 'Enfermedades', valueFormatter: this.arrayFormatter, filter: false, sortable: false },
+        { field: 'history.signsAndSymptoms', headerName: 'Signos y sintomas', valueFormatter: this.arrayFormatter, filter: false, sortable: false }
+      ]
+    },
+    { headerName: 'Fecha',
+      children: [
+        { field: 'createdAt', headerName: 'Creación', valueFormatter: this.dateFormatter, filter: 'agDateColumnFilter',
+          filterParams: {
+            debounceMs: 500,
+            suppressAndOrCondition: true,
+          },
+        }
+      ]
+    }
+  ];
+  //history.diseases
+  //history.signsAndSymptoms
+  //history.otherBackground
+  
+  
+  // DefaultColDef sets props common to all Columns
+  public defaultColDef: ColDef = {
+    sortable: true,
+    filter: true,
+    resizable: true,
+  };
+
+  // Data that gets displayed in the grid
+  public rowData: any[];
+  public pagination = true;
+  public rowModelType = 'infinite';
+  public serverSideStoreType ='partial';
+  public paginationPageSize = 10;
+  public cacheBlockSize = 10;
+  private gridApi!: GridApi;
+  private gridColumnApi: any;  
+  private numberOfItems: any;
+  private centrosReferentesNew: any;
+  private genre: any;
+
 
   constructor(
     private subjectsService: SubjectsService,
@@ -82,11 +185,104 @@ export class SubjectsPage implements OnInit, OnDestroy {
     public lang: LanguageService,
     private auth: AuthService,
     private activatedRoute: ActivatedRoute,
-    private loadingController: LoadingController
-  ) { }
+    private loadingController: LoadingController,
+    private http: HttpClient,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    this.presentLoading();
+    
+  }
+
+  myGetRowHeight() {
+    return 45;
+  }
+  // Example of consuming Grid Event
+  onCellClicked( e: CellClickedEvent): void {
+    console.log('cellClicked', e);
+  }
+
+  // Example using Grid's API
+  clearSelection(): void {
+    this.agGrid.api.deselectAll();
+  }
+  onGridReady(params: any) {
+    this.gridApi = params.api;
+    this.gridColumnApi = params.columnApi;
+    this.gridApi.setDomLayout('autoHeight');
+  }
+  dataSource: IDatasource = {
+    getRows: (params: IGetRowsParams) => {
+      console.log(params);
+      this.getSubjects(this.gridApi.paginationGetPageSize(), this.gridApi.paginationGetCurrentPage()+1, params).then(() => {
+        params.successCallback(
+          this.subjects, this.numberOfItems
+        );
+        this.rowData = this.subjects;
+        
+        this.gridApi.sizeColumnsToFit();
+        const setFilterCR = this.gridApi.getFilterInstance('history.centroReferente');
+        //setFilterCR.refreshFilterValues();
+        
+      });
+    }
+  }
+
+  dateFormatter(params) {
+    if (params.data != undefined) {
+      console.log(params.data.createdAt);
+      var date = new Date(params.data.createdAt * 1000);
+      // Hours part from the timestamp
+      var day = "0" + date.getDate();
+      var month  = "0" +  (date.getMonth()+1);
+      var year = date.getFullYear();
+      var hours = "0" + date.getHours();
+      // Minutes part from the timestamp
+      var minutes = "0" + date.getMinutes();
+      // Seconds part from the timestamp
+      var seconds = "0" + date.getSeconds();
+
+      // Will display time in 10:30:23 format
+      var formattedTime = day.substr(-2) + '/' + month.substr(-2) + '/' + year + ' ' + hours.substr(-2) + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+      return formattedTime;
+    } else{
+      return '';
+    }
+  }
+  arrayFormatter(params) {
+    if (params.data != undefined) {
+      if (params.data.hasOwnProperty("history.diseases") ){
+        if (params.data['history.diseases'].length === 0  ){
+          return 'No';
+        } else{
+          return 'Si';
+        }
+      } else{
+        return '';
+      }
+    } else{
+      return '';
+    }
+  }
+  boolFormatter(params) {
+    if (params.data != undefined) {
+      if (params.data.hasOwnProperty("hasImageAnalysis") ){
+        if (params.data['hasImageAnalysis'] === false  ){
+          return 'No';
+        } else{
+          return 'Si';
+        }
+      } else{
+        return '';
+      }
+    } else{
+      return '';
+    }
+  }
+  onSelectionChanged($event) {
+    const selectedRows = this.gridApi.getSelectedRows();
+    this.router.navigate(['/subjects/edit/'+selectedRows[0].id]);
+    
   }
 
   async ionViewDidEnter() {
@@ -101,9 +297,7 @@ export class SubjectsPage implements OnInit, OnDestroy {
         const userDoctor = (await this.doctorsService.getDoctorData(this.userData.id)).data();
         this.doctorData = (await this.doctorsService.getDoctorData(this.id)).data();
         this.isSameClinic = this.doctorData.clinic === userDoctor.clinic;
-        console.log(this.userData);
-        console.log(this.doctorData);
-        console.log(userDoctor);
+
 
         await this.getSubjectsFromDoctorId();
 
@@ -118,15 +312,8 @@ export class SubjectsPage implements OnInit, OnDestroy {
       this.userSub = this.auth.user$.subscribe(async (data) => {
         this.userData = data;
         this.doctorData = (await this.doctorsService.getDoctorData(this.userData.id)).data();
-        console.log(this.userData);
-        console.log(this.doctorData);
-
-        this.getSubjects().then(() => {
-          this.sortDateDesc();
-          this.getCentrosReferentes();
-          this.loadingController.dismiss();
-        });
         this.getDoctorData();
+        this.gridApi.setDatasource(this.dataSource);      
       });
     }
     // this.updateReproductionTestsExistence();
@@ -172,16 +359,41 @@ export class SubjectsPage implements OnInit, OnDestroy {
     });
   }
 
-  async getSubjects(): Promise<void> {
-    console.log("getSubjects");
+  async getSubjects(pageSize: number, currentPage: number, params: any ): Promise<void> {
+    /*console.log("getSubjects");
 
     this.querySubjects = null;
-    this.subjects = (await this.subjectsService.getSubjectsByDoctorData(this.userData.id)).docs.map(element => element.data());
+    
+    if (this.subjectsStartAt == null){
+      this.subjects = (await this.subjectsService.getSubjectsByDoctorData(this.userData.id, this.subjectsStartAt)).docs.map(element => element.data());
+    } else{
+      this.subjects = [...this.subjects, ...(await this.subjectsService.getSubjectsByDoctorData(this.userData.id, this.subjectsStartAt)).docs.map(element => element.data())];
+    }
+    this.subjectsStartAt = this.subjects[this.subjects.length - 1];
+
+    this.originalSubjects = [...this.subjects];
+    console.log(this.subjects);
+    console.log(this.subjects.length, "TAMAÑO DE LOS SUJETOS");*/
+
+    let subjectTypesenseAux =  await this.subjectsService.getSubjectsByDoctorTypesense(this.userData.id, currentPage, params);
+    let subjectTypesense = [];
+    console.log(subjectTypesenseAux);
+    for await (const hit of subjectTypesenseAux.hits) {
+      subjectTypesense.push(hit.document);
+    }
+
+
+    this.querySubjects = null;
+    this.subjects = subjectTypesense;
+    this.numberOfItems = subjectTypesenseAux.found;
+    this.centrosReferentesNew = subjectTypesenseAux.facet_counts[0].counts;
+    this.genre = subjectTypesenseAux.facet_counts[1].counts;
+    //this.subjects = (await this.subjectsService.getSubjectsByDoctorData(this.userData.id)).docs.map(element => element.data());
+
     this.originalSubjects = [...this.subjects];
 
-    console.log(this.subjects);
+    
     console.log(this.subjects.length, "TAMAÑO DE LOS SUJETOS");
-
     /*
     this.subjects$ = this.subjectsService.getSubjectByDoctor(this.userData.id);
     return new Promise(async(resolve) => {
@@ -196,11 +408,12 @@ export class SubjectsPage implements OnInit, OnDestroy {
     });
     */
   }
-
+ 
   getSubjectsFromDoctorId(): Promise<void> {
     console.log("getSubjectsFromDoctorId");
 
     this.querySubjects = null;
+
     this.subjects$ = this.subjectsService.getSubjectByDoctor(this.id);
     return new Promise((resolve) => {
       this.subjectsSub = this.subjects$.subscribe((subjects) => {

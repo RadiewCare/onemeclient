@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="'/subjects/edit/'+id"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Documentos de {{ subject?.identifier }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed class="ion-no-padding">
+    <ion-row>
+      <ion-col size="12" class="ion-padding">
+        <ion-item>
+          <ion-label>Insertar documento</ion-label>
+          <ion-input type="file" [(ngModel)]="fileInput" (change)="loadFile($event.target.files)"></ion-input>
+          <ion-buttons slot="end">
+            <ion-button *ngIf="currentFiles" (click)="save()" color="success">
+              <ion-icon slot="start" name="save"></ion-icon>
+              Guardar
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" class="ion-padding-horizontal" *ngIf="documents && documents.length>0">
+        <ion-item color="primary">
+          <ion-label>Listado de documentos</ion-label>
+        </ion-item>
+        <ion-item *ngFor="let document of documents; let i = index" lines="full">
+          <ion-label>{{ document.fileName }}</ion-label>
+          <ion-buttons slot="end">
+            <ion-button (click)="delete(i)" color="danger">
+              <ion-icon slot="start" name="trash"></ion-icon>
+              Eliminar
+            </ion-button>
+            <ion-button (click)="download(i)">
+              <ion-icon slot="start" name="cloud-download"></ion-icon>
+              Descargar
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

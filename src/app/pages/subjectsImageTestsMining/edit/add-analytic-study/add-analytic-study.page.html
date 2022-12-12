@@ -1,0 +1,94 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Crear estudio analítico</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ng-container *ngIf="canBeAnalyzed; else elseTemplate">
+      <ion-row class="ion-margin-bottom">
+        <ion-col size="12" class="ion-padding-top">
+          <ion-item>
+            <ion-label *ngIf="lang.isSpanish()">Introduzca la fecha del análisis</ion-label>
+            <ion-label *ngIf="!lang.isSpanish()">Enter analysis date</ion-label>
+            <ion-datetime display-format="DD/MM/YYYY" [(ngModel)]="date" doneText="Aceptar"
+              cancelText="Cancelar">
+            </ion-datetime>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12">
+          <ion-item>
+            <ion-label *ngIf="lang.isSpanish()" position="floating">Introduzca accession number</ion-label>
+            <ion-label *ngIf="!lang.isSpanish()" position="floating">Enter accession number</ion-label>
+            <ion-input type="number" placeholder="Accession number" [(ngModel)]="accessionNumber"></ion-input>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size="12">
+          <ion-item lines="full">
+  
+            <ion-label *ngIf="lang.isSpanish()">Pruebas de análisis por defecto</ion-label>
+            <ion-label *ngIf="!lang.isSpanish()">Predesigned clinic analysis</ion-label>
+  
+            <ionic-selectable [(ngModel)]="currentAnalysis" [items]="clinicAnalysis"
+            itemValueField="id" itemTextField="name" [canSearch]="true" confirmButtonText="Seleccionar"
+            closeButtonText="Cancelar" (onChange)="getCurrentAnalysis()" headerColor="primary"
+            searchFailText="No hay items disponibles" searchPlaceholder="Buscar" [isMultiple]="false" [hasVirtualScroll]="true" (onSearch)="onSearch($event)">
+            <ng-template ionicSelectableCloseButtonTemplate>
+              <ion-icon name="close" style="font-size: 24px;"></ion-icon>
+            </ng-template>
+          </ionic-selectable>
+  
+          </ion-item>
+        </ion-col>
+
+
+          <ion-col size="12" *ngIf="currentAnalysis" class="ion-margin-top">
+            <ion-item color="primary">
+              <ion-label>{{currentAnalysis.testCode}} - {{currentAnalysis.name}}</ion-label>
+            </ion-item>
+          </ion-col>
+
+
+          <ion-col size="12" *ngFor="let element of analyticValues; let i = index">
+            <ion-item
+              [color]="analyticValues.length === 0 || analyticValues[i].status === undefined || analyticValues[i].status === null || analyticValues[i].meaning ==='negative'?'light':'danger'">
+              <ion-label position="floating">{{element.ranges[0].CODIGO_T}} - {{element.name}}</ion-label>
+              <ion-input type="number" placeholder="Introduzca valor"
+                (ionChange)="editElement($event.detail.value, i)">
+              </ion-input>
+              <ion-note slot="end" *ngIf="element.ranges">{{ element.ranges[0].UNIDAD }}</ion-note>
+            </ion-item>
+          </ion-col>
+
+      </ion-row>
+    </ng-container>
+    <ng-template #elseTemplate>
+      <ion-row>
+        <ion-col size="12">
+          <ion-item color="danger">
+            <ion-label>No se puede realizar análisis porque no está rellenada la edad o el sexo en datos fenotípicos</ion-label>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ng-template>
+  </ion-grid>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon slot="start" name="close"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Cancelar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Cancel</ion-label>
+      </ion-button>
+      <ion-button (click)="save()" color="primary" *ngIf="canBeAnalyzed">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Aceptar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Accept</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

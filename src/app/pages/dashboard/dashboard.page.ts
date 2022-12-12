@@ -45,21 +45,37 @@ export class DashboardPage implements OnInit {
   ionViewDidEnter() {
     this.userSub = this.authService.user$.subscribe((user) => {
       this.userData = user;
-      console.log(this.userData);
-
-      this.subjectsService
+      /*this.subjectsService
         .getSubjectsByDoctor(this.userData.id)
         .then((data) => {
           console.log(data);
 
           this.numberOfOwnSubjects = data.length;
+        });*/
+        let params = {filterModel : [], sortModel : [] };
+        
+        this.subjectsService.getSubjectsByDoctorTypesense(this.userData.id, 1, params).then((data) => {
+          this.numberOfOwnSubjects = data.found;
         });
 
-      this.subjectsService.getSubjectsData().then((data) => {
-        this.numberOfSubjects = data.docs.length;
+      this.subjectsService.getSubjectsDataTypesense().then((data) => {
+        this.numberOfSubjects = data.found;
       });
 
-      this.doctorsService.getDoctorsData().then((data) => {
+      this.numberOfDoctors = '0';
+
+      this.numberOfDiseases = '0';
+      
+
+      this.numberOfPolymorphisms = '0';
+      
+
+      this.numberOfMutations = '0';
+
+
+      this.numberOfPharma = '0';
+      
+      /*this.doctorsService.getDoctorsData().then((data) => {
         this.numberOfDoctors = data.docs.length;
       });
 
@@ -77,7 +93,7 @@ export class DashboardPage implements OnInit {
 
       this.drugElementsService.getDrugElementsData().then((data) => {
         this.numberOfPharma = data.docs.length;
-      });
+      });*/
     });
   }
 

@@ -4,12 +4,14 @@ import { Observable } from "rxjs";
 import * as moment from "moment";
 import * as firebase from "firebase/app";
 import { ToastService } from "./toast.service";
-
+import { TypesenseService } from "./typesense.service";
+ 
 @Injectable({
   providedIn: "root"
 })
+
 export class SubjectsService {
-  constructor(private db: AngularFirestore, private toastService: ToastService) { }
+  constructor(private db: AngularFirestore, private toastService: ToastService, private typesense: TypesenseService) { }
 
   /**
    * Devuelve todos los sujetos como observable
@@ -29,12 +31,138 @@ export class SubjectsService {
    * Devuelve todos los sujetos como promesa
    * @param order Orden a aplicar (opcional)
    */
-  getSubjectsData(order?: string): Promise<any> {
+   async getSubjectsData(order?: string): Promise<any> {
+    let searchResults = [];
+    searchResults = await this.typesense.typeSense.collections('subjects').documents().search({
+      q: '',
+      query_by: 'id'
+    });
     if (order) {
       return this.db.firestore.collection("subjects").orderBy(order).get();
     } else {
       return this.db.firestore.collection("subjects").get();
     }
+  }
+  async getSubjectsDataTypesense(order?: string): Promise<any> {
+    let searchResults = [];
+    searchResults = await this.typesense.typeSense.collections('subjects').documents().search({
+      q: '',
+      query_by: 'id'
+    });
+    return searchResults;
+  }
+
+  async getSubjectsByDoctorTypesense(id: string, currentPage:number, params:any): Promise<any> {
+
+    let searchResults = [];
+    
+    let queryText = '*';
+    let queryTextBy = 'identifier';
+    let filterSet = 'mainDoctor:'+id;
+    let filterSetBy = '';
+    
+    if ( Object.keys(params.filterModel).length != 0 ) {
+      Object.keys(params.filterModel).map(function(key, index) {
+        let auxFilter = '';
+        if (params.filterModel[key].filterType == 'text'){
+          queryText = params.filterModel[key].filter;
+          queryTextBy = key;
+
+        }
+        if (params.filterModel[key].filterType == 'set'){
+          auxFilter = '';
+          for (const item of params.filterModel[key].values){
+            auxFilter = auxFilter + '`' + item + '`' + ',';
+          }
+          filterSetBy = String(key)+':';
+          filterSetBy = filterSetBy + '[' + auxFilter.slice(0, -1) + ']';
+          filterSet = filterSet + '&&' + filterSetBy;
+        }
+      });
+    }
+    let sortBy = '_text_match(buckets: 10):desc,weighted_score:desc,';
+    if (Object.keys(params.sortModel).length != 0){
+      for (const element of params.sortModel) {
+        sortBy = sortBy + element.colId + ':' + element.sort;
+      }
+    } else{
+      sortBy = 'createdAt:desc';
+    }
+    console.log('q: '+queryText);
+    console.log('query_by:' + queryTextBy);
+
+    searchResults = await this.typesense.typeSense.collections('subjects').documents().search({
+      q: queryText,
+      query_by: queryTextBy,
+      filter_by: filterSet,
+      num_typos: 2,
+      per_page: 10,
+      page: currentPage,
+      facet_by: 'history.centroReferente,history.genre',
+      sort_by: sortBy,
+      prefix: false, 
+    });
+    
+    
+    return searchResults;
+  }
+
+  async getSubjectsFlattenedByDoctorTypesense(id: string, currentPage:number, params:any): Promise<any> {
+
+    let searchResults = [];
+    
+    let queryText = '*';
+    let queryTextBy = 'identifier';
+    let filterSet = 'mainDoctor:'+id;
+    let filterSetBy = '';
+    let sortBy = 'createdAt:desc';
+    if (params.filterModel !== undefined) {
+      if ( Object.keys(params.filterModel).length != 0 ) {
+        Object.keys(params.filterModel).map(function(key, index) {
+          let auxFilter = '';
+          if (params.filterModel[key].filterType == 'text'){
+            queryText = '"'+String(params.filterModel[key].filter)+'"';
+            queryTextBy = String(key);
+
+          }
+          if (params.filterModel[key].filterType == 'set'){
+            auxFilter = '';
+            for (const item of params.filterModel[key].values){
+              auxFilter = auxFilter + '`' + item + '`' + ',';
+            }
+            filterSetBy = String(key)+':=';
+            filterSetBy = filterSetBy + '[' + auxFilter.slice(0, -1) + ']';
+            filterSet = filterSet + '&&' + filterSetBy;
+          }
+        });
+      }
+    } 
+    if (params.sortModel !== undefined) {
+      if (Object.keys(params.sortModel).length != 0){
+        for (const element of params.sortModel) {
+          sortBy = sortBy + element.colId + ':' + element.sort;
+        }
+      } 
+    }
+
+    let query = {
+      q: queryText,
+      query_by: queryTextBy,
+      filter_by: filterSet,
+      per_page: 10,
+      page: currentPage,
+      facet_by: 'history.centroReferente,history.genre,history.diseases.name,history.signsAndSymptoms.name',
+      max_facet_values: 450,
+      sort_by: sortBy,
+      prefix: false, 
+      split_join_tokens: 'off',
+      pre_segmented_query: true
+    }
+    console.log(query);
+    searchResults = await this.typesense.typeSense.collections('subjectsFlattened').documents().search(query);
+    
+    
+    return searchResults;
   }
 
   getSubjectsByDoctor(id: string): Promise<any> {
@@ -48,7 +176,7 @@ export class SubjectsService {
         );
       });
   }
-
+ 
   getSubjectsByDoctorLimit(id: string): Observable<any> {
     return this.db
       .collection("subjects", ref => ref.where("mainDoctor", "==", id).orderBy('createdAt', 'desc').limit(50))
@@ -88,7 +216,14 @@ export class SubjectsService {
  * @param subjectId Identificador del sujeto
  */
   getSubjectsByDoctorData(doctorId: string): Promise<any> {
+  /*getSubjectsByDoctorData(doctorId: string, subjectStartAt:any): Promise<any> {
+    if (subjectStartAt == null) {
+      return this.db.firestore.collection(`subjects`).where("mainDoctor", "==", doctorId).orderBy("createdAt", "desc").limit(25).get();
+    } else{
+      return this.db.firestore.collection(`subjects`).where("mainDoctor", "==", doctorId).orderBy("createdAt", "desc").startAfter(subjectStartAt.createdAt).limit(25).get();
+    }*/
     return this.db.firestore.collection(`subjects`).where("mainDoctor", "==", doctorId).orderBy("identifier", "asc").get();
+
   }
 
   /**

@@ -114,7 +114,39 @@ const routes: Routes = [
   {
     path: 'activity/:id',
     loadChildren: () => import('./pages/activity/activity.module').then(m => m.ActivityPageModule)
-  }
+  },
+  {
+    path: "subjectsMining",
+    loadChildren: () =>
+      import("./pages/subjectsMining/subjectsMining.module").then(
+        (m) => m.SubjectsMiningPageModule
+      ),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: "subjectsMining/:id",
+    loadChildren: () =>
+      import("./pages/subjectsMining/subjectsMining.module").then(
+        (m) => m.SubjectsMiningPageModule
+      ),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: "subjectsImageTestsMining",
+    loadChildren: () =>
+      import("./pages/subjectsImageTestsMining/subjectsImageTestsMining.module").then(
+        (m) => m.SubjectsImageTestsMiningPageModule
+      ),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: "subjectsImageTestsMining/:id",
+    loadChildren: () =>
+      import("./pages/subjectsImageTestsMining/subjectsImageTestsMining.module").then(
+        (m) => m.SubjectsImageTestsMiningPageModule
+      ),
+    canActivate: [AuthGuard]
+  },
 ];
 
 @NgModule({

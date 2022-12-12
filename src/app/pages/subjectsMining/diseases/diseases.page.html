@@ -1,0 +1,225 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="'/subjects/edit/'+ subject?.id"></ion-back-button>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Enfermedades/condiciones asociadas al paciente: {{subject?.identifier}}</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Diseases associated to patient: {{subject?.identifier}}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+
+      <ion-col size="12" class="ion-padding-top ion-padding-horizontal">
+        <ion-button (click)="createReport()" expand="block" color="secondary">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Crear informe de enfermedades/condiciones asociadas
+        </ion-button>
+      </ion-col>
+
+      <ion-col size="12" class="ion-padding-top ion-padding-horizontal">
+        <ion-item lines="full">
+          <ion-label>¿Excluir ciertas pruebas del informe?</ion-label>
+          <ion-checkbox slot="start" [(ngModel)]="exclusion" (ionChange)="combineTests()"></ion-checkbox>
+        </ion-item>
+        <ion-list *ngIf="exclusion" class="ion-padding-top ion-padding-horizontal">
+          <ion-item lines="full" *ngFor="let item of combinedTests" [color]="item.excluded?'danger':'light'">
+            <ion-label>{{item.name? item.name : 'Análisis clínico'}} ({{item.date | date: 'd/M/yy'}}) ({{item.excluded?'Excluido':'Incluido'}})</ion-label>
+            <ion-checkbox slot="start" [(ngModel)]="item.excluded" (ionChange)="excludeTest($event.detail.checked, item.id)"></ion-checkbox>
+          </ion-item>
+        </ion-list>
+      </ion-col>
+
+      <ion-col size="6" class="ion-padding">
+
+        <ion-item color="primary" class="ion-margin-bottom">
+          <ion-label>Informes de biomarcadores</ion-label>
+        </ion-item>
+
+
+        <ng-container *ngFor="let report of assistantReports; let i = index">
+          <ion-item lines="full">
+            <ion-label>
+              {{report.date | date: 'd/M/yy'}}
+            </ion-label>
+            <ion-buttons slot="end">
+              <ion-button (click)="deleteReport(i)" color="danger">
+                <ion-icon slot="start" name="close"></ion-icon>
+                Eliminar
+              </ion-button>
+              <ion-button (click)="selectReport(i)" color="success" [fill]="i===selectedReport? 'solid': 'clear'">
+                <ion-icon slot="start" name="checkmark"></ion-icon>
+                Seleccionar
+              </ion-button>
+            </ion-buttons>
+          </ion-item>
+          <ion-item class="ion-margin-bottom" lines="full">
+            <ion-label>
+              <h2>Signos y síntomas</h2>
+              <p *ngFor="let sign of report.signsAndSymptoms">
+                - {{sign.name}}
+              </p>
+              <p *ngIf="report.signsAndSymptoms.length===0">
+                Ninguno
+              </p>
+              <h2 style="margin-top:1rem;">Biomarcadores análisis positivos</h2>
+              <p *ngFor="let analysis of report.analyticBiomarkers">
+                - {{analysis.name}}
+              </p>
+              <p *ngIf="report.analyticBiomarkers.length===0">
+                Ninguno
+              </p>
+              <h2 style="margin-top:1rem;">Biomarcadores de imagen positivos</h2>
+              <p *ngFor="let test of report.imageBiomarkers">
+                - {{test.name}}: <i>({{test.value}})</i>
+              </p>
+              <p *ngIf="report.imageBiomarkers.length===0">
+                Ninguno
+              </p>
+              <h2 style="margin-top:1rem;">Técnicas de reproducción asistida</h2>
+              <p *ngFor="let rep of report.reproductionBiomarkers">
+                - {{rep.name}}: <i>({{rep.value}})</i>
+              </p>
+              <p *ngIf="!report.reproductionBiomarkers || report.reproductionBiomarkers.length===0">
+                Ninguno
+              </p>
+            </ion-label>
+          </ion-item>
+        </ng-container>
+
+
+      </ion-col>
+
+
+      <ion-col size="6" class="ion-padding">
+        <ion-row>
+
+          <ion-col size="12" class="ion-no-padding ion-margin-bottom">
+
+            <ion-item>
+              <ion-icon slot="start" name="folder" color="dark"></ion-icon>
+              <ion-label>Filtrar por categorías</ion-label>
+              <ion-input [(ngModel)]="queryCategory" (ionChange)="onCategoryChange($event.detail.value)"></ion-input>
+            </ion-item>
+    
+            <!-- AUTOCOMPLETADO -->
+            <ng-container *ngIf="queryCategory; else elseCategory">
+              <ion-item *ngFor="let suggestedCategory of suggestedCategories" (click)="addCategory(suggestedCategory)" style="cursor: pointer;" lines="full">
+                <ion-label>{{suggestedCategory.name}}</ion-label>
+              </ion-item>
+              <ion-item *ngIf="suggestedCategories.length === 0">
+                <ion-label>¿No existe la categoría?</ion-label>
+                <ion-button [routerLink]="['/database/categories/create']" color="primary">
+                  Crear
+                </ion-button>
+              </ion-item>
+            </ng-container>
+            <ng-template #elseCategory>
+              
+            </ng-template>
+            <!-- FIN DE AUTOCOMPLETADO -->
+            
+            <ng-container class="ion-padding-top">
+              <ion-chip color="primary" mode="ios" outline="true" *ngFor="let category of selectedCategories; let i = index" (click)="removeCategory(i)">
+                <ion-label>{{category.name}}</ion-label>
+                <ion-icon name="close-circle"></ion-icon>
+              </ion-chip>
+            </ng-container>
+          
+          </ion-col>
+    
+          <ion-col size="12" class="ion-no-padding ion-margin-bottom">
+    
+            <ion-item>
+              <ion-icon slot="start" name="pricetags" color="dark"></ion-icon>
+              <ion-label>Filtrar por etiquetas</ion-label>
+              <ion-input [(ngModel)]="queryLabel" (ionChange)="onLabelChange($event.detail.value)"></ion-input>
+            </ion-item>
+    
+            <!-- AUTOCOMPLETADO -->
+            <ng-container *ngIf="queryLabel; else elseLabel">
+              <ion-item *ngFor="let suggestedLabel of suggestedLabels" (click)="addLabel(suggestedLabel)" style="cursor: pointer;" lines="full">
+                <ion-label>{{suggestedLabel.name}}</ion-label>
+              </ion-item>
+              <ion-item *ngIf="suggestedLabels.length === 0">
+                <ion-label>¿No existe la etiqueta?</ion-label>
+                <ion-button [routerLink]="['/database/labels/create']" color="primary">
+                  Crear
+                </ion-button>
+              </ion-item>
+            </ng-container>
+            <ng-template #elseLabel>
+              
+            </ng-template>
+            <!-- FIN DE AUTOCOMPLETADO -->
+    
+            <ng-container class="ion-padding-top">
+              <ion-chip color="primary" mode="ios" outline="true" *ngFor="let label of selectedLabels; let i = index" (click)="removeLabel(i)">
+                <ion-label>{{label.name}}</ion-label>
+                <ion-icon name="close-circle"></ion-icon>
+              </ion-chip>
+            </ng-container>
+    
+          </ion-col>
+
+          <!--  
+          <ion-col size="12" class="ion-no-padding ion-margin-bottom" *ngIf="confirmedDiseasesList.length>0">
+            <ion-item color="primary" lines="full">
+              <ion-label>Enfermedades asociadas destacadas</ion-label>
+            </ion-item>
+            <ion-list>
+              <ion-item lines="full" *ngFor="let disease of confirmedDiseasesList" [routerLink]="['/database/diseases/edit/'+ disease.id]">
+                <ion-label>
+                  {{disease.name}}
+                  <p><small>{{disease.value}}</small></p>
+                </ion-label>
+                <ion-note slot="end">{{disease.ponderation}}</ion-note>
+              </ion-item>
+            </ion-list>
+          </ion-col>
+        -->
+
+          <ion-col size="12" class="ion-no-padding" *ngIf="subjectDiseases.length>0 || confirmedDiseasesList.length>0">
+            <ion-item color="primary" lines="full">
+              <ion-label>Enfermedades/condiciones asociadas</ion-label>
+            </ion-item>
+            <ion-list>
+              <ion-item lines="full" *ngFor="let disease of confirmedDiseasesList" (click)="showDiseaseDescription(disease.id)" style="cursor: pointer;">
+                <ion-label>
+                  {{disease.name}}
+                  <ul style="margin: 0">
+                    <li *ngFor="let value of disease.values">
+                      <small>{{value}}</small>
+                    </li>
+                  </ul>
+                </ion-label>
+                <!--  
+                <ion-note slot="end">F({{disease.frequency}}) - P({{disease.ponderation}})</ion-note>
+                -->
+              </ion-item>
+              <ng-container *ngFor="let disease of subjectDiseases">
+                <ion-item lines="full" *ngIf="disease.ponderation && disease.ponderation > 0" (click)="showDiseaseDescription(disease.id)" style="cursor: pointer;">
+                  <ion-label>
+                    {{disease.name}}
+                    <ul style="margin: 0">
+                      <li *ngFor="let value of disease.values">
+                        <small>{{value}}</small>
+                      </li>
+                    </ul>
+                  </ion-label>
+                  <!--
+                  <ion-note slot="end">F({{disease.frequency}}) - P({{disease.ponderation}})</ion-note>
+                  -->
+                </ion-item>
+              </ng-container>
+            </ion-list>
+          </ion-col>
+
+        </ion-row>
+      </ion-col>
+
+    </ion-row>
+  </ion-grid>
+</ion-content>

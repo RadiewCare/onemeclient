@@ -1,5 +1,79 @@
 <ion-app>
+  <ion-menu contentId="main-content" side="start" type="overlay">
+    <ion-content>
+      <ion-list>
+        <!-- MENÚ PARA ADMINISTRADOR GENERAL -->
+        <ng-container>
+          <ion-menu-toggle auto-hide="false">
+            <ion-list-header class="ion-margin-vertical">
+              <ion-label *ngIf="lang.isSpanish()">MI CLÍNICA</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">MY CLINIC</ion-label>
+            </ion-list-header>
+            <ion-item-sliding class="shaded-slider" *ngFor="let p of appPagesDoctor;"> 
+              <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false"
+                [class.selected]="isSelected(p.url)" *ngIf="p.role === 'doctor' || p.role === 'clinic-admin'">
+                <ion-icon slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+                <ion-label *ngIf="lang.isSpanish()">{{ p.title }}</ion-label>
+                <ion-label *ngIf="!lang.isSpanish()">{{ p.titleEng }}</ion-label>
+              </ion-item>
+            </ion-item-sliding>
+            <ion-list-header *ngIf="userData?.isAdmin" class="ion-margin-vertical">
+              <ion-label *ngIf="lang.isSpanish()">ADMINISTRACIÓN</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">ADMINISTRATION</ion-label>
+            </ion-list-header>
+            <ion-item-sliding  class="shaded-slider" *ngFor="let p of appPagesAdmin;"> 
+              <ion-item *ngIf="userData?.isAdmin" routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false"
+                [class.selected]="isSelected(p.url)">
+                <ion-icon slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+                <ion-label *ngIf="lang.isSpanish()">{{ p.title }}</ion-label>
+                <ion-label *ngIf="!lang.isSpanish()">{{ p.titleEng }}</ion-label>
+              </ion-item>
+            </ion-item-sliding>
+            <ion-list-header *ngIf="userData?.isAdmin" class="ion-margin-vertical">
+              <ion-label *ngIf="lang.isSpanish()">EXPLOTACIÓN</ion-label>
+              <ion-label *ngIf="!lang.isSpanish()">MINING</ion-label>
+            </ion-list-header>
+            <ion-item-sliding  class="shaded-slider" *ngFor="let p of appPagesMining;"> 
+              <ion-item *ngIf="userData?.isAdmin" routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false"
+                [class.selected]="isSelected(p.url)">
+                <ion-icon slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+                <ion-label *ngIf="lang.isSpanish()">{{ p.title }}</ion-label>
+                <ion-label *ngIf="!lang.isSpanish()">{{ p.titleEng }}</ion-label>
+              </ion-item>
+            </ion-item-sliding>
+          </ion-menu-toggle>
+
+        </ng-container>
+
+
+
+        
+      </ion-list>
+
+    </ion-content>
+
+    <ion-footer class="ion-hide-md-up">
+      <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+          <ion-button routerLink="/profile" [routerDirection]="'root'">
+            <ion-icon slot="icon-only" name="person-circle"></ion-icon>
+          </ion-button>
+          <ion-button routerLink="/documentation" [routerDirection]="'root'">
+            <ion-icon slot="icon-only" name="book"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-buttons slot="end">
+          <ion-button (click)="signOut()">
+            <ion-icon slot="icon-only" name="log-out"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-footer>
+  </ion-menu>
   <ion-toolbar color="primary" class="ion-hide-md-down" *ngIf="userData">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
     <ion-thumbnail slot="start" class="ion-margin-start">
       <img src="/assets/images/one-me-logo.svg" />
     </ion-thumbnail>
@@ -18,89 +92,11 @@
       <ion-button routerLink="/profile" [routerDirection]="'root'" title="Perfil de usuario">
         <ion-icon slot="icon-only" name="person-circle"></ion-icon>
       </ion-button>
+      <ion-title>{{doctorData?.name}}</ion-title>
     </ion-buttons>
   </ion-toolbar>
   <ion-content>
-    <ion-split-pane contentId="main-content">
-      <ion-menu contentId="main-content" type="overlay">
-        <ion-content>
-          <ion-list>
-
-            <!-- MENÚ PARA ADMINISTRADOR GENERAL -->
-            <ng-container *ngIf="userData?.isAdmin">
-              <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages;">
-                <ion-list-header *ngIf="p.title==='Pacientes'" class="ion-margin-vertical">
-                  <ion-label *ngIf="lang.isSpanish()">MI CLÍNICA</ion-label>
-                  <ion-label *ngIf="!lang.isSpanish()">MY CLINIC</ion-label>
-                </ion-list-header>
-                <ion-list-header *ngIf="p.title==='Clínicas'" class="ion-margin-vertical">
-                  <ion-label *ngIf="lang.isSpanish()">ADMINISTRACIÓN</ion-label>
-                  <ion-label *ngIf="!lang.isSpanish()">ADMINISTRATION</ion-label>
-                </ion-list-header>
-                <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false"
-                  [class.selected]="isSelected(p.url)">
-                  <ion-icon slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
-                  <ion-label *ngIf="lang.isSpanish()">{{ p.title }}</ion-label>
-                  <ion-label *ngIf="!lang.isSpanish()">{{ p.titleEng }}</ion-label>
-                </ion-item>
-              </ion-menu-toggle>
-            </ng-container>
-
-            <!-- MENÚ PARA ADMINISTRADOR DE CLÍNICA -->
-            <ng-container *ngIf="!userData?.isAdmin && doctorData?.isOwner;">
-              <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages;">
-                <ion-list-header *ngIf="p.title==='Pacientes'" class="ion-margin-vertical">
-                  <ion-label *ngIf="lang.isSpanish()">MI CLÍNICA</ion-label>
-                  <ion-label *ngIf="!lang.isSpanish()">MY CLINIC</ion-label>
-                </ion-list-header>
-                <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false"
-                  [class.selected]="isSelected(p.url)" *ngIf="p.role === 'doctor' || p.role === 'clinic-admin'">
-                  <ion-icon slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
-                  <ion-label *ngIf="lang.isSpanish()">{{ p.title }}</ion-label>
-                  <ion-label *ngIf="!lang.isSpanish()">{{ p.titleEng }}</ion-label>
-                </ion-item>
-              </ion-menu-toggle>
-            </ng-container>
-
-            <!-- MENÚ PARA DOCTORES -->
-            <ng-container *ngIf="!userData?.isAdmin && !doctorData?.isOwner;">
-              <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages;">
-                <ion-list-header *ngIf="p.title==='Pacientes'" class="ion-margin-vertical">
-                  <ion-label *ngIf="lang.isSpanish()">MI CLÍNICA</ion-label>
-                  <ion-label *ngIf="!lang.isSpanish()">MY CLINIC</ion-label>
-                </ion-list-header>
-                <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false"
-                  [class.selected]="isSelected(p.url)" *ngIf="p.role == 'doctor'">
-                  <ion-icon slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
-                  <ion-label *ngIf="lang.isSpanish()">{{ p.title }}</ion-label>
-                  <ion-label *ngIf="!lang.isSpanish()">{{ p.titleEng }}</ion-label>
-                </ion-item>
-              </ion-menu-toggle>
-            </ng-container>
-          </ion-list>
-
-        </ion-content>
-
-        <ion-footer class="ion-hide-md-up">
-          <ion-toolbar color="primary">
-            <ion-buttons slot="start">
-              <ion-button routerLink="/profile" [routerDirection]="'root'">
-                <ion-icon slot="icon-only" name="person-circle"></ion-icon>
-              </ion-button>
-              <ion-button routerLink="/documentation" [routerDirection]="'root'">
-                <ion-icon slot="icon-only" name="book"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-            <ion-buttons slot="end">
-              <ion-button (click)="signOut()">
-                <ion-icon slot="icon-only" name="log-out"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-footer>
-      </ion-menu>
       <ion-router-outlet id="main-content"></ion-router-outlet>
-    </ion-split-pane>
   </ion-content>
   <!--  
    <div style="text-align: center; margin-top: 50px;">En mantenimiento, perdonen las molestias</div>

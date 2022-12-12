@@ -1,0 +1,71 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Informe Quibim</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <!-- Genética -->
+      <ion-col size="12" class="ion-padding-top">
+        <ion-item lines="none">
+          <ion-label>Importar CSV de Quibim</ion-label>
+          <input
+            type="file"
+            accept=".csv"
+            name=""
+            id=""
+            class="ion-margin-vertical"
+            (change)="loadQuibimData($event)"
+          />
+        </ion-item>
+        <ion-item *ngIf="doneMessageQuibim" lines="none" color="success">
+          <ion-icon slot="start" name="checkmark"></ion-icon>
+          <ion-label>{{ doneMessageQuibim }}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="errorMessageQuibim" lines="none" color="danger">
+          <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+          <ion-label
+            >Ha ocurrido algún error: {{ errorMessageQuibim }}</ion-label
+          >
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="12" *ngIf="quibimLoadedData">
+        <ion-item *ngFor="let item of quibimLoadedData ; let i = index">
+          <ion-label position="start">{{item[0]}}</ion-label>
+          <span position="end">{{item[1]}}</span>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="12" *ngIf="quibimData">
+        <ion-item *ngFor="let item of quibimData[1] ; let i = index">
+          <ion-label position="start">{{quibimData[1][i].trim()}}</ion-label>
+          <span position="end">{{quibimData[2][i]}}</span>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon slot="start" name="close"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Cerrar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Close</ion-label>
+      </ion-button>
+      <ion-button (click)="save()" color="primary" *ngIf="result">
+        <ion-icon slot="start" name="save"></ion-icon>
+        <ion-label *ngIf="lang.isSpanish()">Guardar</ion-label>
+        <ion-label *ngIf="!lang.isSpanish()">Save</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

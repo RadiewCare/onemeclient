@@ -1,0 +1,107 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/subjects/edit/{{id}}"></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Compartir datos del sujeto con doctores</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Share subject data with doctors</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <!-- Filtros y búsquedas -->
+    <ion-row>
+      <ion-col size="12" class="ion-padding-top">
+        <ion-searchbar class="ion-no-padding" [placeholder]="lang.isSpanish()?'Buscar por nombre':'Search by name'"
+          (ionChange)="onSearchChange($event.detail.value)">
+        </ion-searchbar>
+      </ion-col>
+    </ion-row>
+    <ion-row class="ion-padding-top">
+      <ng-container *ngIf="!queryDoctors; else elseTemplate">
+        <ion-col size="12" *ngFor="let doctor of doctors" class="ion-no-padding"
+          style="padding-left: 5px; padding-right: 5px;">
+          <ion-item lines="full" *ngIf="doctor.id !== currentUser">
+            <ion-label>{{ doctor.name }}</ion-label>
+            <ion-icon slot="end" name="body" title="{{lang.isSpanish()?'Datos fenotípicos':'Phenotypic data'}}"
+              [color]="doctor.sharedSubjectsPhenotypic?.includes(this.id) ? 'primary' : 'medium'"
+              style="cursor: pointer;" (click)="share(doctor.id, 'phenotypic')">
+            </ion-icon>
+            <ion-icon slot="end" name="finger-print" title="{{lang.isSpanish()?'Estudio genético':'Genetic study'}}"
+              [color]="doctor.sharedSubjectsGenetic?.includes(this.id) ? 'primary' : 'medium'" style="cursor: pointer;"
+              (click)="share(doctor.id, 'genetic')">
+            </ion-icon>
+            <ion-icon slot="end" name="male-female"
+              title="{{lang.isSpanish()?'Técnicas de reproducción asistida':'Assisted reproduction techniques'}}"
+              [color]="doctor.sharedSubjectsReproduction?.includes(this.id) ? 'primary' : 'medium'"
+              style="cursor: pointer;" (click)="share(doctor.id, 'reproduction')">
+            </ion-icon>
+            <ion-icon slot="end" name="eyedrop" title="{{lang.isSpanish()?'Estudio analítico':'Analytic study'}}"
+              [color]="doctor.sharedSubjectsAnalytic?.includes(this.id) ? 'primary' : 'medium'" style="cursor: pointer;"
+              (click)="share(doctor.id, 'analytic')">
+            </ion-icon>
+            <ion-icon slot="end" name="images" title="{{lang.isSpanish()?'Estudio de imagen':'Image study'}}"
+              [color]="doctor.sharedSubjectsImage?.includes(this.id) ? 'primary' : 'medium'" style="cursor: pointer;"
+              (click)="share(doctor.id, 'image')">
+            </ion-icon>
+            <ion-buttons slot="end">
+              <ion-button (click)="shareAll(doctor.id)" color="success">
+                <ion-icon slot="start" name="checkmark"></ion-icon>
+                <ion-label *ngIf="lang.isSpanish()">Compartir todo</ion-label>
+                <ion-label *ngIf="!lang.isSpanish()">Share all</ion-label>
+              </ion-button>
+              <ion-button (click)="revokeAll(doctor.id)" color="danger">
+                <ion-icon slot="start" name="close"></ion-icon>
+                <ion-label *ngIf="lang.isSpanish()">No compartir</ion-label>
+                <ion-label *ngIf="!lang.isSpanish()">Don't share</ion-label>
+              </ion-button>
+            </ion-buttons>
+          </ion-item>
+        </ion-col>
+      </ng-container>
+      <ng-template #elseTemplate>
+        <ion-col size="12" class="ion-padding-top">
+          <ion-item *ngFor="let doctor of queryDoctors" lines="full">
+            <ion-label>{{ doctor.name }}</ion-label>
+            <ion-icon slot="end" name="body" title="{{lang.isSpanish()?'Datos fenotípicos':'Phenotypic data'}}"
+              [color]="doctor.sharedSubjectsPhenotypic?.includes(this.id) ? 'primary' : 'medium'"
+              style="cursor: pointer;" (click)="share(doctor.id, 'phenotypic')">
+            </ion-icon>
+            <ion-icon slot="end" name="finger-print" title="{{lang.isSpanish()?'Estudio genético':'Genetic study'}}"
+              [color]="doctor.sharedSubjectsGenetic?.includes(this.id) ? 'primary' : 'medium'" style="cursor: pointer;"
+              (click)="share(doctor.id, 'genetic')">
+            </ion-icon>
+            <ion-icon slot="end" name="male-female"
+              title="{{lang.isSpanish()?'Técnicas de reproducción asistida':'Assisted reproduction techniques'}}"
+              [color]="doctor.sharedSubjectsReproduction?.includes(this.id) ? 'primary' : 'medium'"
+              style="cursor: pointer;" (click)="share(doctor.id, 'reproduction')">
+            </ion-icon>
+            <ion-icon slot="end" name="eyedrop" title="{{lang.isSpanish()?'Estudio analítico':'Analytic study'}}"
+              [color]="doctor.sharedSubjectsAnalytic?.includes(this.id) ? 'primary' : 'medium'" style="cursor: pointer;"
+              (click)="share(doctor.id, 'analytic')">
+            </ion-icon>
+            <ion-icon slot="end" name="images" title="{{lang.isSpanish()?'Estudio de imagen':'Image study'}}"
+              [color]="doctor.sharedSubjectsImage?.includes(this.id) ? 'primary' : 'medium'" style="cursor: pointer;"
+              (click)="share(doctor.id, 'image')">
+            </ion-icon>
+            <ion-buttons slot="end">
+              <ion-button (click)="shareAll(doctor.id)" color="success">
+                <ion-icon slot="start" name="checkmark"></ion-icon>
+                <ion-label *ngIf="lang.isSpanish()">Todo</ion-label>
+                <ion-label *ngIf="!lang.isSpanish()">All</ion-label>
+              </ion-button>
+              <ion-button (click)="revokeAll(doctor.id)" color="danger">
+                <ion-icon slot="start" name="close"></ion-icon>
+                <ion-label *ngIf="lang.isSpanish()">Ninguno</ion-label>
+                <ion-label *ngIf="!lang.isSpanish()">None</ion-label>
+              </ion-button>
+            </ion-buttons>
+          </ion-item>
+        </ion-col>
+      </ng-template>
+    </ion-row>
+  </ion-grid>
+</ion-content>

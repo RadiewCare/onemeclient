@@ -1,0 +1,66 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/subjects/edit/{{id}}"></ion-back-button>
+      </ion-buttons>
+    </ion-buttons>
+    <ion-title *ngIf="lang.isSpanish()">Historial familiar</ion-title>
+    <ion-title *ngIf="!lang.isSpanish()">Family history</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [routerLink]="['/subjects/familiars/create/', id]">
+        <ion-icon slot="start" name="add"></ion-icon>
+        <ion-label class="ion-hide-sm-down" *ngIf="lang.isSpanish()">Nuevo</ion-label>
+        <ion-label class="ion-hide-sm-down" *ngIf="!lang.isSpanish()">New</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12" size-lg="6" class="ion-padding-top">
+        <ion-item color="primary" class="ion-margin-bottom" lines="none">
+          <ion-label *ngIf="lang.isSpanish()">FAMILIARES DE 1<sup>er</sup> GRADO</ion-label>
+          <ion-label *ngIf="!lang.isSpanish()">1<sup>st</sup> GRADE FAMILIARS</ion-label>
+        </ion-item>
+        <ion-item *ngFor="let familiar of firstGradeFamiliars$ | async" lines="full"
+          [routerLink]="['/subjects/familiars/edit/', familiar.id, id]">
+          <ion-label *ngIf="familiar.relationship === 'father' && lang.isSpanish()">Padre</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'mother && lang.isSpanish()'">Madre</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'son' && lang.isSpanish()">Hijo</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'daughter' && lang.isSpanish()">Hija</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'father' && !lang.isSpanish()">Father</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'mother' && !lang.isSpanish()">Mother</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'son' && !lang.isSpanish()">Son</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'daughter' && !lang.isSpanish()">Daughter</ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-lg="6" class="ion-padding-top">
+        <ion-item color="primary" class="ion-margin-bottom" lines="none">
+          <ion-label *ngIf="lang.isSpanish()">FAMILIARES DE 2<sup>do</sup> GRADO</ion-label>
+          <ion-label *ngIf="!lang.isSpanish()">2<sup>nd</sup> GRADE FAMILIARS</ion-label>
+        </ion-item>
+        <ion-item *ngFor="let familiar of secondGradeFamiliars$ | async" lines="none"
+          [routerLink]="['/subjects/familiars/edit/', familiar.id, id]" lines="full">
+          <ion-label *ngIf="familiar.relationship === 'grandfather' && lang.isSpanish()">Abuelo</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'grandmother' && lang.isSpanish()">Abuela</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'grandson' && lang.isSpanish()">Nieto</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'granddaughter' && lang.isSpanish()">Nieta</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'brother' && lang.isSpanish()">Hermano</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'sister' && lang.isSpanish()">Hermana</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'grandfather' && !lang.isSpanish()">Grandfather
+          </ion-label>
+          <ion-label *ngIf="familiar.relationship === 'grandmother' && !lang.isSpanish()">Grandmother
+          </ion-label>
+          <ion-label *ngIf="familiar.relationship === 'grandson' && !lang.isSpanish()">Grandson</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'granddaughter' && !lang.isSpanish()">Granddaughter
+          </ion-label>
+          <ion-label *ngIf="familiar.relationship === 'brother' && !lang.isSpanish()">Brother</ion-label>
+          <ion-label *ngIf="familiar.relationship === 'sister' && !lang.isSpanish()">Sister</ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
